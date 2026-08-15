@@ -37,9 +37,10 @@
 
 1. `AGENTS.md`。
 2. [文档控制规则](docs/governance/DOCUMENT_CONTROL.md)。
-3. 与任务相关的[产品底线](docs/governance/PRODUCT_GUARDRAILS.md)、[发布与兼容准则](docs/governance/RELEASE_AND_COMPATIBILITY.md)、[架构安全边界](docs/governance/ARCHITECTURE_SECURITY.md)。
-4. [开发文档地图](docs/README.md)及其中对应的 `LIVING` 参考文档。
-5. 对应源码、配置、测试和当前工作区差异。
+3. [Git 与 GitHub 版本控制准则](docs/governance/GIT_VERSION_CONTROL.md)。
+4. 与任务相关的[产品底线](docs/governance/PRODUCT_GUARDRAILS.md)、[发布与兼容准则](docs/governance/RELEASE_AND_COMPATIBILITY.md)、[架构安全边界](docs/governance/ARCHITECTURE_SECURITY.md)。
+5. [开发文档地图](docs/README.md)及其中对应的 `LIVING` 参考文档。
+6. 对应源码、配置、测试和当前工作区差异。
 
 禁止仅依据旧版说明或构建产物推断当前代码。若 Git 元数据不可用，必须明确报告无法识别未提交改动，不得假称工作区干净。
 
@@ -52,6 +53,7 @@
 - 不写入或输出密钥、令牌、私钥、`.env` 值或凭据。
 - 未经用户明确授权，不增加联网、遥测、分析、广告、账号、付费、远程配置或自动更新能力。
 - 保留用户已有改动；发现重叠修改或来源不明的工作区变化时，先停机确认。
+- 任何产生可跟踪文件变更的任务，都必须按 [Git 与 GitHub 版本控制准则](docs/governance/GIT_VERSION_CONTROL.md)完成检查、验证、提交、推送和远端核对闭环；用户当前明确要求暂不提交或暂不推送时除外。
 
 ## 6. 文档同步纪律
 
@@ -67,6 +69,7 @@
 - 共享领域规则至少运行相关 Vitest；影响整体 TypeScript 或渲染层时运行构建；影响安装、更新或存档兼容时执行[发布与兼容准则](docs/governance/RELEASE_AND_COMPATIBILITY.md)规定的实装验证。
 - 不运行会重写仓库文件的格式化、代码生成或迁移命令，除非当前任务明确需要并已说明影响。
 - 交付时列出修改摘要、实际变更文件、已运行检查和未验证风险。未运行的检查必须如实说明，不能用“应当通过”代替结果。
+- 产生文件变更时，交付还必须列出分支、提交哈希、GitHub 推送结果和最终工作区状态。
 
 ## 8. 受保护文件清单
 
@@ -77,5 +80,6 @@
 - `docs/governance/PRODUCT_GUARDRAILS.md`
 - `docs/governance/RELEASE_AND_COMPATIBILITY.md`
 - `docs/governance/ARCHITECTURE_SECURITY.md`
+- `docs/governance/GIT_VERSION_CONTROL.md`
 
 本次任务对这些文件的创建授权仅在本次任务内有效；创建完成后，后续修改仍须重新获得用户的明确、具体授权。

@@ -15,10 +15,11 @@
 
 1. [根目录代理规则](../AGENTS.md)。
 2. [文档控制规则](governance/DOCUMENT_CONTROL.md)以及与任务有关的 `LOCKED` 准则。
-3. [当前实现状态](status/CURRENT_IMPLEMENTATION.md)，确认现状、缺口和未批准规划。
-4. [架构与数据流](reference/ARCHITECTURE_AND_DATA_FLOW.md)。
-5. 与任务对应的领域规格，以及[测试与验收](reference/TESTING_AND_ACCEPTANCE.md)。
-6. 涉及交付时，再阅读[更新操作手册](../UPDATE_GUIDE.md)和对应版本快照。
+3. [Git 与 GitHub 版本控制准则](governance/GIT_VERSION_CONTROL.md)。
+4. [当前实现状态](status/CURRENT_IMPLEMENTATION.md)，确认现状、缺口和未批准规划。
+5. [架构与数据流](reference/ARCHITECTURE_AND_DATA_FLOW.md)。
+6. 与任务对应的领域规格，以及[测试与验收](reference/TESTING_AND_ACCEPTANCE.md)。
+7. 涉及交付时，再阅读[更新操作手册](../UPDATE_GUIDE.md)和对应版本快照。
 
 若代码、文档和用户指示互相矛盾，必须使用 `AGENTS.md` 规定的权威顺序处理，不得自行修改受保护准则。
 
@@ -38,6 +39,7 @@
 - [产品底线](governance/PRODUCT_GUARDRAILS.md)
 - [发布与兼容](governance/RELEASE_AND_COMPATIBILITY.md)
 - [架构与安全边界](governance/ARCHITECTURE_SECURITY.md)
+- [Git 与 GitHub 版本控制](governance/GIT_VERSION_CONTROL.md)
 
 根目录 `AGENTS.md` 同样属于受保护文档。上面的列表仅用于导航；权威受保护清单以 `AGENTS.md` 为准。
 
@@ -70,4 +72,3 @@
 - [用户说明](../README.md)：安装、运行和本地开发入口。
 - [技术设计概览](../TECHNICAL_DESIGN.md)：高层架构摘要，不承担参数总账职责。
 - [更新操作手册](../UPDATE_GUIDE.md)：当前可执行的离线发布和安装步骤。
-

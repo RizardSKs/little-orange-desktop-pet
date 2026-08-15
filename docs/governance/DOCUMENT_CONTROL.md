@@ -41,6 +41,7 @@
 - `docs/governance/PRODUCT_GUARDRAILS.md`
 - `docs/governance/RELEASE_AND_COMPATIBILITY.md`
 - `docs/governance/ARCHITECTURE_SECURITY.md`
+- `docs/governance/GIT_VERSION_CONTROL.md`
 
 新增 `LOCKED` 文档时，必须同时在本清单和根目录 `AGENTS.md` 中登记；因为这会修改受保护文件，所以必须获得用户明确授权。
 
@@ -70,5 +71,6 @@
 3. 新增或更新测试并运行相关检查。
 4. 同步对应 `LIVING` 文档中的参数、流程、边界和源码引用。
 5. 对用户可见变化追加更新日志；发布时追加版本快照和实测结果。
+6. 按 [Git 与 GitHub 版本控制准则](GIT_VERSION_CONTROL.md)建立有意提交、推送 GitHub 并核对远端结果。
 
 文档中的数值表不得重复充当多个权威来源。配置登记表记录变量，领域文档解释变量如何参与规则并链接到登记表。
