@@ -1,0 +1,10 @@
+* text=auto eol=lf
+
+*.md whitespace=-blank-at-eol,-blank-at-eof
+
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.ico binary
+*.png binary
+*.webp binary
