@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Governance Baseline"
+  short_description: "Bootstrap protected docs, Git, and release governance"
+  default_prompt: "Use $bootstrap-project-governance to establish a consistent project governance and release baseline."
