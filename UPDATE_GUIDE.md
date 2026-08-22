@@ -1,44 +1,44 @@
 # 小橙子桌宠离线更新与发布运行手册
 
 > 文档级别：`LIVING`  
-> 修改权限：发布脚本、目录、验证步骤或工具链发生变化时，必须与实现同一任务更新；本手册不能覆盖或放宽 `LOCKED` 发布准则。  
-> 适用版本：`1.1.0` 起的 Setup 与离线累积 Update 发布流程。  
-> 最后核对日期：`2026-08-16`。  
-> 权威来源：`package.json`、`package-lock.json`、`electron-builder.update.cjs`、`scripts/write_update_manifest.mjs`、实际发行物与 GitHub Release；策略以 [发布与兼容性准则](docs/governance/RELEASE_AND_COMPATIBILITY.md) 和 [Git 与 GitHub 版本控制准则](docs/governance/GIT_VERSION_CONTROL.md) 为准。  
-> 更新触发：构建命令、产物名称、签名方式、清单字段、兼容验证、存档迁移、GitHub Release 或发布组合变化时。
+> 修改权限：发布脚本、目录、验证步骤或工具链变化时与实现同步；本手册不能覆盖或放宽 `LOCKED` 发布准则。  
+> 适用版本：`1.2.0` 起的 Setup 与离线累积 Update 发布流程。  
+> 最后核对日期：`2026-08-22`。  
+> 权威来源：`package.json`、`package-lock.json`、`electron-builder.update.cjs`、`scripts/write_update_manifest.mjs`、实际发行物与 GitHub Release；策略以[发布与兼容性准则](docs/governance/RELEASE_AND_COMPATIBILITY.md)和[Git 与 GitHub 版本控制准则](docs/governance/GIT_VERSION_CONTROL.md)为准。  
+> 更新触发：构建命令、产物组合、原生依赖、签名、清单、兼容验证、存档迁移或 GitHub Release 流程变化时。
 
-## 1. 发布模型
+## 1. 正式发行组合
 
-每个正式版本应发布同一版本号的一组文件：
+每个正式版本只发布同一版本号的三件套：
 
 | 文件 | 面向用户 | 性质 |
 | --- | --- | --- |
-| `小橙子桌宠-Setup-x.y.z-x64.exe` | 新安装用户 | 最新完整 NSIS 安装包 |
-| `小橙子桌宠-Update-x.y.z-x64.exe` | 已安装且处于声明兼容范围内的用户 | 完整、离线、可累积覆盖的 NSIS 安装包 |
-| `update-manifest.json` | 发布校验 | Update 的身份、版本、大小和 SHA-256 清单 |
+| `小橙子桌宠-Setup-x64.exe` | 新安装用户 | 最新完整 NSIS 安装包 |
+| `小橙子桌宠-Update-x64.exe` | 声明兼容范围内的已安装用户 | 完整、离线、可累积覆盖的 NSIS 安装包 |
+| `update-manifest.json` | 发布校验 | Update 身份、版本、大小和 SHA-256 清单 |
 
-Update 不联网、不自动下载或安装，也不是二进制差分补丁。应用本身没有自动更新器，清单也不会被应用读取；下载、分发和校验均需在应用外完成。
+应用不联网检查、下载或安装更新，清单也不由应用读取。Update 不是差分补丁或下载器；用户必须完全退出应用后手动运行。
 
-每个通过全部门槛的正式版本必须在 GitHub 创建绑定同版本 `vX.Y.Z` 标签的 Release，并上传 Setup、Update 和 `update-manifest.json`。普通源码推送不创建 Release，也不上传 EXE。
-
-`1.0.0 Portable` 仅作遗留归档，不再发布后续 Portable。当前 `npm.cmd run dist:win` 仍同时构建 Portable 与 NSIS Setup，项目尚无只构建 Setup 的 npm 命令；在构建脚本完成对齐前，新生成的 Portable 只能视为非正式构建副产物，不得加入正式发行组合。不得在手册中用未登记的临时命令假装该缺口已经解决。
+`dist:setup` 只生成 Setup，`dist:win` 是它的兼容别名；两者均不再生成 Portable。`1.0.0 Portable` 只作历史归档，v1.2.0 及后续版本不得创建或上传 Portable。
 
 ## 2. 用户更新步骤
 
-1. 确认当前安装版本位于目标版本快照声明的兼容范围内。
-2. 正常退出小橙子桌宠，并确认托盘进程已经结束。
-3. 核对 Update 文件名、大小和 SHA-256 与该版本的 `update-manifest.json` 一致。
-4. 运行目标版本的 `Update`，保持原安装位置并完成覆盖安装。
-5. 重新启动，核对程序版本以及等级、经验、金币、装扮拥有及装备状态、设置和位置。
+1. 在目标版本的正式快照中确认当前版本位于兼容范围内。
+2. 从托盘选择“退出”，确认小橙子和独立解锁按钮均已消失。
+3. 核对 Update 文件名、大小和 SHA-256 与 `update-manifest.json` 一致。
+4. 运行目标版本 Update，保持原安装位置完成覆盖安装。
+5. 启动应用，核对版本、等级、经验、金币、永久装扮、设置和位置；第一次 schema 1→2 升级还要确认背包、效果、探索和新互动设置使用安全默认值。
 
-存档位于 Electron `app.getPath('userData')` 对应目录，不在应用安装目录内。该位置与 `deleteAppDataOnUninstall: false` 是保留数据的实现基础，但不能替代真实覆盖安装和存档迁移测试。
+用户数据位于 Electron `app.getPath('userData')` 对应目录，不在安装目录内。`deleteAppDataOnUninstall: false` 只是保留数据的实现基础，不能替代真实升级验证。
 
 ## 3. 发布前准备
 
-1. 根据变更范围选择语义化版本号，并让 `package.json` 与 `package-lock.json` 的根版本完全一致。
-2. 不得修改稳定身份：`name = little-orange-desktop-pet`、`build.appId = cn.littleorange.desktop.pet`、`productName = 小橙子桌宠`。
-3. 检查存档结构。新增必填字段或提高 `schemaVersion` 时，先实现从全部声明兼容版本迁移、备份和失败恢复，并补齐测试。
-4. 使用 Node.js `22.12.0` 或更高版本，并从锁文件安装依赖。
+1. 选择语义化版本，并同步 `package.json`、`package-lock.json` 根版本和 `CHANGELOG.md` 新条目。
+2. 保持稳定身份：`little-orange-desktop-pet`、`cn.littleorange.desktop.pet`、`小橙子桌宠`。
+3. 核对 `releaseMetadata.compatibleFrom`。当前配置为 `1.0.0`，只有实际覆盖安装通过后才能作为最终声明。
+4. 核对 schema 2 深校验、schema 1 迁移、迁移前版本化备份和失败恢复测试。
+5. 核对 `uiohook-napi` 锁定版本和 `asarUnpack` 配置；不得为修复打包临时关闭 Electron 隔离或沙箱。
+6. 在 Node.js `22.12.0` 或更高版本使用锁文件安装，并执行完整检查：
 
 ```powershell
 npm.cmd ci
@@ -46,45 +46,44 @@ npm.cmd test
 npm.cmd run build
 ```
 
-任何测试或生产构建失败都阻止发布。
+任何测试或构建失败都阻止发行。
 
-## 4. 构建发行物
+## 4. 构建 Setup、Update 与清单
 
-先运行仓库当前存在的完整 Windows 打包命令：
+构建带目标版本身份、使用固定文件名的 Setup：
 
 ```powershell
-npm.cmd run dist:win
+npm.cmd run dist:setup
 ```
 
-该命令实际执行 renderer/main 构建，并同时生成 Portable 与 NSIS Setup 到 `release/`。只选取以下同版本 Setup 作为正式发行候选：
+兼容入口 `npm.cmd run dist:win` 执行相同脚本。预期候选文件：
 
 ```text
-release/小橙子桌宠-Setup-x.y.z-x64.exe
+release/小橙子桌宠-Setup-x64.exe
 ```
 
-然后构建同版本离线累积 Update 与清单：
+构建同版本离线累积 Update 和清单：
 
 ```powershell
 npm.cmd run dist:update
 ```
 
-该命令会再次执行生产构建，使用 `electron-builder.update.cjs` 生成 NSIS Update，并运行 `scripts/write_update_manifest.mjs`：
+预期文件：
 
 ```text
-release/updates/小橙子桌宠-Update-x.y.z-x64.exe
+release/updates/小橙子桌宠-Update-x64.exe
 release/updates/update-manifest.json
 ```
 
-当前没有 Setup-only 命令，也没有自动清理旧产物的命令。核对时必须按目标版本精确选择文件，不能把目录中遗留的旧 EXE 当成本版产物。`release/` 已被 Git 忽略；正式三件套必须上传到对应 GitHub Release，并建议另存于项目外的受控归档。
+`release/` 被 Git 忽略且不会自动清理旧文件。必须按目标版本精确选取三件套；目录中如出现 Portable，则视为历史或异常产物，不得上传。
 
-## 5. 产物核对
+## 5. 本地产物核对
 
-将占位版本替换为本次目标版本后执行只读检查：
+按固定文件名核对候选产物；版本身份来自包元数据和清单，而不是文件名：
 
 ```powershell
-$releaseVersion = 'x.y.z'
-$setupPath = "release\小橙子桌宠-Setup-$releaseVersion-x64.exe"
-$updatePath = "release\updates\小橙子桌宠-Update-$releaseVersion-x64.exe"
+$setupPath = 'release\小橙子桌宠-Setup-x64.exe'
+$updatePath = 'release\updates\小橙子桌宠-Update-x64.exe'
 $manifestPath = 'release\updates\update-manifest.json'
 
 Get-Item -LiteralPath $setupPath, $updatePath |
@@ -97,47 +96,47 @@ Get-AuthenticodeSignature -FilePath $setupPath, $updatePath |
 Get-Content -LiteralPath $manifestPath -Encoding utf8
 ```
 
-逐项确认：
+必须确认：
 
-- Setup、Update、`package.json`、`package-lock.json` 和清单版本完全一致。
-- 清单中的 `product`、`appId`、`artifact`、`size` 和 `sha256` 与实际 Update 一致。
-- `updateMode` 为 `offline-cumulative`，`preservesUserData` 为 `true`。
-- `compatibleFrom` 只能填写已经完成实际升级验证的最早版本。当前生成脚本将其固定为 `1.0.0`；若实测范围不同，必须先修正实现和测试，不能手改生成后的清单掩盖差异。
-- 当前历史产物为 `NotSigned`。在用户尚未建立强制代码签名门槛时，`NotSigned` 本身不自动阻止发布，但必须记录这一限制和 SmartScreen 风险，不能把未签名状态写成签名通过。
+- Setup、Update、包版本和清单版本完全一致。
+- 清单的 `product`、`appId`、`artifact`、`size`、`sha256` 与实际 Update 一致。
+- `updateMode` 为 `offline-cumulative`，`preservesUserData` 为 `true`，`compatibleFrom` 与已验证范围一致。
+- 两个 EXE 都包含运行时所需文件，尤其是从 asar 解包的 `uiohook-napi` 原生模块。
+- 当前预期签名状态为 `NotSigned`。这不自动阻止本版发布，但必须在 Release 和正式快照披露 SmartScreen 风险，不能写成签名通过。
+- 输出中没有本版 Portable。
 
-## 6. 安装与兼容验收
+## 6. Windows 安装与兼容验收
 
-在隔离的 Windows 10/11 x64 环境完成并记录：
+在隔离的 Windows 10/11 x64 环境记录以下路径：
 
-1. 使用本版 Setup 干净安装，验证启动、桌宠窗口、管理面板、托盘、退出和新建存档。
-2. 从 `compatibleFrom` 声明的最早版本运行本版 Update。
+1. 使用本版 Setup 干净安装，验证桌宠、管理面板、独立解锁按钮、托盘、完全退出和新建 schema 2 存档。
+2. 从 `compatibleFrom` 指定的最早版本运行本版 Update。
 3. 从最新上一正式版本运行本版 Update。
-4. 两种升级源都准备包含非默认等级、经验、金币、已拥有及已装备装扮、设置和位置的存档，升级后逐项比对。
-5. 验证应用版本、安装位置、快捷方式和卸载项没有产生并行副本。
-6. 验证应用运行期间没有更新检查、下载或安装相关网络请求。
+4. 两条升级路径都使用包含非默认等级、经验、大额金币、已拥有及已装备装扮、设置和位置的旧档；升级后逐项比对，并检查迁移前备份。
+5. 验证 50 级成长、桌面锁定、鼠标互动、用品/服务/探索、限时效果在应用退出或睡眠/休眠时暂停且仅锁屏时继续，以及离线零金币/经验。
+6. 首次启用键盘陪打必须显示隐私确认；打包后的原生组件应能进入“已就绪”，只产生次数时间桶，关闭、挂起、锁屏和退出后停止。另验证组件不可用时应用安全降级。
+7. 检查安装位置、快捷方式、卸载项和用户数据目录没有产生并行副本；运行期间没有更新检查、下载、遥测或其他新增网络请求。
 
-只有全部通过的来源版本才能写入 `compatibleFrom`。代码静态阅读、干净安装或“用户数据目录未删除”都不能替代跨版本实装。
+只有真实通过的来源版本才能保留在 `compatibleFrom`。静态阅读、单元测试或干净安装不能代替跨版本覆盖安装。
 
-## 7. 记录与发布
+## 7. GitHub 正式发布与快照
 
-1. 根据 [发布快照模板](docs/releases/TEMPLATE.md) 在 `tmp/release-drafts/` 或仓库外准备未入库证据草稿；此时不得提前创建或提交 `docs/releases/vx.y.z.md`，因为远端证据尚未产生。
-2. 在 [CHANGELOG.md](CHANGELOG.md) 文件末尾追加用户可见变化和预定快照链接。
-3. 提交版本和更新日志，推送实际生成发行物的发行提交，并确认远端提交与本地一致。
-4. 创建新的带说明 `vX.Y.Z` 标签，使其指向发行提交，然后将该标签推送到 `origin`；不得移动或复用已发布标签。
-5. 在 GitHub 创建绑定该标签、标题固定为 `小橙子桌宠 vX.Y.Z` 的同版本 Release，上传且只上传同版本 Setup、Update 和 `update-manifest.json`；不要上传 `dist:win` 额外生成的 Portable。
-6. 从 GitHub Release 页面或授权 API 回读标题、标签和资产列表，核对三项资产名称与大小。重新下载全部三项远端资产或使用可信远端摘要核对 SHA-256，确认与本地证据一致。
-7. 将 Release URL、标签、远端资产 URL、大小和哈希核对结果补入草稿；证据齐全后才把它作为 `docs/releases/vx.y.z.md` 首次正式写入，并在文件头标记为 `APPEND_ONLY`。
-8. 提交并推送正式快照，核对该证据提交已经存在于 GitHub。快照从首次正式提交起只允许在文末追加勘误；完成这一步后，才可宣称本版正式发布闭环完成。
+1. 在 `tmp/release-drafts/` 或仓库外准备证据草稿；远端证据出现前，不得创建或提交 `docs/releases/vx.y.z.md`。
+2. 完成源码、LIVING 文档和 `CHANGELOG.md` 的版本条目，运行检查，提交并推送实际用于构建发行物的发行提交。
+3. 创建并推送新的不可变 `vX.Y.Z` 标签，确认它指向发行提交；不得移动或复用旧标签。
+4. 在 GitHub 创建标题为 `小橙子桌宠 vX.Y.Z`、绑定该标签的 Release，只上传 `小橙子桌宠-Setup-x64.exe`、`小橙子桌宠-Update-x64.exe` 和 `update-manifest.json`。
+5. 从 GitHub 回读标题、标签、资产名和大小；重新下载三项资产或使用可信远端摘要，核对远端 SHA-256 与本地一致。
+6. 把 Release URL、资产 URL、大小、签名状态和远端哈希结果补入草稿。证据齐全后，才首次创建 `docs/releases/vx.y.z.md` 并标记 `APPEND_ONLY`。
+7. 提交并推送正式快照，确认该证据提交存在于 GitHub；到此才能宣称正式发布闭环完成。
 
-当前仓库没有自动创建或上传 GitHub Release 的脚本，也没有可依赖的 `gh` 命令。正式发布任务必须使用已经授权的 GitHub 网页或 API 完成人工上传和回读，且不得把访问令牌写入项目、命令日志或快照。
+仓库当前没有自动创建 GitHub Release、上传资产或回读远端哈希的脚本。必须使用已授权的 GitHub 网页或 API，不得把令牌写入仓库、命令日志或文档。
 
-若验证、上传或远端核对失败，停止发布并保留证据。仅远端回读或证据提交中断、且已核验资产没有变化时，可以在同版本继续完成缺失步骤；若已发布资产内容或版本错误，则必须使用新的语义化版本重新走完整流程，不能覆盖已发布产物、移动标签或回写历史快照。
+## 8. v1.2.0 当前状态
 
-## 8. 当前实现缺口
-
-- `dist:win` 仍构建 Portable，尚无 Setup-only npm 命令。
-- v1.1.0 本地归档中没有同版本 Setup，未形成完整正式发行组合。
-- `compatibleFrom` 仍在脚本中固定为 `1.0.0`，发布流水线不会根据实测结果自动约束。
-- 当前没有代码签名、发布服务、自动更新器或应用内清单验证。
-- 当前没有 GitHub Release 自动创建、资产上传或远端哈希复核脚本。
-- 当前存档加载器只接受 `schemaVersion === 1`，尚无 schema 迁移链。
+- 源码版本、77 项自动化测试和生产构建已对齐到 1.2.0。
+- 本版固定名 Setup、Update 与清单已完成本地构建，PE 内部版本、哈希、清单字段及两份解包后的 `uiohook-napi` 原生二进制均已通过 `verify:release`。
+- 已在 Windows x64 `10.0.26200` 的仓库内隔离目录通过全新 Setup、v1.0.0→v1.2.0 直升和 v1.0.0→v1.1.0→v1.2.0 累计升级，并使用丰富 schema 1 存档核对迁移与备份。
+- 使用启用锁定与键盘互动的隔离 schema 2 存档启动安装版时，主窗口与键盘 Node utilityProcess 均保持存活，证明原生组件可从安装包加载；真实按键节奏和点击穿透仍不由此自动检查替代。
+- 打包后桌面点击穿透、托盘、全局键盘钩子、Windows 10 客户端、SmartScreen、多显示器、DPI 和系统电源事件仍属于人工验证边界；远端 GitHub Release 证据尚未取得。
+- 远端证据齐全前不创建 `docs/releases/v1.2.0.md`，也不得把本地构建描述为已经正式发布。
+- 安装程序当前未签名，发布时必须明确披露 SmartScreen 风险。
