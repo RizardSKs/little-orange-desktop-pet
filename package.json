@@ -1,6 +1,6 @@
 {
   "name": "little-orange-desktop-pet",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "小橙子 Windows 桌面宠物",
   "main": "dist-electron/main/main.js",
   "author": "小橙子桌宠",
@@ -64,7 +64,7 @@
       "artifactName": "${productName}-${arch}.${ext}"
     },
     "nsis": {
-      "artifactName": "小橙子桌宠-Setup-x64.${ext}",
+      "artifactName": "Little-Orange-Desktop-Pet-Setup-x64.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,

@@ -2,17 +2,17 @@
 
 > 文档级别：`LOCKED`  
 > 修改权限：仅当用户在当前任务中明确点名本文件或明确授权改变发布与兼容策略时可改；本次创建授权不延续到未来，普通“更新文档”不构成授权。  
-> 适用版本：`1.2.0` 起及后续正式版本；`1.0.0 Portable` 与 `1.1.0` 发行文件名仅作为历史事实保留。  
+> 适用版本：`1.2.1` 起及后续正式版本；`1.0.0 Portable`、`1.1.0` 与未完成发布的 `v1.2.0` 仅作为历史事实保留。  
 > 最后核对日期：`2026-08-22`  
 > 权威来源：用户明确决策；`docs/governance/GIT_VERSION_CONTROL.md`；`package.json`；`package-lock.json`；`electron-builder.update.cjs`；`scripts/write_update_manifest.mjs`；存档类型与实现。  
 > 更新触发：用户明确改变发行物组合、GitHub Release 分发方式、更新模式、应用身份、兼容范围、存档迁移或稳定标识符策略时。
 
 ## 1. 官方发行物
 
-从 `1.2.0` 起，每个正式版本只发布一组与该版本内容一致的最新发行物，三件套在各自 GitHub Release 内使用固定文件名：
+从 `1.2.1` 起，每个正式版本只发布一组与该版本内容一致的最新发行物。GitHub 会重命名包含特殊或非 ASCII 字符的 Release Asset，因此三件套在本地构建和 GitHub Release 内都使用固定 ASCII 文件名：
 
-- 完整安装包：`小橙子桌宠-Setup-x64.exe`。
-- 离线累积更新包：`小橙子桌宠-Update-x64.exe`。
+- 完整安装包：`Little-Orange-Desktop-Pet-Setup-x64.exe`。
+- 离线累积更新包：`Little-Orange-Desktop-Pet-Update-x64.exe`。
 - 更新校验清单：`update-manifest.json`。
 
 固定文件名不代替版本校验：Setup 与 Update 的 PE 内部版本、应用身份和程序内容必须与不可变 `vX.Y.Z` 标签及清单版本一致。Update 是完整、离线、可累积覆盖的安装程序，不是联网下载器，也不是只适用于某一个前置版本的二进制差分补丁。不同 GitHub Release 可以分别包含同名三件套，但不得在已发布的同一 Release 内覆盖资产或借固定名移动既有标签。

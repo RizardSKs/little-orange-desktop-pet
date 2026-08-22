@@ -6,8 +6,8 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
-const setupName = '小橙子桌宠-Setup-x64.exe';
-const updateName = '小橙子桌宠-Update-x64.exe';
+const setupName = 'Little-Orange-Desktop-Pet-Setup-x64.exe';
+const updateName = 'Little-Orange-Desktop-Pet-Update-x64.exe';
 const setupPath = path.join(root, 'release', setupName);
 const updatePath = path.join(root, 'release', 'updates', updateName);
 const manifestPath = path.join(root, 'release', 'updates', 'update-manifest.json');
