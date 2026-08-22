@@ -2,8 +2,8 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在行为类型、移动调度、动画、表达式解析、交互手势、视觉素材或测试已经变更并核对后更新；新增动作方向或角色性格规则必须先取得用户批准。  
-> 适用版本：1.2.0  
-> 最后核对：2026-08-16  
+> 适用版本：1.2.2  
+> 最后核对：2026-08-22  
 > 权威源码：`src/shared/types.ts`、`src/shared/interaction.ts`、`src/shared/expression.ts`、`src/main/interaction-controller.ts`、`src/main/motion.ts`、`src/main/main.ts`、`src/renderer/pet-view.tsx`、`src/renderer/styles.css`  
 > 更新触发：`PetBehavior`、`PetInteractionKind`、互动优先级、触发阈值、自动散步条件、速度/缓动、动画强度、拖动/点击手势、四阶段变体、表情文案或相关测试变化时。
 
@@ -84,14 +84,16 @@
 `INTERACTION_STAGE_PROFILES` 为四个阶段定义独立的振幅、时长系数和性格：幼芽偏害羞且收敛，活力阶段快而弹跳，成熟阶段稳定，闪耀阶段更利落并附带星光。
 
 - 主进程按阶段系数调整交互持续时间。
-- CSS 通过 `--interaction-amplitude`、`--personality-duration`、阶段体型、表情和粒子差异放大阶段辨识度。
-- 各阶段使用五张同坐标系分层素材，并保留整图 fallback。`pet-facing` 包含身体、四肢和 DOM 五官，向左时整体镜像。
+- CSS 通过 `--interaction-amplitude`、`--personality-duration`、阶段体型和粒子差异放大阶段辨识度。
+- 各阶段使用五张同坐标系身体/四肢分层、14 张图片表情，并保留带中性表情的整图 fallback。`pet-facing` 包含身体、四肢和 PNG 五官，向左时整体镜像。
 
 ### 表情决策
 
 `PetExpression` 当前包含 14 种：`neutral`、`happy`、`curious`、`surprised`、`proud`、`focused`、`delighted`、`excited`、`refreshed`、`asleep`、`sad`、`sleepy`、`hungry`和 `uncomfortable`。
 
 解析顺序仍是：持久行为专属表情 > 当前属性上限下的最低需求 > 健康待机加权表情。临时互动通过 `interaction-*` CSS 类控制身体动画，不会写回 `PetBehavior`或覆盖领域需求表情。
+
+解析结果直接选择 `assets/pet/<stage>/expressions/<expression>.png`。图片表情不改变领域优先级；任一分层或表情文件加载失败时统一降级到该阶段中性整图。
 
 升级、阶段进化与闪耀星级反馈由 `growth:progress` 事件驱动。该事件只有 `online` 和 `care` 两种来源；渲染层根据跨越的最高里程碑显示桌宠与面板庆祝动画。
 
@@ -124,6 +126,6 @@
 - `src/main/interaction-integration.test.ts`：点击穿透、置顶恢复、IPC sender 校验、键盘工作进程聚合载荷与解锁 preload 边界。
 - `src/main/motion.test.ts`：移动方向、强度速度差异、时长边界和缓动精确落点。
 - `src/shared/expression.test.ts`：行为表情优先级、需求阈值和待机权重。
-- `src/renderer/ui-regressions.test.ts`：分层结构、交互 CSS 类、四阶段视觉契约和透明窗口回归。
+- `src/renderer/ui-regressions.test.ts`：分层结构、14 种图片表情、交互 CSS 类、四阶段视觉契约和透明窗口回归。
 
 当前仍缺少真实 BrowserWindow 下的多显示器拖动、鼠标手势时序、视觉截图以及原生键盘钩子端到端测试。

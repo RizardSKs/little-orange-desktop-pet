@@ -51,3 +51,12 @@
 - 在更新运行手册中补齐 `gh` Device Flow、Release 创建、资产上传、失败转草稿、远端回读和 SHA-256 复核流程。
 - 2026-08-22 已完成不可变 `v1.2.1` 标签、[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.1)、固定名三件套上传、远端摘要核对和 Windows 安装/升级矩阵；证据与限制见 [v1.2.1 发布快照](docs/releases/v1.2.1.md)。
 - 修复 main/tag CI 中 electron-builder 自动尝试发布的问题；Setup 与 Update 包装命令现显式使用 `--publish never`，GitHub Release 仍只允许人工审查后通过 `gh` CLI 创建和上传。
+
+## 1.2.2
+
+- 重新设计萌芽、活力、成熟和闪耀四阶段小橙子，统一为柔和可爱的 3D 卡通风格，同时强化叶冠、体型、五官比例与成熟度差异。
+- 成熟期改为五片叶全部从单一中央枝干分出，不再让新增叶片直接插在身体上。
+- 闪耀期改为哑光晨曦与星尘表现，移除默认身体外发光和油亮滤镜，只保留低强度星点与用品/庆典主动触发的效果。
+- 将原 DOM/CSS 五官替换为四阶段各 14 种 PNG 图片表情；连同整图 fallback 和身体/四肢分层，运行时角色素材从 24 张扩展为 80 张 512×512 RGBA PNG。
+- 增加 1.2.2 专用离线素材处理脚本，验证真实透明通道、统一画布、分层区域、图片表情和可选预览；运行时不依赖 Python。
+- 保持应用 ID、schema 2、`compatibleFrom: 1.0.0`、八件稳定装扮 ID 与固定 ASCII Setup/Update/manifest 名称不变；已完成全新安装、v1.0.0 直升与 v1.2.1 覆盖升级验证。

@@ -63,6 +63,7 @@ export function PetView({ state, runtime, growthCelebration }: {
   const assetRoot = location.protocol === 'file:' ? '../assets/pet' : '/assets/pet';
   const stageRoot = `${assetRoot}/${state.growth.stage}`;
   const fallbackSprite = `${assetRoot}/${state.growth.stage}.png`;
+  const expressionSprite = `${stageRoot}/expressions/${expression}.png`;
   const equipped = SHOP_ITEMS.find((item) => item.id === state.economy.equippedItem);
   const expedition = state.economy.activeExpedition ? findExpedition(state.economy.activeExpedition.expeditionId) : null;
   const stars = radiantStarsForLevel(state.growth.level);
@@ -212,14 +213,9 @@ export function PetView({ state, runtime, growthCelebration }: {
               <img className="pet-layer limb arm arm-left" src={`${stageRoot}/arm-left.png`} draggable={false} alt="" onError={() => setLayerFailed(true)} />
               <img className="pet-layer limb arm arm-right" src={`${stageRoot}/arm-right.png`} draggable={false} alt="" onError={() => setLayerFailed(true)} />
               <img className="pet-layer pet-body" src={`${stageRoot}/body.png`} draggable={false} alt={state.pet.name} onError={() => setLayerFailed(true)} />
+              <img className="pet-layer pet-expression" src={expressionSprite} draggable={false} alt="" onError={() => setLayerFailed(true)} />
             </>}
             <div className="orange-fallback" />
-            <div className="face">
-              <span className="brow left-brow" /><span className="brow right-brow" />
-              <span className="eye left-eye"><i className="pupil" /></span><span className="eye right-eye"><i className="pupil" /></span>
-              <span className="cheek left-cheek" /><span className="cheek right-cheek" />
-              <span className="mouth" /><span className="expression-mark" />
-            </div>
           </div>
         </div>
         {expedition ? <span className={`travel-outfit ${expedition.travelOutfit}`}>{TRAVEL_ICONS[expedition.travelOutfit]}</span> : equipped && <span className={equipped.className}>{equipped.icon}</span>}
