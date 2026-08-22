@@ -12,9 +12,12 @@ describe('desktop pet visual regressions', () => {
     expect(css).not.toMatch(/\nbody\s*\{\s*background:\s*#fff8ee/);
   });
 
-  it('renders the five aligned character layers with a whole-sprite fallback', () => {
+  it('renders the aligned character rig, raster expressions, and whole-sprite fallback', () => {
     const component = read('src/renderer/pet-view.tsx');
     for (const layer of ['body.png', 'arm-left.png', 'arm-right.png', 'leg-left.png', 'leg-right.png']) expect(component).toContain(layer);
+    expect(component).toContain('/expressions/${expression}.png');
+    expect(component).toContain('pet-expression');
+    expect(component).not.toContain('className="face"');
     expect(component).toContain('fallbackSprite');
     expect(component).toContain('DRAG_THRESHOLD_DIP');
     expect(component).toContain('requestAnimationFrame');
@@ -42,10 +45,16 @@ describe('desktop pet visual regressions', () => {
     expect(css).toContain('.pending-return-status');
   });
 
-  it('ships 512px RGBA layers for every growth stage', () => {
+  it('ships 512px RGBA rig and raster-expression layers for every growth stage', () => {
+    const expressions = ['neutral', 'happy', 'curious', 'surprised', 'proud', 'focused', 'delighted', 'excited', 'refreshed', 'asleep', 'sad', 'sleepy', 'hungry', 'uncomfortable'];
     for (const stage of ['sprout', 'lively', 'mature', 'radiant']) {
-      for (const layer of ['body', 'arm-left', 'arm-right', 'leg-left', 'leg-right']) {
-        const image = fs.readFileSync(path.join(process.cwd(), 'assets', 'pet', stage, `${layer}.png`));
+      const assets = [
+        path.join('assets', 'pet', `${stage}.png`),
+        ...['body', 'arm-left', 'arm-right', 'leg-left', 'leg-right'].map((layer) => path.join('assets', 'pet', stage, `${layer}.png`)),
+        ...expressions.map((expression) => path.join('assets', 'pet', stage, 'expressions', `${expression}.png`)),
+      ];
+      for (const asset of assets) {
+        const image = fs.readFileSync(path.join(process.cwd(), asset));
         expect(image.readUInt32BE(16)).toBe(512);
         expect(image.readUInt32BE(20)).toBe(512);
         expect(image[25]).toBe(6);

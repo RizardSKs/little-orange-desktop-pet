@@ -4,8 +4,8 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随高层架构更新；受保护准则必须另行获得用户明确授权 |
-| 适用版本 | 1.2.1 |
-| 最后核对 | 2026-08-16 |
+| 适用版本 | 1.2.2 |
+| 最后核对 | 2026-08-22 |
 | 权威来源 | [开发文档地图](docs/README.md)、当前源码、构建配置与测试 |
 | 更新触发 | 高层模块职责、进程边界、原生依赖、支持平台或文档导航变化 |
 
@@ -68,14 +68,14 @@
 
 ## 视觉与持久化
 
-- 四阶段运行时素材固定为 24 张 PNG：四张整图 fallback，以及四阶段各五张 512×512 RGBA 身体/手脚分层。
-- 表情、成长星、旅行装和互动道具由 DOM/CSS 叠加；消费与返程产生的庆典、主题和光环效果均已映射到桌宠视觉。永久装扮和旅行标识目前仍使用 emoji。
+- 四阶段运行时素材固定为 80 张 512×512 RGBA PNG：四张中性整图 fallback、四阶段各五张身体/手脚分层，以及每阶段 14 张图片表情。
+- 表情由 PNG 层叠加，成长星、旅行装和互动道具仍由 DOM/CSS 表现；消费与返程产生的庆典、主题和光环效果均已映射到桌宠视觉。永久装扮和旅行标识目前仍使用 emoji。
 - schema 2 在原 `pet`、`growth`、`economy`、`settings` 分区上向后兼容扩展。旧等级、经验、金币、装扮、设置和位置在迁移后保留；新增背包、效果、探索和互动设置使用安全默认值。
 
 ## 构建与发行
 
 - Vite 构建渲染层，TypeScript 构建主进程、preload 与 utility process，electron-builder 生成 Windows NSIS 产物。
-- `dist:setup`（及兼容别名 `dist:win`）生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 和 `update-manifest.json`。v1.2.1 不构建或发布 Portable。
+- `dist:setup`（及兼容别名 `dist:win`）生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 和 `update-manifest.json`。v1.2.2 不构建或发布 Portable。
 - 正式发行仍须完成真实 Setup/Update 安装、schema 迁移、原生键盘组件、SHA-256、不可变标签和 GitHub Release 远端核对。
 - 当前安装程序未签名，必须如实披露 SmartScreen 风险。
 
@@ -91,4 +91,4 @@
 - [存档结构与迁移](docs/reference/SAVE_SCHEMA_AND_MIGRATIONS.md)
 - [测试与验收](docs/reference/TESTING_AND_ACCEPTANCE.md)
 
-当前源码版本为 1.2.1。源码能力与正式发布证据必须分开判断；v1.2.1 GitHub Release 远端证据齐全前，不创建正式版本快照。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。
+当前源码版本为 1.2.2。源码能力与正式发布证据必须分开判断；v1.2.2 GitHub Release 远端证据齐全前，不创建正式版本快照。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。

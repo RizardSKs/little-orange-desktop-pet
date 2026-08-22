@@ -56,7 +56,6 @@ export function PanelView({ state, setState, runtime, notice, flash, growthCeleb
       <header className="hero-card">
         <div className="hero-pet-preview">
           <img className="hero-pet" src={`${location.protocol === 'file:' ? '../assets/pet' : '/assets/pet'}/${state.growth.stage}.png`} alt="" />
-          <span className="hero-preview-face"><i /><i /><b /></span>
         </div>
         <div className="hero-copy">
           <p>{STAGE_NAMES[state.growth.stage]}阶段 · {descriptor.title}</p>

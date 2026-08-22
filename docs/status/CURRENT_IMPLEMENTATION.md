@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随实现更新；不得把未完成的发行验证或候选规划改写成现有能力 |
-| 适用版本 | 1.2.1 |
+| 适用版本 | 1.2.2 |
 | 最后核对 | 2026-08-22 |
 | 权威来源 | 当前源码、`package.json`、`package-lock.json`、自动化测试、实际发行物和 GitHub Release |
 | 更新触发 | 功能、缺口、工具链、发布产物、测试基线或仓库状态变化 |
@@ -38,10 +38,10 @@
 
 ### 视觉、界面与发行配置
 
-- 四个成长阶段现有 24 张本地 PNG：每阶段 1 张整图降级素材和身体、双臂、双腿 5 张 512×512 RGBA 分层素材；四阶段轮廓、叶片、色彩和闪耀效果具有更明显差异。
+- 四个成长阶段现有 80 张本地 PNG：每阶段 1 张中性整图降级素材、身体/双臂/双腿 5 张分层素材和 14 张图片表情，全部为 512×512 RGBA。萌芽、活力、成熟和闪耀在体型、叶冠、色彩与五官比例上逐级变化；成熟期五片叶均从单一中央枝干分出，闪耀期使用哑光晨曦/星尘表现，不使用默认身体外发光。
 - 管理面板已拆分为状态、互动、生活和设置视图，生活页包含装扮、用品、服务、探索和背包；状态页显示成长称号、闪耀星、旅行和限时效果剩余运行时间。用品/服务的庆典、主题与光环，以及探索返程效果，均已映射到桌宠视觉。
-- `dist:win` 现为 `dist:setup` 的别名，生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 与 `update-manifest.json`。v1.2.1 不生成或发布 Portable。
-- 2026-08-22 已通过 `npm.cmd test`（12 个测试文件、78 项测试）、完整 `npm.cmd run build` 及本地三件套 `npm.cmd run verify:release`。
+- `dist:win` 现为 `dist:setup` 的别名，生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 与 `update-manifest.json`。v1.2.2 不生成或发布 Portable。
+- 2026-08-22 已通过 1.2.2 的 `npm.cmd test`（12 个测试文件、78 项测试）、完整 `npm.cmd run build`、本地三件套 `npm.cmd run verify:release`、真实窗口素材验收，以及全新安装、v1.0.0 直升和 v1.2.1 覆盖升级；GitHub 标签、Release 和远端摘要仍以本次正式发布闭环完成后的快照为准。
 
 ## 已知实现与发行边界
 
