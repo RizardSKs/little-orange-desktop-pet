@@ -16,7 +16,7 @@ module.exports = {
   },
   nsis: {
     ...baseBuild.nsis,
-    artifactName: '小橙子桌宠-Update-x64.${ext}',
+    artifactName: 'Little-Orange-Desktop-Pet-Update-x64.${ext}',
     differentialPackage: false,
     deleteAppDataOnUninstall: false,
   },

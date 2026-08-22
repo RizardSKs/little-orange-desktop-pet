@@ -43,3 +43,9 @@
 - Windows 发行线统一为固定文件名 `小橙子桌宠-Setup-x64.exe`、`小橙子桌宠-Update-x64.exe` 和 `update-manifest.json`，不再生成新的 Portable；原生键盘钩子与未签名发行物仍需在目标 Windows 环境进行隐私、杀毒软件和 SmartScreen 验证。
 - 已通过自动化测试与完整 TypeScript/Vite/Electron 构建；最终测试总数以发布门禁最后一次实测为准。
 - 本条仅记录已完成的本地版本实现；GitHub Release、远端资产与校验和核对完成前，不创建 v1.2.0 发布快照，也不视为已正式发布。
+
+## 1.2.1
+
+- 将 GitHub Release 的正式安装包改为平台兼容的固定 ASCII 文件名：`Little-Orange-Desktop-Pet-Setup-x64.exe` 与 `Little-Orange-Desktop-Pet-Update-x64.exe`；清单仍为 `update-manifest.json`。
+- 保留未完成发布的不可变 `v1.2.0` 标签，删除文件名被 GitHub 改写后的错误草稿 Release，不把它视为正式版本。
+- 在更新运行手册中补齐 `gh` Device Flow、Release 创建、资产上传、失败转草稿、远端回读和 SHA-256 复核流程。

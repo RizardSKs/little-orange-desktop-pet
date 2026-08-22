@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 测试结构、支持环境、原生依赖、发布方式或验收要求变化时同步更新 |
-| 适用版本 | 1.2.0 |
+| 适用版本 | 1.2.1 |
 | 最后核对 | 2026-08-22 |
 | 权威来源 | `package.json`、`.github/workflows/windows-release.yml`、`src/**/*.test.ts`、构建配置、实际安装结果和 GitHub Release |
 | 更新触发 | 行为变化、新缺陷回归、测试增删、Node/Electron/原生组件基线、CI 门禁或正式发布变化 |
@@ -42,7 +42,7 @@
 | `src/main/interaction-integration.test.ts` | IPC 白名单、锁定窗口、隐私时间桶、原生组件降级、恢复路径与原子启动静态集成 |
 | `src/main/motion.test.ts` | 方向、速度、时长边界、缓动和落点 |
 | `src/main/store.test.ts` | 默认档、备份恢复、schema 1→2、迁移备份、未知或无效 schema 2 和离线加载 |
-| `src/main/release-config.test.ts` | 1.2.0 身份、固定名 Setup/Update、用户数据保留和原生组件解包 |
+| `src/main/release-config.test.ts` | 1.2.1 身份、ASCII 固定名 Setup/Update、用户数据保留和原生组件解包 |
 | `src/renderer/ui-regressions.test.ts` | 透明窗口、分层素材、消费效果视觉、成长/生活/锁定/隐私控件和中文菜单 |
 
 ## 变更所需最小验证
@@ -79,7 +79,7 @@
 2. 从 `compatibleFrom` 声明的最早版本运行同版本 Update，并从最新上一正式版本再执行一次独立 Update 路径。
 3. 升级前准备非默认等级、经验、大额金币、已拥有及已装备装扮、设置和位置；升级后逐项核对，并确认新增背包、效果、探索和隐私设置使用安全默认值。
 4. 确认迁移前版本化备份存在；损坏主档时不会覆盖唯一有效备份，未知未来 schema 不会被默认档替换。
-5. 核对正式三件套固定名为 `小橙子桌宠-Setup-x64.exe`、`小橙子桌宠-Update-x64.exe`、`update-manifest.json`，其包版本和清单版本一致；Update 是完整离线累积 NSIS 安装包，不联网、不自动下载，也不是差分补丁。
+5. 核对正式三件套固定名为 `Little-Orange-Desktop-Pet-Setup-x64.exe`、`Little-Orange-Desktop-Pet-Update-x64.exe`、`update-manifest.json`，其包版本和清单版本一致；Update 是完整离线累积 NSIS 安装包，不联网、不自动下载，也不是差分补丁。
 6. 确认本版没有生成或上传 Portable；检查安装位置、快捷方式、卸载项和用户数据目录没有产生并行副本。
 7. 核对不可变 `vX.Y.Z` 标签指向发行提交，GitHub Release 完整包含 Setup、Update 和清单；从远端核对名称、大小和三项 SHA-256。
 

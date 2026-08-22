@@ -9,7 +9,7 @@ const compatibleFrom = packageJson.releaseMetadata?.compatibleFrom;
 if (typeof compatibleFrom !== 'string' || !/^\d+\.\d+\.\d+$/.test(compatibleFrom)) {
   throw new Error('package.json releaseMetadata.compatibleFrom must be a semantic version');
 }
-const artifact = '小橙子桌宠-Update-x64.exe';
+const artifact = 'Little-Orange-Desktop-Pet-Update-x64.exe';
 const outputDirectory = path.join(root, 'release', 'updates');
 const artifactPath = path.join(outputDirectory, artifact);
 const bytes = readFileSync(artifactPath);

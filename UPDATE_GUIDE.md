@@ -2,7 +2,7 @@
 
 > 文档级别：`LIVING`  
 > 修改权限：发布脚本、目录、验证步骤或工具链变化时与实现同步；本手册不能覆盖或放宽 `LOCKED` 发布准则。  
-> 适用版本：`1.2.0` 起的 Setup 与离线累积 Update 发布流程。  
+> 适用版本：`1.2.1` 起的 Setup 与离线累积 Update 发布流程。  
 > 最后核对日期：`2026-08-22`。  
 > 权威来源：`package.json`、`package-lock.json`、`electron-builder.update.cjs`、`scripts/write_update_manifest.mjs`、实际发行物与 GitHub Release；策略以[发布与兼容性准则](docs/governance/RELEASE_AND_COMPATIBILITY.md)和[Git 与 GitHub 版本控制准则](docs/governance/GIT_VERSION_CONTROL.md)为准。  
 > 更新触发：构建命令、产物组合、原生依赖、签名、清单、兼容验证、存档迁移或 GitHub Release 流程变化时。
@@ -13,13 +13,13 @@
 
 | 文件 | 面向用户 | 性质 |
 | --- | --- | --- |
-| `小橙子桌宠-Setup-x64.exe` | 新安装用户 | 最新完整 NSIS 安装包 |
-| `小橙子桌宠-Update-x64.exe` | 声明兼容范围内的已安装用户 | 完整、离线、可累积覆盖的 NSIS 安装包 |
+| `Little-Orange-Desktop-Pet-Setup-x64.exe` | 新安装用户 | 最新完整 NSIS 安装包 |
+| `Little-Orange-Desktop-Pet-Update-x64.exe` | 声明兼容范围内的已安装用户 | 完整、离线、可累积覆盖的 NSIS 安装包 |
 | `update-manifest.json` | 发布校验 | Update 身份、版本、大小和 SHA-256 清单 |
 
 应用不联网检查、下载或安装更新，清单也不由应用读取。Update 不是差分补丁或下载器；用户必须完全退出应用后手动运行。
 
-`dist:setup` 只生成 Setup，`dist:win` 是它的兼容别名；两者均不再生成 Portable。`1.0.0 Portable` 只作历史归档，v1.2.0 及后续版本不得创建或上传 Portable。
+`dist:setup` 只生成 Setup，`dist:win` 是它的兼容别名；两者均不再生成 Portable。`1.0.0 Portable` 只作历史归档，v1.2.0 及后续版本不得创建或上传 Portable。GitHub 会改写包含特殊或非 ASCII 字符的 Release Asset 名称，所以安装包从 v1.2.1 起必须使用上表中的 ASCII 文件名；中文产品名继续保留在程序身份、界面与 Release 标题中。
 
 ## 2. 用户更新步骤
 
@@ -59,7 +59,7 @@ npm.cmd run dist:setup
 兼容入口 `npm.cmd run dist:win` 执行相同脚本。预期候选文件：
 
 ```text
-release/小橙子桌宠-Setup-x64.exe
+release/Little-Orange-Desktop-Pet-Setup-x64.exe
 ```
 
 构建同版本离线累积 Update 和清单：
@@ -71,7 +71,7 @@ npm.cmd run dist:update
 预期文件：
 
 ```text
-release/updates/小橙子桌宠-Update-x64.exe
+release/updates/Little-Orange-Desktop-Pet-Update-x64.exe
 release/updates/update-manifest.json
 ```
 
@@ -82,8 +82,8 @@ release/updates/update-manifest.json
 按固定文件名核对候选产物；版本身份来自包元数据和清单，而不是文件名：
 
 ```powershell
-$setupPath = 'release\小橙子桌宠-Setup-x64.exe'
-$updatePath = 'release\updates\小橙子桌宠-Update-x64.exe'
+$setupPath = 'release\Little-Orange-Desktop-Pet-Setup-x64.exe'
+$updatePath = 'release\updates\Little-Orange-Desktop-Pet-Update-x64.exe'
 $manifestPath = 'release\updates\update-manifest.json'
 
 Get-Item -LiteralPath $setupPath, $updatePath |
@@ -124,19 +124,70 @@ Get-Content -LiteralPath $manifestPath -Encoding utf8
 1. 在 `tmp/release-drafts/` 或仓库外准备证据草稿；远端证据出现前，不得创建或提交 `docs/releases/vx.y.z.md`。
 2. 完成源码、LIVING 文档和 `CHANGELOG.md` 的版本条目，运行检查，提交并推送实际用于构建发行物的发行提交。
 3. 创建并推送新的不可变 `vX.Y.Z` 标签，确认它指向发行提交；不得移动或复用旧标签。
-4. 在 GitHub 创建标题为 `小橙子桌宠 vX.Y.Z`、绑定该标签的 Release，只上传 `小橙子桌宠-Setup-x64.exe`、`小橙子桌宠-Update-x64.exe` 和 `update-manifest.json`。
-5. 从 GitHub 回读标题、标签、资产名和大小；重新下载三项资产或使用可信远端摘要，核对远端 SHA-256 与本地一致。
-6. 把 Release URL、资产 URL、大小、签名状态和远端哈希结果补入草稿。证据齐全后，才首次创建 `docs/releases/vx.y.z.md` 并标记 `APPEND_ONLY`。
-7. 提交并推送正式快照，确认该证据提交存在于 GitHub；到此才能宣称正式发布闭环完成。
+4. 必须使用 `gh` CLI 创建 Release 和上传资产。先检查登录；若未登录，运行 Device Flow。必须先把 `gh` 输出的一次性 code 明确交给授权人，再让其访问设备登录页，不能只打开网页或让命令无提示等待：
 
-仓库当前没有自动创建 GitHub Release、上传资产或回读远端哈希的脚本。必须使用已授权的 GitHub 网页或 API，不得把令牌写入仓库、命令日志或文档。
+```powershell
+gh auth status
+gh auth login --hostname github.com --git-protocol https --web --scopes repo
+```
 
-## 8. v1.2.0 当前状态
+5. 登录完成后创建标题为 `小橙子桌宠 vX.Y.Z`、绑定同版本标签的 Release，只上传 ASCII 固定名三件套：
 
-- 源码版本、78 项自动化测试和生产构建已对齐到 1.2.0。
+```powershell
+$releaseVersion = 'vX.Y.Z'
+gh release create $releaseVersion `
+  'release\Little-Orange-Desktop-Pet-Setup-x64.exe' `
+  'release\updates\Little-Orange-Desktop-Pet-Update-x64.exe' `
+  'release\updates\update-manifest.json' `
+  --repo RizardSKs/little-orange-desktop-pet `
+  --title "小橙子桌宠 $releaseVersion" `
+  --notes-file '<已审查的 Release 说明文件>' `
+  --verify-tag
+```
+
+6. 立即用 `gh` 回读标题、标签、草稿状态、资产名、大小和 GitHub 提供的摘要。名称只要被 GitHub 改写、任一资产缺失或摘要不一致，就把 Release 转为草稿并停止，不得宣称正式发布：
+
+```powershell
+gh release view $releaseVersion `
+  --repo RizardSKs/little-orange-desktop-pet `
+  --json url,tagName,name,isDraft,isPrerelease,targetCommitish,assets
+```
+
+需要将失败 Release 转为草稿时，先读取 release id，再通过 `gh api` 更新；不得删除或移动已经推送的版本标签：
+
+```powershell
+$releaseId = gh api "repos/RizardSKs/little-orange-desktop-pet/releases/tags/$releaseVersion" --jq '.id'
+gh api --method PATCH "repos/RizardSKs/little-orange-desktop-pet/releases/$releaseId" -F draft=true
+```
+
+7. 把三项远端资产重新下载到全新的隔离目录，逐项核对 SHA-256，不复用本地上传源文件冒充远端证据：
+
+```powershell
+$remoteEvidenceDir = "tmp\release-evidence\$releaseVersion"
+New-Item -ItemType Directory -Path $remoteEvidenceDir -Force | Out-Null
+gh release download $releaseVersion `
+  --repo RizardSKs/little-orange-desktop-pet `
+  --dir $remoteEvidenceDir `
+  --pattern 'Little-Orange-Desktop-Pet-Setup-x64.exe' `
+  --pattern 'Little-Orange-Desktop-Pet-Update-x64.exe' `
+  --pattern 'update-manifest.json'
+Get-FileHash -LiteralPath `
+  "$remoteEvidenceDir\Little-Orange-Desktop-Pet-Setup-x64.exe", `
+  "$remoteEvidenceDir\Little-Orange-Desktop-Pet-Update-x64.exe", `
+  "$remoteEvidenceDir\update-manifest.json" -Algorithm SHA256
+```
+
+8. 把 Release URL、资产 URL、大小、签名状态和远端哈希结果补入草稿。证据齐全后，才首次创建 `docs/releases/vx.y.z.md` 并标记 `APPEND_ONLY`。
+9. 提交并推送正式快照，确认该证据提交存在于 GitHub；到此才能宣称正式发布闭环完成。
+
+凭据只能存放在 `gh` 自身凭据存储中，不得把令牌写入仓库、命令参数日志、Release 说明或文档。`gh release create` 返回 URL 不代表闭环完成，远端回读和重新下载验哈希不可省略。
+
+## 8. v1.2.1 当前状态
+
+- 源码版本、78 项自动化测试和生产构建正在对齐到 1.2.1；最终数字以本版发布门禁实测为准。
 - 本版固定名 Setup、Update 与清单已完成本地构建，PE 内部版本、哈希、清单字段及两份解包后的 `uiohook-napi` 原生二进制均已通过 `verify:release`。
-- 已在 Windows x64 `10.0.26200` 的仓库内隔离目录通过全新 Setup、v1.0.0→v1.2.0 直升和 v1.0.0→v1.1.0→v1.2.0 累计升级，并使用丰富 schema 1 存档核对迁移与备份。
+- v1.2.0 功能候选已在 Windows x64 `10.0.26200` 的仓库内隔离目录通过全新 Setup、v1.0.0→v1.2.0 直升和 v1.0.0→v1.1.0→v1.2.0 累计升级，并使用丰富 schema 1 存档核对迁移与备份；v1.2.1 只改变版本身份和发行文件名，仍须重新构建并核对安装包。
 - 使用启用锁定与键盘互动的隔离 schema 2 存档启动安装版时，主窗口与键盘 Node utilityProcess 均保持存活，证明原生组件可从安装包加载；真实按键节奏和点击穿透仍不由此自动检查替代。
 - 打包后桌面点击穿透、托盘、全局键盘钩子、Windows 10 客户端、SmartScreen、多显示器、DPI 和系统电源事件仍属于人工验证边界；远端 GitHub Release 证据尚未取得。
-- 远端证据齐全前不创建 `docs/releases/v1.2.0.md`，也不得把本地构建描述为已经正式发布。
+- v1.2.0 的中文资产名被 GitHub 自动改写，错误草稿 Release 已删除且不可变标签保留；它不是正式版本。远端证据齐全前不创建 `docs/releases/v1.2.1.md`，也不得把本地构建描述为已经正式发布。
 - 安装程序当前未签名，发布时必须明确披露 SmartScreen 风险。

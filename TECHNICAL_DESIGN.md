@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随高层架构更新；受保护准则必须另行获得用户明确授权 |
-| 适用版本 | 1.2.0 |
+| 适用版本 | 1.2.1 |
 | 最后核对 | 2026-08-16 |
 | 权威来源 | [开发文档地图](docs/README.md)、当前源码、构建配置与测试 |
 | 更新触发 | 高层模块职责、进程边界、原生依赖、支持平台或文档导航变化 |
@@ -75,7 +75,7 @@
 ## 构建与发行
 
 - Vite 构建渲染层，TypeScript 构建主进程、preload 与 utility process，electron-builder 生成 Windows NSIS 产物。
-- `dist:setup`（及兼容别名 `dist:win`）生成固定名 `小橙子桌宠-Setup-x64.exe`；`dist:update` 生成固定名 `小橙子桌宠-Update-x64.exe` 和 `update-manifest.json`。v1.2.0 不构建或发布 Portable。
+- `dist:setup`（及兼容别名 `dist:win`）生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 和 `update-manifest.json`。v1.2.1 不构建或发布 Portable。
 - 正式发行仍须完成真实 Setup/Update 安装、schema 迁移、原生键盘组件、SHA-256、不可变标签和 GitHub Release 远端核对。
 - 当前安装程序未签名，必须如实披露 SmartScreen 风险。
 
@@ -91,4 +91,4 @@
 - [存档结构与迁移](docs/reference/SAVE_SCHEMA_AND_MIGRATIONS.md)
 - [测试与验收](docs/reference/TESTING_AND_ACCEPTANCE.md)
 
-当前源码版本为 1.2.0。源码能力与正式发布证据必须分开判断；v1.2.0 GitHub Release 远端证据齐全前，不创建正式版本快照。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。
+当前源码版本为 1.2.1。源码能力与正式发布证据必须分开判断；v1.2.1 GitHub Release 远端证据齐全前，不创建正式版本快照。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。
