@@ -18,14 +18,14 @@
 - 生产构建：`npm.cmd run build`。
 - 全局键盘节奏依赖 `uiohook-napi@1.5.4` 原生组件；构建配置将其从 asar 解包，但自动类型检查不能证明安装包内原生二进制可正常加载。
 
-2026-08-22 已通过 `npm.cmd test`（12 个测试文件、77 项测试）和完整 `npm.cmd run build`；`npm.cmd run verify:release` 也已核对本地三件套、PE 内部版本、清单哈希及 Setup/Update 两份原生键盘二进制。
+2026-08-22 已通过 `npm.cmd test`（12 个测试文件、78 项测试）和完整 `npm.cmd run build`；`npm.cmd run verify:release` 也已核对本地三件套、PE 内部版本、清单哈希及 Setup/Update 两份原生键盘二进制。
 
 ## GitHub Actions Windows 门禁
 
 `.github/workflows/windows-release.yml` 在拉取请求、`main` 分支推送、`v*` 标签推送和手动触发时运行，使用只读仓库权限：
 
 - `windows-2022` 与 `windows-2025` 分别以 Node.js 22.12.0 执行 `npm ci`、`npm test` 和 `npm run build`，覆盖当前声明的最低 Node 基线及两代 Windows 托管运行器。
-- 独立包装作业在上述矩阵全部通过后，于 `windows-2022` 顺序执行 `npm run dist:setup`、`npm run dist:update` 和 `npm run verify:release`，核对 Setup、Update、更新清单及解包后的 `uiohook-napi` Windows x64 原生二进制。
+- 独立包装作业在上述矩阵全部通过后，于 `windows-2022` 显式安装锁定的 Electron 运行时，再顺序执行 `npm run dist:setup`、`npm run dist:update` 和 `npm run verify:release`，核对 Setup、Update、更新清单及解包后的 `uiohook-napi` Windows x64 原生二进制。
 - 工作流不上传产物、不创建标签、不创建 GitHub Release，也不发布安装包；门禁通过只证明当前提交可构建并通过脚本校验，不能代替正式安装、升级矩阵或远端发行核对。
 
 ## 自动测试清单

@@ -33,4 +33,13 @@ describe('offline cumulative update release', () => {
     expect(read('scripts/verify_release_artifacts.mjs')).toContain('VersionInfo.ProductVersion');
     expect(read('scripts/verify_release_artifacts.mjs')).toContain('VersionInfo.FileVersion');
   });
+
+  it('installs the Electron runtime before the Windows packaging gate', () => {
+    const workflow = read('.github/workflows/windows-release.yml');
+    const installRuntime = workflow.indexOf('node node_modules/electron/install.js');
+    const buildSetup = workflow.indexOf('run: npm run dist:setup');
+    expect(workflow).toContain('Remove-Item Env:ELECTRON_SKIP_BINARY_DOWNLOAD');
+    expect(installRuntime).toBeGreaterThan(-1);
+    expect(buildSetup).toBeGreaterThan(installRuntime);
+  });
 });

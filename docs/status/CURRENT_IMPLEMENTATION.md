@@ -41,7 +41,7 @@
 - 四个成长阶段现有 24 张本地 PNG：每阶段 1 张整图降级素材和身体、双臂、双腿 5 张 512×512 RGBA 分层素材；四阶段轮廓、叶片、色彩和闪耀效果具有更明显差异。
 - 管理面板已拆分为状态、互动、生活和设置视图，生活页包含装扮、用品、服务、探索和背包；状态页显示成长称号、闪耀星、旅行和限时效果剩余运行时间。用品/服务的庆典、主题与光环，以及探索返程效果，均已映射到桌宠视觉。
 - `dist:win` 现为 `dist:setup` 的别名，生成固定名 `小橙子桌宠-Setup-x64.exe`；`dist:update` 生成固定名 `小橙子桌宠-Update-x64.exe` 与 `update-manifest.json`。v1.2.0 不生成或发布 Portable。
-- 2026-08-22 已通过 `npm.cmd test`（12 个测试文件、77 项测试）、完整 `npm.cmd run build` 及本地三件套 `npm.cmd run verify:release`。
+- 2026-08-22 已通过 `npm.cmd test`（12 个测试文件、78 项测试）、完整 `npm.cmd run build` 及本地三件套 `npm.cmd run verify:release`。
 
 ## 已知实现与发行边界
 

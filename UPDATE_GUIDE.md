@@ -133,7 +133,7 @@ Get-Content -LiteralPath $manifestPath -Encoding utf8
 
 ## 8. v1.2.0 当前状态
 
-- 源码版本、77 项自动化测试和生产构建已对齐到 1.2.0。
+- 源码版本、78 项自动化测试和生产构建已对齐到 1.2.0。
 - 本版固定名 Setup、Update 与清单已完成本地构建，PE 内部版本、哈希、清单字段及两份解包后的 `uiohook-napi` 原生二进制均已通过 `verify:release`。
 - 已在 Windows x64 `10.0.26200` 的仓库内隔离目录通过全新 Setup、v1.0.0→v1.2.0 直升和 v1.0.0→v1.1.0→v1.2.0 累计升级，并使用丰富 schema 1 存档核对迁移与备份。
 - 使用启用锁定与键盘互动的隔离 schema 2 存档启动安装版时，主窗口与键盘 Node utilityProcess 均保持存活，证明原生组件可从安装包加载；真实按键节奏和点击穿透仍不由此自动检查替代。
