@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随项目演进更新；相关代码变化时必须在同一次修改中同步 |
-| 适用版本 | 1.1.0 |
+| 适用版本 | 1.2.0 |
 | 最后核对 | 2026-08-16 |
 | 权威来源 | 根目录 `AGENTS.md`、本目录下的治理与参考文档、当前源码与发布产物 |
 | 更新触发 | 新增、移动或改变文档职责；版本发布；文档控制规则经用户批准后变化 |
@@ -49,10 +49,10 @@
 | --- | --- | --- |
 | 总体架构 | [架构与数据流](reference/ARCHITECTURE_AND_DATA_FLOW.md) | `src/main/`、`src/preload/`、`src/shared/`、`src/renderer/` |
 | 全部可调量 | [变量登记表](reference/CONFIGURATION_REGISTRY.md) | 领域源码、`package.json`、CSS |
-| 成长 | [成长与经验](reference/GROWTH_AND_EXPERIENCE.md) | `src/shared/game.ts` |
-| 照顾、互动和收益 | [照顾、动作与收益](reference/CARE_ACTIONS_AND_REWARDS.md) | `src/shared/game.ts`、`src/main/main.ts` |
-| 装扮和素材 | [装扮与素材](reference/OUTFITS_AND_ASSETS.md) | `src/shared/catalog.ts`、`assets/pet/`、CSS |
-| 行为、移动和表情 | [动作、行为与表情](reference/MOTION_BEHAVIOR_AND_EXPRESSIONS.md) | `src/main/motion.ts`、`src/shared/expression.ts`、CSS |
+| 成长 | [成长与经验](reference/GROWTH_AND_EXPERIENCE.md) | `src/shared/growth.ts`、`src/shared/game.ts` |
+| 照顾、经济、探索和收益 | [照顾、动作与收益](reference/CARE_ACTIONS_AND_REWARDS.md) | `src/shared/game.ts`、`src/shared/economy.ts`、`src/shared/catalog.ts` |
+| 装扮和素材 | [装扮与素材](reference/OUTFITS_AND_ASSETS.md) | `src/shared/catalog.ts`、`src/renderer/pet-view.tsx`、`assets/pet/` |
+| 行为、移动和表情 | [动作、行为与表情](reference/MOTION_BEHAVIOR_AND_EXPRESSIONS.md) | `src/shared/interaction.ts`、`src/main/interaction-controller.ts`、`src/shared/expression.ts` |
 | 窗口、设置和 IPC | [界面、窗口、设置与 IPC](reference/UI_WINDOWS_SETTINGS_AND_IPC.md) | `src/main/main.ts`、`src/preload/preload.ts`、`src/shared/types.ts` |
 | 存档 | [存档结构与迁移](reference/SAVE_SCHEMA_AND_MIGRATIONS.md) | `src/shared/types.ts`、`src/shared/game.ts`、`src/main/store.ts` |
 | 验证 | [测试与验收](reference/TESTING_AND_ACCEPTANCE.md) | `src/**/*.test.ts`、构建配置 |
@@ -61,11 +61,13 @@
 
 ## 状态与历史
 
-- [当前实现状态](status/CURRENT_IMPLEMENTATION.md)：持续更新的 1.1.0 实现快照和已知差距。
+- [当前实现状态](status/CURRENT_IMPLEMENTATION.md)：持续更新的 1.2.0 源码实现与发行边界。
 - [版本索引](../CHANGELOG.md)：只追加的发布入口。
 - [1.0.0 快照](releases/v1.0.0.md)：依据遗留发布包重建。
 - [1.1.0 快照](releases/v1.1.0.md)：依据当前更新包、清单和归档差异重建。
 - [版本快照模板](releases/TEMPLATE.md)：后续正式发布必须使用。
+
+v1.2.0 正式发布快照尚未创建。必须先完成固定名 `小橙子桌宠-Setup-x64.exe`、`小橙子桌宠-Update-x64.exe`、`update-manifest.json`、不可变标签、GitHub Release 和远端 SHA-256 核对，取得证据后才能首次写入 `docs/releases/v1.2.0.md`。
 
 ## 当前根目录入口
 

@@ -6,6 +6,8 @@ module.exports = {
   appId: baseBuild.appId,
   productName: baseBuild.productName,
   asar: baseBuild.asar,
+  electronDist: baseBuild.electronDist,
+  asarUnpack: baseBuild.asarUnpack,
   directories: { output: 'release/updates' },
   files: baseBuild.files,
   win: {
@@ -14,7 +16,7 @@ module.exports = {
   },
   nsis: {
     ...baseBuild.nsis,
-    artifactName: '小橙子桌宠-Update-${version}-x64.${ext}',
+    artifactName: '小橙子桌宠-Update-x64.${ext}',
     differentialPackage: false,
     deleteAppDataOnUninstall: false,
   },
