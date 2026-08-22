@@ -50,3 +50,4 @@
 - 保留未完成发布的不可变 `v1.2.0` 标签，删除文件名被 GitHub 改写后的错误草稿 Release，不把它视为正式版本。
 - 在更新运行手册中补齐 `gh` Device Flow、Release 创建、资产上传、失败转草稿、远端回读和 SHA-256 复核流程。
 - 2026-08-22 已完成不可变 `v1.2.1` 标签、[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.1)、固定名三件套上传、远端摘要核对和 Windows 安装/升级矩阵；证据与限制见 [v1.2.1 发布快照](docs/releases/v1.2.1.md)。
+- 修复 main/tag CI 中 electron-builder 自动尝试发布的问题；Setup 与 Update 包装命令现显式使用 `--publish never`，GitHub Release 仍只允许人工审查后通过 `gh` CLI 创建和上传。

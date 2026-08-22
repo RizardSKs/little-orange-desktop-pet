@@ -52,6 +52,7 @@
 - `compatibleFrom: 1.0.0` 已在 Windows x64 隔离目录通过 v1.0.0→v1.2.1 直升及 v1.0.0→v1.1.0→v1.2.1 累计安装；两条路径均验证丰富 schema 1 存档迁移和备份。
 - 依赖声明仍使用 `latest`；本版可复现安装必须依赖已提交的 `package-lock.json` 和 `npm.cmd ci`。
 - 仓库仍没有自动创建 GitHub Release、上传三件套或回读远端哈希的发布脚本。
+- Setup 与 Update 包装命令显式传入 `--publish never`；Windows CI 只构建和校验产物，不读取发布令牌、不自动上传或修改 GitHub Release。
 
 ## 明确未实现
 

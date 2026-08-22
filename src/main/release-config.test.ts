@@ -13,6 +13,8 @@ describe('offline cumulative update release', () => {
     expect(packageJson.releaseMetadata.compatibleFrom).toBe('1.0.0');
     expect(packageJson.scripts['dist:update']).toContain('electron-builder.update.cjs');
     expect(packageJson.scripts['dist:win']).toBe('npm run dist:setup');
+    expect(packageJson.scripts['dist:setup']).toContain('--publish never');
+    expect(packageJson.scripts['dist:update']).toContain('--publish never');
     expect(packageJson.build.win.target).toEqual(['nsis']);
     expect(packageJson.build.electronDist).toBe('node_modules/electron/dist');
     expect(packageJson.build.asarUnpack).toContain('node_modules/uiohook-napi/**');

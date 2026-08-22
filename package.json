@@ -18,8 +18,8 @@
     "test:watch": "vitest",
     "verify:release": "node scripts/verify_release_artifacts.mjs",
     "dist:win": "npm run dist:setup",
-    "dist:setup": "npm run build && electron-builder --win nsis --x64",
-    "dist:update": "npm run build && electron-builder --config electron-builder.update.cjs --win nsis --x64 && node scripts/write_update_manifest.mjs"
+    "dist:setup": "npm run build && electron-builder --win nsis --x64 --publish never",
+    "dist:update": "npm run build && electron-builder --config electron-builder.update.cjs --win nsis --x64 --publish never && node scripts/write_update_manifest.mjs"
   },
   "dependencies": {
     "react": "latest",
