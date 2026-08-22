@@ -1,11 +1,14 @@
 {
   "name": "little-orange-desktop-pet",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "小橙子 Windows 桌面宠物",
   "main": "dist-electron/main/main.js",
   "author": "小橙子桌宠",
   "license": "UNLICENSED",
   "private": true,
+  "releaseMetadata": {
+    "compatibleFrom": "1.0.0"
+  },
   "scripts": {
     "dev": "concurrently -k \"vite\" \"tsc -p tsconfig.main.json --watch\" \"wait-on http://127.0.0.1:5173 dist-electron/main/main.js && set VITE_DEV_SERVER_URL=http://127.0.0.1:5173&& electron .\"",
     "build": "npm run build:renderer && npm run build:electron",
@@ -13,18 +16,21 @@
     "build:electron": "tsc -p tsconfig.main.json",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dist:win": "npm run build && electron-builder --win portable nsis --x64",
+    "verify:release": "node scripts/verify_release_artifacts.mjs",
+    "dist:win": "npm run dist:setup",
+    "dist:setup": "npm run build && electron-builder --win nsis --x64",
     "dist:update": "npm run build && electron-builder --config electron-builder.update.cjs --win nsis --x64 && node scripts/write_update_manifest.mjs"
   },
   "dependencies": {
-    "@vitejs/plugin-react": "latest",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "uiohook-napi": "1.5.4"
   },
   "devDependencies": {
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
     "concurrently": "latest",
     "electron": "latest",
     "electron-builder": "latest",
@@ -37,17 +43,34 @@
     "appId": "cn.littleorange.desktop.pet",
     "productName": "小橙子桌宠",
     "asar": true,
-    "directories": { "output": "release" },
-    "files": ["dist/**/*", "dist-electron/**/*", "assets/**/*", "package.json"],
-    "win": { "target": ["portable", "nsis"], "icon": "assets/icon.png", "artifactName": "${productName}-${version}-${arch}.${ext}" },
-    "portable": { "artifactName": "小橙子桌宠-Portable-${version}-x64.${ext}" },
+    "electronDist": "node_modules/electron/dist",
+    "asarUnpack": [
+      "node_modules/uiohook-napi/**"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.png",
+      "artifactName": "${productName}-${arch}.${ext}"
+    },
     "nsis": {
-      "artifactName": "小橙子桌宠-Setup-${version}-x64.${ext}",
+      "artifactName": "小橙子桌宠-Setup-x64.${ext}",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "小橙子桌宠"
+      "shortcutName": "小橙子桌宠",
+      "deleteAppDataOnUninstall": false
     }
   }
 }

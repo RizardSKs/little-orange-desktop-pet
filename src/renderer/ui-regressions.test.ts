@@ -13,9 +13,33 @@ describe('desktop pet visual regressions', () => {
   });
 
   it('renders the five aligned character layers with a whole-sprite fallback', () => {
-    const component = read('src/renderer/App.tsx');
+    const component = read('src/renderer/pet-view.tsx');
     for (const layer of ['body.png', 'arm-left.png', 'arm-right.png', 'leg-left.png', 'leg-right.png']) expect(component).toContain(layer);
     expect(component).toContain('fallbackSprite');
+    expect(component).toContain('DRAG_THRESHOLD_DIP');
+    expect(component).toContain('requestAnimationFrame');
+    expect(component).toContain('CELEBRATION_PROPS');
+    expect(component).toContain('effect-grand-tour-return');
+  });
+
+  it('exposes growth, life, exploration, lock, and privacy controls in the panel', () => {
+    const panel = read('src/renderer/panel-view.tsx');
+    for (const text of ['在线陪伴效率', '用品', '服务', '探索', '背包', '桌面锁定', '键盘陪打']) expect(panel).toContain(text);
+    expect(panel).toContain('不会读取、传递或保存按键内容');
+    expect(panel).not.toContain('离线收益');
+  });
+
+  it('surfaces queued effects and pending expedition rewards on the status tab', () => {
+    const panel = read('src/renderer/panel-view.tsx');
+    const css = read('src/renderer/styles.css');
+    for (const text of ['限时体验队列', '当前剩余', '排队', '总剩余', '返程故事待确认', '前往探索查看']) {
+      expect(panel).toContain(text);
+    }
+    expect(panel).toContain('queuedSegments: queue.length - 1');
+    expect(panel).toContain("setLifeSection('explore')");
+    expect(panel).toContain("setTab('life')");
+    expect(css).toContain('.effect-queue-row');
+    expect(css).toContain('.pending-return-status');
   });
 
   it('ships 512px RGBA layers for every growth stage', () => {
