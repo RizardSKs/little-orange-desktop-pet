@@ -2,9 +2,9 @@
 
 > 文档级别：`LIVING`（随实现持续维护）  
 > 修改权限：装扮目录、购买/装备逻辑、渲染锚点、角色素材或测试变化时同步更新；既有物品 ID、存档兼容规则和美术方向不得擅自改变。  
-> 适用版本：1.2.2  
-> 最后核对：2026-08-22  
-> 权威源码：`src/shared/catalog.ts`、`src/shared/economy-types.ts`、`src/renderer/pet-view.tsx`、`src/renderer/styles.css`、`scripts/prepare_v1_2_2_character_assets.py`、`assets/pet/`  
+> 适用版本：1.2.3  
+> 最后核对：2026-08-23  
+> 权威源码：`src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`src/renderer/pet-view.tsx`、`scripts/prepare_v1_2_3_outfit_assets.py`、`assets/outfits/`  
 > 更新触发：稳定 ID、装扮所有权、旅行外观、限时视觉、阶段素材、素材处理流程或相关测试变化。
 
 精确目录价格、解锁等级和视觉参数统一登记在[配置与变量总账](CONFIGURATION_REGISTRY.md)。本文件说明稳定资产契约和渲染关系。
@@ -26,7 +26,7 @@
 
 购买仍按目录存在、未拥有、等级解锁和金币足够的顺序校验；成功购买不会自动装备。装备新物品会替换旧物品，卸下使用 `null`。schema 1 到 schema 2 的迁移会原样保留上述所有权和当前装备。
 
-当前永久装扮仍使用系统 emoji 和 CSS 锚点，不是本地 PNG/SVG。不同 Windows 字体环境可能造成颜色或占位差异。
+八件永久装扮均使用 `assets/outfits/<stable-id>.png` 下的 512×512 RGBA 本地素材。`OUTFIT_LAYOUTS` 为四个成长阶段定义共 32 组位置、宽度和旋转；装扮位于 `pet-facing` 内的角色运动节点中，因此会跟随呼吸、步态、开心飞行拖拽和左右镜像。商店预览读取同一素材，不再依赖平台 emoji 字体。
 
 ## v1.2.2 阶段角色素材
 
@@ -61,6 +61,8 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 
 ## 素材处理流程
 
+`scripts/prepare_v1_2_3_outfit_assets.py` 将批准的透明装扮图裁去极低 alpha 外扩光效、等比缩放并居中写入 512×512 RGBA 画布。正式源码包含已经核验的八张输出图，运行时不依赖 Python 或图片生成服务。
+
 `scripts/prepare_v1_2_2_character_assets.py` 是 v1.2.2 的离线维护脚本，不是运行时依赖，也不会由 `npm.cmd run build` 自动执行。脚本负责：
 
 - 将批准的四阶段透明 master 输入规范化到 512×512 RGBA 画布和统一落脚线。
@@ -74,13 +76,13 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 
 - 分层或当前表情加载失败会降级为带中性表情的整图，因此降级状态无法显示独立手脚步态或动态表情，外围效果仍可工作。
 - `layerFailed` 在成长阶段改变时重置；同阶段内的临时加载失败不会自动重试分层模式。
-- 永久装扮仍共用 CSS 锚点且不会随角色朝向镜像，阶段轮廓越大时越需要人工检查遮挡和漂移。
 - 旅行装和限时道具没有独立 PNG 美术，外观会受平台 emoji 字体影响。
-- 自动测试验证文件名、512×512 和 RGBA 色彩类型，不替代透明边缘、锚点、DPI 和动作遮挡的人工截图检查。
+- 自动测试验证装扮稳定 ID、文件名、512×512 RGBA 和 32 组边界，不替代透明边缘、DPI、左右镜像和动作遮挡的人工截图检查。
 
 ## 相关测试
 
 - `src/renderer/ui-regressions.test.ts`：验证五层与图片表情加载、整图 fallback，以及全部 80 张 PNG 的尺寸与 RGBA 类型。
+- `src/renderer/outfit-layout.test.ts`：验证八件本地装扮、透明 PNG 契约和四阶段 32 组布局边界。
 - `src/shared/catalog.test.ts`：锁定八件永久装扮 ID，以及用品、服务、探索、故事和效果目录。
 - `src/shared/game.test.ts`、`src/main/store.test.ts`：验证永久装扮购买规则和 schema 1 到 schema 2 的所有权/装备保留。
 - `scripts/prepare_v1_2_2_character_assets.py`：执行时验证全部 80 张阶段运行素材的透明画布契约。

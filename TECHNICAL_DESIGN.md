@@ -4,8 +4,8 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随高层架构更新；受保护准则必须另行获得用户明确授权 |
-| 适用版本 | 1.2.2 |
-| 最后核对 | 2026-08-22 |
+| 适用版本 | 1.2.3 |
+| 最后核对 | 2026-08-23 |
 | 权威来源 | [开发文档地图](docs/README.md)、当前源码、构建配置与测试 |
 | 更新触发 | 高层模块职责、进程边界、原生依赖、支持平台或文档导航变化 |
 
@@ -28,6 +28,7 @@
 - `src/main/store.ts`：schema 2 存档、schema 1 迁移、临时文件、常规备份、迁移前版本化备份与失败恢复。
 - `src/main/motion.ts`：自动移动规划与插值。
 - `src/main/interaction-controller.ts`：点击、拖动、鼠标、键盘动作的运行时状态、优先级、冷却和打扰上限。
+- `src/main/runtime-scheduler.ts`：统一登记并停止在线推进、轮询、散步、移动和短时反馈定时器，避免退出后访问已销毁对象。
 - `src/main/keyboard-worker.ts`：独立 utility process 内的原生键盘次数时间桶；只发送 `count` 与 `endedAt`，不发送按键内容。
 
 主进程内的 `SaveData` 是持久状态唯一权威。桌面位置、设置、照顾、背包、探索和效果只能经校验后的专用 IPC 修改，再由主进程保存并广播。
@@ -69,13 +70,13 @@
 ## 视觉与持久化
 
 - 四阶段运行时素材固定为 80 张 512×512 RGBA PNG：四张中性整图 fallback、四阶段各五张身体/手脚分层，以及每阶段 14 张图片表情。
-- 表情由 PNG 层叠加，成长星、旅行装和互动道具仍由 DOM/CSS 表现；消费与返程产生的庆典、主题和光环效果均已映射到桌宠视觉。永久装扮和旅行标识目前仍使用 emoji。
+- 表情由 PNG 层叠加；八件永久装扮使用 512×512 RGBA 本地 PNG 和四阶段布局，置于角色运动/朝向节点内。成长星、旅行装和互动道具继续由 DOM/CSS 表现。
 - schema 2 在原 `pet`、`growth`、`economy`、`settings` 分区上向后兼容扩展。旧等级、经验、金币、装扮、设置和位置在迁移后保留；新增背包、效果、探索和互动设置使用安全默认值。
 
 ## 构建与发行
 
 - Vite 构建渲染层，TypeScript 构建主进程、preload 与 utility process，electron-builder 生成 Windows NSIS 产物。
-- `dist:setup`（及兼容别名 `dist:win`）生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 和 `update-manifest.json`。v1.2.2 不构建或发布 Portable。
+- `dist:setup`（及兼容别名 `dist:win`）生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 和 `update-manifest.json`。v1.2.3 不构建或发布 Portable。
 - 正式发行仍须完成真实 Setup/Update 安装、schema 迁移、原生键盘组件、SHA-256、不可变标签和 GitHub Release 远端核对。
 - 当前安装程序未签名，必须如实披露 SmartScreen 风险。
 
@@ -91,4 +92,4 @@
 - [存档结构与迁移](docs/reference/SAVE_SCHEMA_AND_MIGRATIONS.md)
 - [测试与验收](docs/reference/TESTING_AND_ACCEPTANCE.md)
 
-当前源码版本为 1.2.2，正式 GitHub Release、三件套、远端摘要和实装升级证据见 [v1.2.2 发布快照](docs/releases/v1.2.2.md)。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。
+当前源码版本为 1.2.3；正式发布完成前，最近一份已完成的 GitHub Release、三件套、远端摘要和实装升级证据仍见 [v1.2.2 发布快照](docs/releases/v1.2.2.md)。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。

@@ -4,8 +4,8 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 测试结构、支持环境、原生依赖、发布方式或验收要求变化时同步更新 |
-| 适用版本 | 1.2.2 |
-| 最后核对 | 2026-08-22 |
+| 适用版本 | 1.2.3 |
+| 最后核对 | 2026-08-23 |
 | 权威来源 | `package.json`、`.github/workflows/windows-release.yml`、`src/**/*.test.ts`、构建配置、实际安装结果和 GitHub Release |
 | 更新触发 | 行为变化、新缺陷回归、测试增删、Node/Electron/原生组件基线、CI 门禁或正式发布变化 |
 
@@ -19,6 +19,8 @@
 - 全局键盘节奏依赖 `uiohook-napi@1.5.4` 原生组件；构建配置将其从 asar 解包，但自动类型检查不能证明安装包内原生二进制可正常加载。
 
 2026-08-22 已通过 1.2.2 的 `npm.cmd test`（12 个测试文件、78 项测试）和完整 `npm.cmd run build`；`npm.cmd run verify:release` 也已核对本地三件套、PE 内部版本、清单哈希及 Setup/Update 两份原生键盘二进制。
+
+2026-08-23 已通过 1.2.3 的 `npm.cmd ci`、`npm.cmd test`（15 个测试文件、86 项测试）和完整 `npm.cmd run build`。正式三件套、安装升级与 GitHub 远端证据须在后续发布门禁完成后记录，不能由本条自动推定。
 
 ## GitHub Actions Windows 门禁
 
@@ -42,8 +44,11 @@
 | `src/main/interaction-integration.test.ts` | IPC 白名单、锁定窗口、隐私时间桶、原生组件降级、恢复路径与原子启动静态集成 |
 | `src/main/motion.test.ts` | 方向、速度、时长边界、缓动和落点 |
 | `src/main/store.test.ts` | 默认档、备份恢复、schema 1→2、迁移备份、未知或无效 schema 2 和离线加载 |
-| `src/main/release-config.test.ts` | 1.2.2 身份、ASCII 固定名 Setup/Update、用户数据保留和原生组件解包 |
+| `src/main/release-config.test.ts` | 1.2.3 身份、ASCII 固定名 Setup/Update、用户数据保留和原生组件解包 |
 | `src/renderer/ui-regressions.test.ts` | 透明窗口、五层角色、四阶段各 14 张图片表情、消费效果视觉、成长/生活/锁定/隐私控件和中文菜单 |
+| `src/main/runtime-scheduler.test.ts` | 退出时幂等停止周期、递归和短时定时器，停止后不能重新排程 |
+| `src/renderer/drag-visual.test.ts` | 开心飞行方向、速度限幅、强度倍率和静止姿态 |
+| `src/renderer/outfit-layout.test.ts` | 八件本地装扮 PNG、稳定 ID 和四阶段 32 组布局边界 |
 
 ## 变更所需最小验证
 
@@ -53,7 +58,7 @@
 | 成长、照顾、收益或商品规则 | 对应共享领域测试、全量测试、变量登记与领域文档同步 |
 | 用品、服务、探索或效果时钟 | 目录/经济测试；退出和系统挂起暂停、仅锁屏继续推进的人工检查 |
 | 动作、鼠标、键盘或桌面锁定 | 领域/控制器/集成测试；开发环境和打包环境人工操作 |
-| 阶段素材或 CSS | UI 静态测试；四阶段、左右朝向、拖动和降级素材人工截图 |
+| 阶段/装扮素材或 CSS | UI/装扮静态测试；四阶段、八装扮、左右朝向、拖动和降级素材人工截图 |
 | 存档字段或 schema | 真实旧档迁移、迁移前备份、损坏档和未知 schema 测试；覆盖安装验证 |
 | 发布配置 | 全部测试和构建、Setup/Update/清单、SHA-256、旧版覆盖安装及 GitHub Release 远端核对 |
 

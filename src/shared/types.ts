@@ -112,6 +112,7 @@ export interface ShopItem {
   id: string;
   name: string;
   icon: string;
+  assetFile: string;
   price: number;
   unlockLevel: number;
   className: string;

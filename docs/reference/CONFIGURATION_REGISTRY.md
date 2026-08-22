@@ -2,8 +2,8 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理可在对应代码或测试已经变更并完成核对时修改；不得仅为设想改写“当前值”，不得重排、复用或删除既有 CFG 编号。  
-> 适用版本：1.2.0  
-> 最后核对：2026-08-16  
+> 适用版本：1.2.3  
+> 最后核对：2026-08-23  
 > 权威源码：src/shared/types.ts、src/shared/growth.ts、src/shared/game.ts、src/shared/catalog.ts、src/shared/economy-types.ts、src/shared/economy.ts、src/shared/expression.ts、src/shared/interaction.ts、src/main/store.ts、src/main/main.ts、src/main/motion.ts、src/main/interaction-controller.ts、src/renderer  
 > 更新触发：默认存档、领域类型、公式、阈值、计时器、窗口尺寸、动作、互动、表情、装扮或经济目录、设置项及其测试发生变化时。
 
@@ -112,7 +112,7 @@
 | CFG-076 | 温暖围巾 | ID scarf；价格 150；10 级；图标 🧣；class wearable scarf | `ShopItem` | `SHOP_ITEMS` | 商店、存档、PetView | `catalog.test.ts` | 高：稳定 ID 禁止改名或复用 |
 | CFG-077 | 金色皇冠 | ID crown；价格 240；15 级；图标 👑；class wearable crown | `ShopItem` | `SHOP_ITEMS` | 商店、存档、PetView | `catalog.test.ts`、`game.test.ts` | 高：稳定 ID 禁止改名或复用 |
 | CFG-078 | 星星光环 | ID halo；价格 360；20 级；图标 ✨；class wearable halo | `ShopItem` | `SHOP_ITEMS` | 商店、存档、PetView | `catalog.test.ts` | 高：稳定 ID 禁止改名或复用 |
-| CFG-079 | 装扮视觉锚点 | leaf-clip top19 left50 size27；bow top30 right24 size37；glasses top72 left46 size47；top-hat top0 left61 size37；headphones top53 left33 size61；scarf top119 left54 size48；crown top4 left64 size37；halo top1 left58 size37 | 相对角色画布的 CSS 像素 | `styles.css` | PetView | `ui-regressions.test.ts` 部分覆盖 | 中：角色轮廓变化时须逐阶段复核 |
+| CFG-079 | 装扮视觉锚点 | 四阶段 × 八件共 32 组 x、y、width、rotation；当前宽度 36–109px、旋转 -24°–12°，完整逐项值以 `OUTFIT_LAYOUTS` 为权威 | 相对 165×168 角色画布的 CSS 像素 | `outfit-layout.ts` | PetView、商店预览 | `outfit-layout.test.ts` | 中：角色轮廓或装扮素材变化时须逐阶段复核 |
 | CFG-080 | 阶段角色素材 | 4 阶段 × body、arm-left、arm-right、leg-left、leg-right；每层 512×512 RGBA PNG；另有阶段整图 fallback | 像素资源 | `pet-view.tsx`、`assets/pet` | PetView、步态 | `ui-regressions.test.ts` | 高：命名和坐标系是渲染契约 |
 | CFG-081 | 背包目录与堆叠 | 8 种用品 + 5 种服务券，共 13 种；每种最多 99；单次购买 1–10 | 稳定 `InventoryItemId` 与安全整数数量 | `INVENTORY_ITEMS`、`INVENTORY_STACK_LIMIT`、`MAX_PURCHASE_QUANTITY` | 商店、背包、schema 校验 | `catalog.test.ts`、`economy.test.ts` | 高：价格、效果和 ID 影响经济与兼容；逐项数值以目录为权威 |
 | CFG-082 | 定时效果队列 | celebration、keyboard、mouse、theme、aura 五槽；每槽 FIFO 最多 32 段，总剩余实际运行时最多 14 天 | 正整数毫秒；有效效果与来源 ID | `MAX_EFFECT_SEGMENTS_PER_SLOT`、`MAX_EFFECT_RUNTIME_PER_SLOT_MS` | 使用物品、探索奖励、PetView | `economy.test.ts`、`game.test.ts` | 高：影响可预付时长、schema 和渲染效果 |
@@ -137,7 +137,7 @@
 
 | 编号 | 变量或规则 | 当前值 | 类型、单位与范围 | 权威源码 | 使用方 | 相关测试 | 变更影响 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| CFG-100 | 鼠标采样、点击与拖动阈值 | 采样 50ms；点击组结算 320ms；拖动阈值 7 DIP | 毫秒、DIP | `CURSOR_SAMPLE_MS`、`TAP_SETTLE_MS`、`DRAG_THRESHOLD_DIP` | 主进程采样、PetView | `interaction.test.ts`、`interaction-integration.test.ts` | 中：影响点击、抚摸和拖动判定 |
+| CFG-100 | 鼠标采样、点击与拖动阈值 | 采样 50ms；点击组结算 320ms；拖动阈值 7 DIP；飞行速度在 1.4px/ms 归一封顶、基础最大倾斜 11°，gentle/normal/lively 幅度系数 0.65/1/1.25 | 毫秒、DIP、像素/毫秒、角度、倍率 | `interaction.ts`、`drag-visual.ts` | 主进程采样、PetView | `interaction.test.ts`、`drag-visual.test.ts` | 中：影响点击、抚摸和拖动观感 |
 | CFG-101 | 四阶段互动参数 | sprout 幅度0.75/时长1.12/shy；lively 1.15/0.86/bouncy；mature 0.95/1/steady；radiant 1.05/0.9/radiant | 幅度与时长倍率、性格标签 | `INTERACTION_STAGE_PROFILES` | 互动控制器、CSS | `interaction.test.ts`、`ui-regressions.test.ts` | 高：保证阶段动作差异显著 |
 | CFG-102 | 互动优先级与时长 | 优先级 idle0、nearby30、rest/paw50、tug/chase/dizzy60、keyboard70、petting90、dodge92、landing95、dragging100；基础时长 nearby3500、petting1200、dodge900、landing650、rest3500、paw1350、tug2200、chase2400、dizzy1800ms | 高优先级可中断低优先级；时长再乘阶段倍率 | `INTERACTION_PRIORITY`、`INTERACTION_DURATION_MS` | 互动控制器 | `interaction.test.ts`、`interaction-controller.test.ts` | 高：决定动作竞争与反馈辨识度 |
 | CFG-103 | 注视与鼠标轨迹识别 | 注视半径700，x/y分别按350/250归一；挑逗2秒、半径70–230、路径≥420、横向反转≥4；环绕2.5秒且≥1.25圈，≥2圈后眩晕；附近停留6秒、距离≤160、速度≤25 | CSS 像素、毫秒、圈数、像素/秒 | `gazeForCursor()`、`isTeasingCursor()`、`accumulatedCursorTurns()`、`isNearbyCursor()` | 注视、扒拉、追逐、眩晕、陪伴 | `interaction.test.ts`、`interaction-controller.test.ts` | 中：改变环境互动触发率 |
