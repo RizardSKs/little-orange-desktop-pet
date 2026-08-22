@@ -65,9 +65,10 @@
 - [版本索引](../CHANGELOG.md)：只追加的发布入口。
 - [1.0.0 快照](releases/v1.0.0.md)：依据遗留发布包重建。
 - [1.1.0 快照](releases/v1.1.0.md)：依据当前更新包、清单和归档差异重建。
+- [1.2.1 快照](releases/v1.2.1.md)：正式 Release、三件套、实装升级与远端摘要证据。
 - [版本快照模板](releases/TEMPLATE.md)：后续正式发布必须使用。
 
-v1.2.0 因 GitHub 自动改写中文资产名而停止，错误草稿 Release 已删除且标签保留。v1.2.1 正式发布快照尚未创建；必须先完成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`、`Little-Orange-Desktop-Pet-Update-x64.exe`、`update-manifest.json`、不可变标签、GitHub Release 和远端 SHA-256 核对，取得证据后才能首次写入 `docs/releases/v1.2.1.md`。
+v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删除且标签保留。v1.2.1 已改用固定 ASCII 三件套并完成不可变标签、GitHub Release、远端 SHA-256 核对和正式发布快照。
 
 ## 当前根目录入口
 

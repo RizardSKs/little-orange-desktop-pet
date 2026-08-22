@@ -47,9 +47,9 @@
 
 - 全局键盘节奏依赖 `uiohook-napi` 原生组件。Setup 与 Update 已验证包含同一份解包后的 Windows x64 二进制；安装版在启用键盘互动后成功保持独立 Node utilityProcess 存活，并提供不可用降级。真实全局输入、停用、挂起恢复与退出清理仍需人工冒烟。
 - 自动化测试不等于真实 Windows 窗口验收；桌面点击穿透、独立解锁按钮、全局输入、托盘、多显示器、DPI、全屏和挂起恢复仍需使用打包程序人工冒烟。
-- v1.2.0 因 GitHub 自动移除中文资产名而停止发布，错误草稿 Release 已删除且不可变标签保留。v1.2.1 改用 GitHub 兼容的 ASCII 固定名；取得远端 Release 与哈希证据前不得创建正式 v1.2.1 发布快照或宣称发布闭环完成。
+- v1.2.0 因 GitHub 自动移除中文资产名而停止发布，错误 Release 已删除且不可变标签保留。v1.2.1 已改用 GitHub 兼容的 ASCII 固定名并完成[正式 Release 与发布快照](../releases/v1.2.1.md)。
 - 当前发行程序尚未代码签名，可能触发 Windows SmartScreen“未知发布者”提示；发布说明必须披露实际 `NotSigned` 状态。
-- `compatibleFrom: 1.0.0` 已在 Windows x64 `10.0.26200` 的隔离目录通过 v1.0.0→v1.2.0 直升及 v1.0.0→v1.1.0→v1.2.0 累计安装；两条路径均验证丰富 schema 1 存档迁移和备份。
+- `compatibleFrom: 1.0.0` 已在 Windows x64 隔离目录通过 v1.0.0→v1.2.1 直升及 v1.0.0→v1.1.0→v1.2.1 累计安装；两条路径均验证丰富 schema 1 存档迁移和备份。
 - 依赖声明仍使用 `latest`；本版可复现安装必须依赖已提交的 `package-lock.json` 和 `npm.cmd ci`。
 - 仓库仍没有自动创建 GitHub Release、上传三件套或回读远端哈希的发布脚本。
 
