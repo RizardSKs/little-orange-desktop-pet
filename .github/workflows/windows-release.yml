@@ -1,0 +1,63 @@
+name: Windows release gates
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-test-build:
+    name: Test and build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - windows-2022
+          - windows-2025
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+      - name: Build application
+        run: npm run build
+
+  windows-package-gate:
+    name: Build and verify Windows installers
+    needs: windows-test-build
+    runs-on: windows-2022
+    timeout-minutes: 45
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.12.0'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Build Setup installer
+        run: npm run dist:setup
+      - name: Build Update installer and manifest
+        run: npm run dist:update
+      - name: Verify release artifacts
+        run: npm run verify:release
