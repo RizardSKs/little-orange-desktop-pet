@@ -91,4 +91,4 @@
 - [存档结构与迁移](docs/reference/SAVE_SCHEMA_AND_MIGRATIONS.md)
 - [测试与验收](docs/reference/TESTING_AND_ACCEPTANCE.md)
 
-当前源码版本为 1.2.2。源码能力与正式发布证据必须分开判断；v1.2.2 GitHub Release 远端证据齐全前，不创建正式版本快照。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。
+当前源码版本为 1.2.2，正式 GitHub Release、三件套、远端摘要和实装升级证据见 [v1.2.2 发布快照](docs/releases/v1.2.2.md)。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。

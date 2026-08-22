@@ -103,7 +103,7 @@
 - 自动测试没有启动真实打包后的 Electron 窗口，也不会操作 Windows 全局钩子、托盘、SmartScreen、多显示器、DPI 或系统电源事件。
 - 当前安装程序没有代码签名，预计可能显示 SmartScreen“未知发布者”；必须记录为 `NotSigned`，不能描述为签名通过。
 - `compatibleFrom: 1.0.0` 已通过上述本地真实安装链验证；Windows 10 客户端和 Windows 11 的桌面点击穿透、托盘、全局钩子、SmartScreen、多显示器、DPI 与电源事件仍需人工补充冒烟或作为已知验证边界披露。
-- v1.2.1 的 Setup、Update、清单、标签、GitHub Release 与远端 SHA-256 均已核对，详见[正式发布快照](../releases/v1.2.1.md)。
+- v1.2.1 与 v1.2.2 的 Setup、Update、清单、标签、GitHub Release 与远端 SHA-256 均已核对；当前版本证据见 [v1.2.2 正式发布快照](../releases/v1.2.2.md)。
 
 ## 相关文档
 

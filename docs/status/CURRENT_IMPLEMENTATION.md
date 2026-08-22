@@ -41,13 +41,13 @@
 - 四个成长阶段现有 80 张本地 PNG：每阶段 1 张中性整图降级素材、身体/双臂/双腿 5 张分层素材和 14 张图片表情，全部为 512×512 RGBA。萌芽、活力、成熟和闪耀在体型、叶冠、色彩与五官比例上逐级变化；成熟期五片叶均从单一中央枝干分出，闪耀期使用哑光晨曦/星尘表现，不使用默认身体外发光。
 - 管理面板已拆分为状态、互动、生活和设置视图，生活页包含装扮、用品、服务、探索和背包；状态页显示成长称号、闪耀星、旅行和限时效果剩余运行时间。用品/服务的庆典、主题与光环，以及探索返程效果，均已映射到桌宠视觉。
 - `dist:win` 现为 `dist:setup` 的别名，生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 与 `update-manifest.json`。v1.2.2 不生成或发布 Portable。
-- 2026-08-22 已通过 1.2.2 的 `npm.cmd test`（12 个测试文件、78 项测试）、完整 `npm.cmd run build`、本地三件套 `npm.cmd run verify:release`、真实窗口素材验收，以及全新安装、v1.0.0 直升和 v1.2.1 覆盖升级；GitHub 标签、Release 和远端摘要仍以本次正式发布闭环完成后的快照为准。
+- 2026-08-22 已通过 1.2.2 的 `npm.cmd test`（12 个测试文件、78 项测试）、完整 `npm.cmd run build`、本地三件套 `npm.cmd run verify:release`、真实窗口素材验收，以及全新安装、v1.0.0 直升和 v1.2.1 覆盖升级；GitHub 标签、Release 和远端摘要已完成核对，详见[正式发布快照](../releases/v1.2.2.md)。
 
 ## 已知实现与发行边界
 
 - 全局键盘节奏依赖 `uiohook-napi` 原生组件。Setup 与 Update 已验证包含同一份解包后的 Windows x64 二进制；安装版在启用键盘互动后成功保持独立 Node utilityProcess 存活，并提供不可用降级。真实全局输入、停用、挂起恢复与退出清理仍需人工冒烟。
 - 自动化测试不等于真实 Windows 窗口验收；桌面点击穿透、独立解锁按钮、全局输入、托盘、多显示器、DPI、全屏和挂起恢复仍需使用打包程序人工冒烟。
-- v1.2.0 因 GitHub 自动移除中文资产名而停止发布，错误 Release 已删除且不可变标签保留。v1.2.1 已改用 GitHub 兼容的 ASCII 固定名并完成[正式 Release 与发布快照](../releases/v1.2.1.md)。
+- v1.2.0 因 GitHub 自动移除中文资产名而停止发布，错误 Release 已删除且不可变标签保留。v1.2.1 与 [v1.2.2](../releases/v1.2.2.md) 均使用 GitHub 兼容的 ASCII 固定名并完成正式 Release 与发布快照。
 - 当前发行程序尚未代码签名，可能触发 Windows SmartScreen“未知发布者”提示；发布说明必须披露实际 `NotSigned` 状态。
 - `compatibleFrom: 1.0.0` 已在 Windows x64 隔离目录通过 v1.0.0→v1.2.1 直升及 v1.0.0→v1.1.0→v1.2.1 累计安装；两条路径均验证丰富 schema 1 存档迁移和备份。
 - 依赖声明仍使用 `latest`；本版可复现安装必须依赖已提交的 `package-lock.json` 和 `npm.cmd ci`。
