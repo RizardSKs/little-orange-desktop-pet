@@ -20,6 +20,7 @@ import type { AnimationIntensity, EconomyIpcResult, OfflineSummary, PetAction, P
 import { SaveStore } from './store';
 import { createMotionPlan, positionAt } from './motion';
 import { InteractionController } from './interaction-controller';
+import { RuntimeScheduler } from './runtime-scheduler';
 
 const execFileAsync = promisify(execFile);
 const PET_SIZE = 220;
@@ -51,6 +52,9 @@ let motionRestoreBehavior: PetBehavior = 'idle';
 let interactionController: InteractionController | null = null;
 let keyboardWorker: UtilityProcess | null = null;
 let keyboardReadyTimer: NodeJS.Timeout | null = null;
+let runtimeScheduler: RuntimeScheduler | null = null;
+let shutdownSaved = false;
+const systemListenerCleanups: Array<() => void> = [];
 
 const preloadPath = path.join(__dirname, '..', 'preload', 'preload.js');
 const unlockPreloadPath = path.join(__dirname, '..', 'preload', 'unlock.js');
@@ -100,10 +104,14 @@ function createPetWindow() {
     petWindow.setIgnoreMouseEvents(true);
   }
   petWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: false });
-  void loadView(petWindow, 'pet').then(() => petWindow?.showInactive());
+  const window = petWindow;
+  void loadView(window, 'pet').then(() => {
+    if (!quitting && !window.isDestroyed()) window.showInactive();
+  });
   petWindow.on('close', (event) => {
     if (!quitting) { event.preventDefault(); petWindow?.hide(); }
   });
+  petWindow.on('closed', () => { petWindow = null; });
 }
 
 const unlockDocument = `<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'"><style>*{box-sizing:border-box}html,body{width:100%;height:100%;margin:0;overflow:hidden;background:transparent}body{display:grid;place-items:center}button{width:36px;height:36px;border:1px solid rgba(255,255,255,.9);border-radius:50%;background:linear-gradient(145deg,#ffad46,#ee7620);color:white;font-size:18px;line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(95,45,12,.28)}button:hover{filter:brightness(1.08)}button:active{transform:scale(.94)}button:focus-visible{outline:2px solid white;outline-offset:-4px}</style></head><body><button id="unlock-pet" type="button" title="点击解锁小橙子" aria-label="解锁小橙子">🔓</button></body></html>`;
@@ -133,12 +141,14 @@ function createUnlockWindow(): BrowserWindow {
   unlockWindow.setAlwaysOnTop(true, 'floating');
   unlockWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: false });
   positionUnlockWindow();
-  void unlockWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(unlockDocument)}`).then(() => {
-    if (state.settings.desktopLocked) unlockWindow?.showInactive();
+  const window = unlockWindow;
+  void window.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(unlockDocument)}`).then(() => {
+    if (!quitting && state.settings.desktopLocked && !window.isDestroyed()) window.showInactive();
   });
   unlockWindow.on('close', (event) => {
     if (!quitting && state.settings.desktopLocked) { event.preventDefault(); unlockWindow?.hide(); }
   });
+  unlockWindow.on('closed', () => { unlockWindow = null; });
   return unlockWindow;
 }
 
@@ -152,6 +162,7 @@ function createPanelWindow() {
   panelWindow.on('close', (event) => {
     if (!quitting) { event.preventDefault(); panelWindow?.hide(); }
   });
+  panelWindow.on('closed', () => { panelWindow = null; });
   panelWindow.on('focus', () => cancelPetMotion());
 }
 
@@ -240,7 +251,7 @@ function rebuildApplicationMenu() {
         { label: '打开管理面板', accelerator: 'CmdOrCtrl+O', enabled: !state.settings.desktopLocked, click: () => togglePanel(true) },
         { label: '隐藏管理面板', click: () => togglePanel(false) },
         { type: 'separator' },
-        { label: '退出小橙子', accelerator: 'Alt+F4', click: () => { quitting = true; app.quit(); } },
+        { label: '退出小橙子', accelerator: 'Alt+F4', click: requestQuit },
       ],
     },
     {
@@ -296,7 +307,7 @@ function rebuildTrayMenu() {
     { label: '始终置顶', type: 'checkbox', checked: state.settings.alwaysOnTop || state.settings.desktopLocked, enabled: !state.settings.desktopLocked, click: (item) => updateSetting('alwaysOnTop', item.checked) },
     { label: state.settings.desktopLocked ? '解锁小橙子' : '锁定在桌面', click: () => setDesktopLocked(!state.settings.desktopLocked) },
     { type: 'separator' },
-    { label: '退出', click: () => { quitting = true; app.quit(); } },
+    { label: '退出', click: requestQuit },
   ]));
 }
 
@@ -353,7 +364,7 @@ function broadcastMotion(moving: boolean) {
 
 function cancelPetMotion(resetBehavior = true) {
   motionToken += 1;
-  if (motionTimer) clearTimeout(motionTimer);
+  if (motionTimer) runtimeScheduler?.clearTimeout(motionTimer);
   motionTimer = null;
   if (resetBehavior && state?.pet.behavior === 'walking') {
     state.pet.behavior = motionRestoreBehavior;
@@ -363,7 +374,7 @@ function cancelPetMotion(resetBehavior = true) {
 }
 
 function animatePetTo(position: PetPosition) {
-  if (!petWindow || state.settings.desktopLocked) return;
+  if (quitting || !petWindow || petWindow.isDestroyed() || state.settings.desktopLocked) return;
   cancelPetMotion();
   const from = petWindow.getBounds();
   const target = clampPosition(position);
@@ -384,12 +395,12 @@ function animatePetTo(position: PetPosition) {
   broadcast();
 
   const tick = () => {
-    if (!petWindow || token !== motionToken) return;
+    if (quitting || !petWindow || petWindow.isDestroyed() || token !== motionToken) return;
     const progress = Math.min(1, (Date.now() - startedAt) / plan.durationMs);
     const next = positionAt(plan, progress);
     petWindow.setPosition(next.x, next.y);
     if (progress < 1) {
-      motionTimer = setTimeout(tick, 33);
+      motionTimer = runtimeScheduler?.setTimeout(tick, 33) ?? null;
       return;
     }
     motionTimer = null;
@@ -421,18 +432,20 @@ function updateSetting(key: SettingKey, value: boolean | string): SaveData {
 }
 
 function resetTemporaryBehavior() {
-  if (actionResetTimer) clearTimeout(actionResetTimer);
+  if (actionResetTimer) runtimeScheduler?.clearTimeout(actionResetTimer);
   if (state.pet.behavior === 'sleeping') return;
-  actionResetTimer = setTimeout(() => {
+  actionResetTimer = runtimeScheduler?.setTimeout(() => {
+    actionResetTimer = null;
+    if (quitting) return;
     if (state.pet.behavior !== 'sleeping') {
       state.pet.behavior = 'idle';
       saveAndBroadcast();
     }
-  }, 2600);
+  }, 2600) ?? null;
 }
 
 function clearKeyboardReadyTimer() {
-  if (keyboardReadyTimer) clearTimeout(keyboardReadyTimer);
+  if (keyboardReadyTimer) runtimeScheduler?.clearTimeout(keyboardReadyTimer);
   keyboardReadyTimer = null;
 }
 
@@ -442,7 +455,11 @@ function stopKeyboardWorker(status: 'disabled' | 'unavailable' = 'disabled') {
   keyboardWorker = null;
   if (worker) {
     try { worker.postMessage({ type: 'stop' }); } catch { /* the isolated worker already stopped */ }
-    setTimeout(() => { try { worker.kill(); } catch { /* already exited */ } }, 100);
+    if (quitting) {
+      try { worker.kill(); } catch { /* already exited */ }
+    } else {
+      runtimeScheduler?.setTimeout(() => { try { worker.kill(); } catch { /* already exited */ } }, 100);
+    }
   }
   interactionController?.setKeyboardStatus(status);
 }
@@ -462,7 +479,7 @@ function startKeyboardWorker() {
   try {
     const worker = utilityProcess.fork(keyboardWorkerPath, [], { stdio: 'ignore', serviceName: '小橙子键盘节奏' });
     keyboardWorker = worker;
-    keyboardReadyTimer = setTimeout(() => failKeyboardWorker(worker), 2_000);
+    keyboardReadyTimer = runtimeScheduler?.setTimeout(() => failKeyboardWorker(worker), 2_000) ?? null;
     worker.on('message', (message: unknown) => {
       if (keyboardWorker !== worker || !message || typeof message !== 'object') return;
       const payload = message as { type?: unknown; count?: unknown; endedAt?: unknown };
@@ -601,7 +618,7 @@ function setupIpc() {
       { label: '锁定在桌面', click: () => setDesktopLocked(true) },
       { type: 'separator' },
       { label: '隐藏', click: () => petWindow?.hide() },
-      { label: '退出', click: () => { quitting = true; app.quit(); } },
+      { label: '退出', click: requestQuit },
     ]);
     menu.popup({ window: BrowserWindow.fromWebContents(event.sender) ?? undefined });
   });
@@ -709,14 +726,21 @@ function setupIpc() {
     saveAndBroadcast();
     return state;
   });
-  ipcMain.handle('app:quit', () => { quitting = true; app.quit(); });
+  ipcMain.handle('app:quit', requestQuit);
+}
+
+function requestQuit(): void {
+  if (quitting) return;
+  quitting = true;
+  app.quit();
 }
 
 async function detectForegroundFullscreen() {
-  if (process.platform !== 'win32') return false;
+  if (quitting || process.platform !== 'win32') return false;
   const command = `$s='[DllImport("user32.dll")]public static extern IntPtr GetForegroundWindow();[DllImport("user32.dll")]public static extern bool GetWindowRect(IntPtr h,out R r);public struct R{public int L;public int T;public int Rg;public int B;}';Add-Type -MemberDefinition $s -Name W -Namespace N -ErrorAction SilentlyContinue;$h=[N.W]::GetForegroundWindow();$r=New-Object N.W+R;[N.W]::GetWindowRect($h,[ref]$r)|Out-Null;Write-Output \"$($r.L),$($r.T),$($r.Rg),$($r.B)\"`;
   try {
     const { stdout } = await execFileAsync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], { windowsHide: true, timeout: 2500 });
+    if (quitting || !runtimeScheduler?.isActive) return false;
     const [left, top, right, bottom] = stdout.trim().split(',').map(Number);
     if (![left, top, right, bottom].every(Number.isFinite)) return false;
     return screen.getAllDisplays().some(({ bounds }) => Math.abs(left - bounds.x) <= 2 && Math.abs(top - bounds.y) <= 2 && Math.abs(right - bounds.x - bounds.width) <= 2 && Math.abs(bottom - bounds.y - bounds.height) <= 2);
@@ -724,15 +748,19 @@ async function detectForegroundFullscreen() {
 }
 
 function startTimers() {
+  runtimeScheduler?.stop();
+  const scheduler = new RuntimeScheduler();
+  runtimeScheduler = scheduler;
   runtimeBaselineAt = Date.now();
-  setInterval(() => {
-    if (systemSuspended) return;
+  scheduler.setInterval(() => {
+    if (quitting || systemSuspended) return;
     const fromLevel = state.growth.level;
     state = advanceOnline(state, Date.now());
     saveAndBroadcast();
     broadcastGrowthProgress(growthProgress('online', fromLevel));
   }, 60_000);
-  setInterval(() => {
+  scheduler.setInterval(() => {
+    if (quitting) return;
     const now = Date.now();
     if (systemSuspended) {
       runtimeBaselineAt = null;
@@ -741,11 +769,14 @@ function startTimers() {
     if (advanceActualEconomyRuntime(now)) saveAndBroadcast();
     else broadcast();
   }, 5_000);
-  setInterval(async () => {
-    foregroundFullscreen = await detectForegroundFullscreen();
+  scheduler.setInterval(async () => {
+    const detected = await detectForegroundFullscreen();
+    if (quitting || !scheduler.isActive || runtimeScheduler !== scheduler) return;
+    foregroundFullscreen = detected;
     if (foregroundFullscreen) cancelPetMotion();
   }, 5_000);
-  setInterval(() => {
+  scheduler.setInterval(() => {
+    if (quitting) return;
     const maySampleCursor = !systemSuspended
       && !screenLocked
       && state.settings.mouseInteractionsEnabled
@@ -754,12 +785,13 @@ function startTimers() {
       && state.pet.behavior !== 'playing'
       && state.pet.behavior !== 'cleaning'
       && !foregroundFullscreen
-      && Boolean(petWindow?.isVisible());
+      && Boolean(petWindow && !petWindow.isDestroyed() && petWindow.isVisible());
     const cursor = maySampleCursor ? screen.getCursorScreenPoint() : null;
     interactionController?.tick(cursor, Date.now());
   }, 50);
-  const scheduleWalk = () => setTimeout(() => {
-    if (!petWindow || systemSuspended || screenLocked || state.settings.desktopLocked || !state.settings.autoWalk || state.pet.behavior !== 'idle' || foregroundFullscreen || panelWindow?.isFocused()) {
+  const scheduleWalk = () => scheduler.setTimeout(() => {
+    if (quitting || !scheduler.isActive) return;
+    if (!petWindow || petWindow.isDestroyed() || systemSuspended || screenLocked || state.settings.desktopLocked || !state.settings.autoWalk || state.pet.behavior !== 'idle' || foregroundFullscreen || Boolean(panelWindow && !panelWindow.isDestroyed() && panelWindow.isFocused())) {
       scheduleWalk();
       return;
     }
@@ -771,6 +803,19 @@ function startTimers() {
     scheduleWalk();
   }, 8_000 + Math.round(Math.random() * 8_000));
   scheduleWalk();
+}
+
+function stopRuntimeServices(): void {
+  runtimeScheduler?.stop();
+  runtimeScheduler = null;
+  motionToken += 1;
+  if (motionTimer) clearTimeout(motionTimer);
+  motionTimer = null;
+  if (actionResetTimer) clearTimeout(actionResetTimer);
+  actionResetTimer = null;
+  clearKeyboardReadyTimer();
+  for (const cleanup of systemListenerCleanups.splice(0)) cleanup();
+  stopKeyboardWorker('disabled');
 }
 
 app.whenReady().then(() => {
@@ -801,26 +846,36 @@ app.whenReady().then(() => {
       store.save(state);
     }
   }
+  startTimers();
   syncKeyboardWorker();
   rebuildApplicationMenu();
-  startTimers();
-  powerMonitor.on('suspend', () => {
+  const onSuspend = () => {
     systemSuspended = true;
     pauseActualRuntimeForSuspend();
-  });
-  powerMonitor.on('lock-screen', () => {
+  };
+  const onLockScreen = () => {
     screenLocked = true;
     pauseNativeInput();
-  });
-  powerMonitor.on('resume', () => {
+  };
+  const onResume = () => {
     systemSuspended = false;
     resumeActualRuntimeAfterSuspend();
-  });
-  powerMonitor.on('unlock-screen', () => {
+  };
+  const onUnlockScreen = () => {
     if (!screenLocked) return;
     screenLocked = false;
     syncKeyboardWorker();
-  });
+  };
+  powerMonitor.on('suspend', onSuspend);
+  powerMonitor.on('lock-screen', onLockScreen);
+  powerMonitor.on('resume', onResume);
+  powerMonitor.on('unlock-screen', onUnlockScreen);
+  systemListenerCleanups.push(
+    () => powerMonitor.off('suspend', onSuspend),
+    () => powerMonitor.off('lock-screen', onLockScreen),
+    () => powerMonitor.off('resume', onResume),
+    () => powerMonitor.off('unlock-screen', onUnlockScreen),
+  );
   const recoverPetPosition = () => {
     if (state.settings.desktopLocked) {
       movePet(state.settings.petPosition ?? defaultPetPosition());
@@ -830,13 +885,17 @@ app.whenReady().then(() => {
   };
   screen.on('display-removed', recoverPetPosition);
   screen.on('display-metrics-changed', recoverPetPosition);
+  systemListenerCleanups.push(
+    () => screen.off('display-removed', recoverPetPosition),
+    () => screen.off('display-metrics-changed', recoverPetPosition),
+  );
 });
 
 app.on('window-all-closed', () => { /* keep the tray application alive */ });
 app.on('before-quit', () => {
   quitting = true;
-  stopKeyboardWorker('disabled');
-  if (state && store) {
+  stopRuntimeServices();
+  if (!shutdownSaved && state && store) {
     if (runtimeBaselineAt !== null) {
       const now = Date.now();
       state = advanceOnline(state, now);
@@ -844,6 +903,7 @@ app.on('before-quit', () => {
       runtimeBaselineAt = null;
     }
     store.save(state);
+    shutdownSaved = true;
   }
 });
 

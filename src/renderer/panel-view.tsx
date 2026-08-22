@@ -15,6 +15,7 @@ import { EFFECT_SLOTS, type EffectSlot } from '../shared/economy-types';
 import { describeGrowth, MAX_LEVEL, rewardEfficiency, statCap } from '../shared/game';
 import type { PetAction, PetRuntimeState, PetStats, SaveData, SettingKey } from '../shared/types';
 import type { GrowthCelebrationState } from './App';
+import { outfitAssetPath } from './outfit-layout';
 
 const STAGE_NAMES = { sprout: '幼芽', lively: '活力', mature: '成熟', radiant: '闪耀' } as const;
 const EFFECT_SLOT_NAMES: Record<EffectSlot, string> = {
@@ -168,7 +169,7 @@ function OutfitShop({ state, setState, flash }: { state: SaveData; setState: (st
   };
   return <div className="shop-grid">{SHOP_ITEMS.map((item) => {
     const owned = state.economy.ownedItems.includes(item.id); const equipped = state.economy.equippedItem === item.id; const locked = state.growth.level < item.unlockLevel;
-    return <button className={`shop-card ${equipped ? 'equipped' : ''}`} key={item.id} disabled={locked} onClick={() => void handleItem(item.id)}><span className="shop-icon">{item.icon}</span><strong>{item.name}</strong><small>{locked ? `Lv.${item.unlockLevel} 解锁` : equipped ? '使用中 · 点击卸下' : owned ? '已拥有 · 点击装备' : `🪙 ${item.price}`}</small></button>;
+    return <button className={`shop-card ${equipped ? 'equipped' : ''}`} key={item.id} disabled={locked} onClick={() => void handleItem(item.id)}><img className="shop-icon-image" src={outfitAssetPath(item.assetFile)} alt="" /><strong>{item.name}</strong><small>{locked ? `Lv.${item.unlockLevel} 解锁` : equipped ? '使用中 · 点击卸下' : owned ? '已拥有 · 点击装备' : `🪙 ${item.price}`}</small></button>;
   })}</div>;
 }
 

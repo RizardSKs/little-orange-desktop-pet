@@ -21,6 +21,10 @@ describe('desktop pet visual regressions', () => {
     expect(component).toContain('fallbackSprite');
     expect(component).toContain('DRAG_THRESHOLD_DIP');
     expect(component).toContain('requestAnimationFrame');
+    expect(component).toContain('dragVisualForMovement');
+    expect(component).toContain("runtime.interaction.kind === 'dragging'");
+    expect(component).toContain('outfit-layer');
+    expect(component).toContain('outfitStyle(state.growth.stage');
     expect(component).toContain('CELEBRATION_PROPS');
     expect(component).toContain('effect-grand-tour-return');
   });

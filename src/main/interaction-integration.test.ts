@@ -36,16 +36,27 @@ describe('desktop lock and native input boundaries', () => {
 
   it('pauses actual runtime only for system suspend while screen lock pauses native input', () => {
     const main = read('src/main/main.ts');
-    expect(main).toContain("powerMonitor.on('suspend', () => {");
-    expect(main).toContain("powerMonitor.on('lock-screen', () => {");
-    expect(main).toContain("powerMonitor.on('resume', () => {");
+    expect(main).toContain("powerMonitor.on('suspend', onSuspend)");
+    expect(main).toContain("powerMonitor.on('lock-screen', onLockScreen)");
+    expect(main).toContain("powerMonitor.on('resume', onResume)");
     expect(main).toContain('pauseActualRuntimeForSuspend();');
     expect(main).toContain('state = settleOffline(state, Date.now()).state');
-    const lockBlock = main.slice(main.indexOf("powerMonitor.on('lock-screen'"), main.indexOf("powerMonitor.on('resume'"));
+    const lockBlock = main.slice(main.indexOf('const onLockScreen'), main.indexOf('const onResume'));
     expect(lockBlock).toContain('pauseNativeInput();');
     expect(lockBlock).not.toContain('pauseActualRuntimeForSuspend();');
-    const unlockBlock = main.slice(main.indexOf("powerMonitor.on('unlock-screen'"), main.indexOf('const recoverPetPosition'));
+    const unlockBlock = main.slice(main.indexOf('const onUnlockScreen'), main.indexOf("powerMonitor.on('suspend'"));
     expect(unlockBlock).not.toContain('settleOffline');
+  });
+
+  it('stops runtime services before windows are destroyed during quit', () => {
+    const main = read('src/main/main.ts');
+    expect(main).toContain('function requestQuit(): void');
+    expect(main).toContain('function stopRuntimeServices(): void');
+    expect(main).toContain('runtimeScheduler?.stop()');
+    expect(main).toContain("app.on('before-quit', () => {");
+    const quitBlock = main.slice(main.indexOf("app.on('before-quit'"), main.indexOf("if (!app.requestSingleInstanceLock())"));
+    expect(quitBlock.indexOf('stopRuntimeServices();')).toBeLessThan(quitBlock.indexOf('store.save(state)'));
+    expect(main).toContain("petWindow.on('closed', () => { petWindow = null; })");
   });
 
   it('keeps economy mutations panel-only and advances only actual runtime', () => {

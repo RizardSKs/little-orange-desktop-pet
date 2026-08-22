@@ -4,8 +4,8 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 窗口、设置、菜单、IPC 或公开 API 变化时同步更新 |
-| 适用版本 | 1.2.0 |
-| 最后核对 | 2026-08-16 |
+| 适用版本 | 1.2.3 |
+| 最后核对 | 2026-08-23 |
 | 权威源码 | `src/main/main.ts`、`src/preload/preload.ts`、`src/preload/unlock.ts`、`src/shared/types.ts`、`src/shared/economy-types.ts`、`src/renderer/App.tsx`、`src/renderer/pet-view.tsx`、`src/renderer/panel-view.tsx` |
 | 更新触发 | 增删窗口、设置键、IPC 通道、公开方法、事件、sender 验证、参数验证或系统副作用 |
 
@@ -80,7 +80,7 @@
 | `showContextMenu()` | `pet:context-menu` | 由桌宠窗口请求右键菜单 |
 | `buyItem(id)` | `shop:buy` | 购买旧装扮目录中的可穿戴项 |
 | `equipItem(id | null)` | `shop:equip` | 装备已拥有装扮或卸下 |
-| `quitApp()` | `app:quit` | 标记正常退出并关闭应用 |
+| `quitApp()` | `app:quit` | 进入幂等退出入口；停止调度器/监听器/原生 worker、结算保存一次，再关闭窗口和应用 |
 
 `onStateChanged`、`onMotionChanged`、`onRuntimeChanged` 和 `onGrowthProgress` 分别订阅 `state:changed`、`motion:changed`、`interaction:runtime-changed` 和 `growth:progress`；每个方法都返回取消订阅函数。`GrowthProgressEvent.source` 仅为 `online | care`，分别表示在线周期奖励或有效照料导致的升级。
 
@@ -120,11 +120,13 @@
 - `OrangePetApi.setPetPosition` 声明为 `Promise<void>`，主进程当前实际返回限制后的坐标；渲染层不使用返回值，新代码也不应依赖这个未声明差异。
 - 解锁 HTML 通过本地 data URL 异步加载。同步窗口创建失败会阻止锁定；异步页面加载失败当前没有专用 UI 错误提示，但托盘/应用菜单解锁路径仍存在。
 - 键盘原生组件启动超时、报错或退出时，`keyboardStatus` 变为 `unavailable`，不会中断桌宠、存档或其他互动。
+- 所有退出入口共用 `requestQuit()`；`before-quit` 在窗口销毁前停止周期、递归和短时定时器，已关闭窗口的引用由 `closed` 事件清空。
 - `launchAtLogin`、真实 BrowserWindow 点击穿透、多显示器解锁定位与打包后原生键盘组件仍依赖 Windows/Electron 实装冒烟测试。
 
 ## 相关测试
 
-- `src/main/interaction-integration.test.ts`：锁定穿透与置顶恢复、手势/解锁 sender 校验、键盘聚合载荷、最小解锁 preload、挂起处理与经济 IPC 暴露。
+- `src/main/interaction-integration.test.ts`：锁定穿透与置顶恢复、手势/解锁 sender 校验、键盘聚合载荷、最小解锁 preload、挂起处理、退出清理顺序与经济 IPC 暴露。
+- `src/main/runtime-scheduler.test.ts`：统一调度器的幂等停止、周期/递归定时器停机和显式取消。
 - `src/renderer/ui-regressions.test.ts`：透明背景、桌宠分层、交互类和主界面静态契约。
 - `src/main/release-config.test.ts`：发布身份、原生模块解包与更新配置。
 

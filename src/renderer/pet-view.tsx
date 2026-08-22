@@ -7,6 +7,8 @@ import { radiantStarsForLevel } from '../shared/growth';
 import { DRAG_THRESHOLD_DIP } from '../shared/interaction';
 import type { PetExpression, PetRuntimeState, SaveData } from '../shared/types';
 import type { GrowthCelebrationState } from './App';
+import { dragVisualForMovement } from './drag-visual';
+import { OUTFIT_IDS, outfitAssetPath, outfitStyle, type OutfitId } from './outfit-layout';
 
 const EXPRESSION_TEXT: Record<PetExpression, string> = {
   neutral: '今天也要元气满满！', happy: '心情真不错～', curious: '那边是什么？', surprised: '哇！', proud: '我超棒的！',
@@ -48,6 +50,10 @@ interface DragState {
   released: boolean;
   latestX: number;
   latestY: number;
+  lastX: number;
+  lastY: number;
+  lastAt: number;
+  target: HTMLDivElement;
 }
 
 export function PetView({ state, runtime, growthCelebration }: {
@@ -59,17 +65,22 @@ export function PetView({ state, runtime, growthCelebration }: {
   const dragFrame = useRef<number | null>(null);
   const [idleRoll, setIdleRoll] = useState(() => Math.random());
   const [layerFailed, setLayerFailed] = useState(false);
-  const expression = resolvePetExpression(state, idleRoll);
+  const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(null);
+  const restingExpression = resolvePetExpression(state, idleRoll);
+  const expression = runtime.interaction.kind === 'dragging'
+    ? 'excited'
+    : runtime.interaction.kind === 'landing' ? 'happy' : restingExpression;
   const assetRoot = location.protocol === 'file:' ? '../assets/pet' : '/assets/pet';
   const stageRoot = `${assetRoot}/${state.growth.stage}`;
   const fallbackSprite = `${assetRoot}/${state.growth.stage}.png`;
   const expressionSprite = `${stageRoot}/expressions/${expression}.png`;
   const equipped = SHOP_ITEMS.find((item) => item.id === state.economy.equippedItem);
+  const equippedOutfitId = equipped && OUTFIT_IDS.includes(equipped.id as OutfitId) ? equipped.id as OutfitId : null;
   const expedition = state.economy.activeExpedition ? findExpedition(state.economy.activeExpedition.expeditionId) : null;
   const stars = radiantStarsForLevel(state.growth.level);
   const celebrationEffect = activeEffectForSlot(state.economy, 'celebration')?.effectId ?? null;
   const celebrationProp = celebrationEffect ? CELEBRATION_PROPS[celebrationEffect] : null;
-  const direction = runtime.interaction.kind === 'idle' ? runtime.motion.direction : runtime.interaction.direction;
+  const direction = dragDirection ?? (runtime.interaction.kind === 'idle' ? runtime.motion.direction : runtime.interaction.direction);
   const activeEffects = EFFECT_SLOTS
     .map((slot) => activeEffectForSlot(state.economy, slot)?.effectId)
     .filter((effect): effect is string => Boolean(effect))
@@ -91,6 +102,7 @@ export function PetView({ state, runtime, growthCelebration }: {
       if (dragFrame.current !== null) window.cancelAnimationFrame(dragFrame.current);
       const currentDrag = drag.current;
       drag.current = null;
+      if (currentDrag) clearDragVisual(currentDrag);
       if (currentDrag?.active) void window.orangePet.endPetDrag().catch(() => undefined);
     };
   }, []);
@@ -109,6 +121,25 @@ export function PetView({ state, runtime, growthCelebration }: {
     dragFrame.current = null;
   };
 
+  const clearDragVisual = (current: DragState) => {
+    for (const property of ['--drag-tilt', '--drag-lift', '--drag-stretch-x', '--drag-stretch-y']) {
+      current.target.style.removeProperty(property);
+    }
+    setDragDirection(null);
+  };
+
+  const updateDragVisual = (current: DragState, screenX: number, screenY: number, now: number) => {
+    const visual = dragVisualForMovement(screenX - current.lastX, screenY - current.lastY, now - current.lastAt, state.settings.animationIntensity);
+    current.lastX = screenX;
+    current.lastY = screenY;
+    current.lastAt = now;
+    current.target.style.setProperty('--drag-tilt', `${visual.tiltDeg.toFixed(2)}deg`);
+    current.target.style.setProperty('--drag-lift', `${visual.liftPx.toFixed(2)}px`);
+    current.target.style.setProperty('--drag-stretch-x', visual.stretchX.toFixed(3));
+    current.target.style.setProperty('--drag-stretch-y', visual.stretchY.toFixed(3));
+    if (visual.direction) setDragDirection((currentDirection) => currentDirection === visual.direction ? currentDirection : visual.direction);
+  };
+
   const scheduleWindowMove = (current: DragState) => {
     if (dragFrame.current !== null) return;
     dragFrame.current = window.requestAnimationFrame(() => {
@@ -121,6 +152,7 @@ export function PetView({ state, runtime, growthCelebration }: {
 
   const finishActiveDrag = async (current: DragState, moveToReleasePoint: boolean) => {
     cancelDragFrame();
+    clearDragVisual(current);
     if (moveToReleasePoint) {
       try { await moveWindow(current, current.latestX, current.latestY); } catch { /* always clear main-process drag state */ }
     }
@@ -141,6 +173,10 @@ export function PetView({ state, runtime, growthCelebration }: {
       released: false,
       latestX: event.screenX,
       latestY: event.screenY,
+      lastX: event.screenX,
+      lastY: event.screenY,
+      lastAt: event.timeStamp,
+      target: event.currentTarget,
     };
   };
 
@@ -167,7 +203,10 @@ export function PetView({ state, runtime, growthCelebration }: {
           void finishActiveDrag(current, true);
         } else scheduleWindowMove(current);
       }).catch(() => { if (drag.current === current) drag.current = null; });
-    } else if (current.active) scheduleWindowMove(current);
+    } else if (current.active) {
+      updateDragVisual(current, event.screenX, event.screenY, event.timeStamp);
+      scheduleWindowMove(current);
+    }
   };
 
   const pointerCancel = (event: React.PointerEvent) => {
@@ -175,6 +214,7 @@ export function PetView({ state, runtime, growthCelebration }: {
     if (!current || current.pointerId !== event.pointerId) return;
     drag.current = null;
     cancelDragFrame();
+    clearDragVisual(current);
     if (current.active) void finishActiveDrag(current, false);
   };
 
@@ -216,9 +256,16 @@ export function PetView({ state, runtime, growthCelebration }: {
               <img className="pet-layer pet-expression" src={expressionSprite} draggable={false} alt="" onError={() => setLayerFailed(true)} />
             </>}
             <div className="orange-fallback" />
+            {!expedition && equipped && equippedOutfitId && <img
+              className={`outfit-layer outfit-${equippedOutfitId}`}
+              src={outfitAssetPath(equipped.assetFile)}
+              style={outfitStyle(state.growth.stage, equippedOutfitId)}
+              draggable={false}
+              alt={equipped.name}
+            />}
           </div>
         </div>
-        {expedition ? <span className={`travel-outfit ${expedition.travelOutfit}`}>{TRAVEL_ICONS[expedition.travelOutfit]}</span> : equipped && <span className={equipped.className}>{equipped.icon}</span>}
+        {expedition && <span className={`travel-outfit ${expedition.travelOutfit}`}>{TRAVEL_ICONS[expedition.travelOutfit]}</span>}
         {runtime.interaction.kind === 'keyboard-typing' && <span className="interaction-prop mini-keyboard">⌨️</span>}
         {runtime.interaction.kind === 'cursor-paw' && <span className="interaction-prop mouse-feather">🪶</span>}
         {celebrationProp && <span className={`celebration-prop ${celebrationEffect}`}>{celebrationProp}</span>}
