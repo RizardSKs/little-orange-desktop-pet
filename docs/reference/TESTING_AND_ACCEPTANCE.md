@@ -23,7 +23,7 @@
 
 2026-08-23 已通过 1.2.3 的 `npm.cmd ci`、`npm.cmd test`（15 个测试文件、86 项测试）、完整 `npm.cmd run build`、本地三件套校验、干净安装、v1.0.0 与 v1.2.2 覆盖升级、16 次打包程序退出循环，以及 GitHub 三项资产回下载 SHA-256 核对；完整证据见 [v1.2.3 正式发布快照](../releases/v1.2.3.md)。
 
-2026-08-23 已通过 1.2.4 候选源码的 `npm.cmd test`（15 个测试文件、90 项测试）和完整 `npm.cmd run build`。另以真实 Electron/Chromium 渲染四阶段 × 左右朝向 × 三档强度共 24 个最大摆幅拖动态，以及四阶段键盘/光标抓握道具矩阵；肩部均保持连接，道具位置与透明边界通过检查。正式安装、升级与远端发行证据在发布闭环完成后补充。
+2026-08-23 已通过 1.2.4 的 `npm.cmd ci`、`npm.cmd test`（15 个测试文件、90 项测试）、完整 `npm.cmd run build`、24 格拖动关节矩阵和四阶段互动道具矩阵。另完成全新安装、v1.0.0 直升、v1.2.3 覆盖升级、安装版原生组件与真实系统光标抓握、PR #5 Windows CI、正式三件套和 GitHub 远端摘要核对；完整证据见 [v1.2.4 正式发布快照](../releases/v1.2.4.md)。
 
 ## GitHub Actions Windows 门禁
 
@@ -111,7 +111,7 @@
 - 自动测试没有启动真实打包后的 Electron 窗口，也不会操作 Windows 全局钩子、托盘、SmartScreen、多显示器、DPI 或系统电源事件。
 - 当前安装程序没有代码签名，预计可能显示 SmartScreen“未知发布者”；必须记录为 `NotSigned`，不能描述为签名通过。
 - `compatibleFrom: 1.0.0` 已通过上述本地真实安装链验证；Windows 10 客户端和 Windows 11 的桌面点击穿透、托盘、全局钩子、SmartScreen、多显示器、DPI 与电源事件仍需人工补充冒烟或作为已知验证边界披露。
-- v1.2.1、v1.2.2 与 v1.2.3 的 Setup、Update、清单、标签、GitHub Release 与远端 SHA-256 均已核对；当前版本证据见 [v1.2.3 正式发布快照](../releases/v1.2.3.md)。
+- v1.2.1、v1.2.2、v1.2.3 与 v1.2.4 的 Setup、Update、清单、标签、GitHub Release 与远端 SHA-256 均已核对；当前版本证据见 [v1.2.4 正式发布快照](../releases/v1.2.4.md)。
 
 ## 相关文档
 

@@ -160,7 +160,7 @@ $releaseId = gh api "repos/RizardSKs/little-orange-desktop-pet/releases/tags/$re
 gh api --method PATCH "repos/RizardSKs/little-orange-desktop-pet/releases/$releaseId" -F draft=true
 ```
 
-7. 把三项远端资产重新下载到全新的隔离目录，逐项核对 SHA-256，不复用本地上传源文件冒充远端证据：
+7. 优先把三项远端资产重新下载到全新的隔离目录，逐项核对 SHA-256，不复用本地上传源文件冒充远端证据。若 GitHub 大文件回下载受当前网络限制，可使用资产 API 返回的可信服务器 `sha256` 摘要、名称和大小逐项复核，并如实记录未完成全量回下载的边界：
 
 ```powershell
 $remoteEvidenceDir = "tmp\release-evidence\$releaseVersion"
@@ -180,9 +180,15 @@ Get-FileHash -LiteralPath `
 8. 把 Release URL、资产 URL、大小、签名状态和远端哈希结果补入草稿。证据齐全后，才首次创建 `docs/releases/vx.y.z.md` 并标记 `APPEND_ONLY`。
 9. 提交并推送正式快照，确认该证据提交存在于 GitHub；到此才能宣称正式发布闭环完成。
 
-凭据只能存放在 `gh` 自身凭据存储中，不得把令牌写入仓库、命令参数日志、Release 说明或文档。`gh release create` 返回 URL 不代表闭环完成，远端回读和重新下载验哈希不可省略。
+凭据只能存放在 `gh` 自身凭据存储中，不得把令牌写入仓库、命令参数日志、Release 说明或文档。`gh release create` 返回 URL 不代表闭环完成；远端回读和 SHA-256 复核不可省略，全量回下载受阻时必须记录可信服务器摘要证据与限制。
 
-## 8. v1.2.1 当前状态
+## 8. 当前正式发布状态
+
+- v1.2.4 已于 2026-08-23 正式发布：[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.4)；不可变标签指向合并提交 `72fe3455d8937ad1b753d4dfd3002cfc4d564cb9`。
+- 本版 90 项自动化测试、生产构建、两代 Windows CI、固定名 Setup/Update/清单、PE 版本、哈希、两份原生二进制、全新安装、v1.0.0 直升和 v1.2.3 覆盖升级均已通过。
+- GitHub 三项资产的名称、大小与服务器 SHA-256 均与本地正式文件一致；清单完成实际回下载，大文件全量回下载受当前带宽限制，详见 [v1.2.4 正式快照](docs/releases/v1.2.4.md)。
+
+### 历史补充：v1.2.1
 
 - v1.2.1 已于 2026-08-22 正式发布：[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.1)；不可变标签指向合并提交 `7de465c77f189b2a3a7760a9d3ce2d97d50a781c`。
 - 本版 78 项自动化测试、生产构建、固定名 Setup/Update/清单、PE 内部版本、哈希、清单字段及两份解包后的 `uiohook-napi` 原生二进制均已通过。

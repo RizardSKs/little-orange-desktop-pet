@@ -56,6 +56,8 @@
 
 新用户直接运行最新 Setup。已安装用户应先从托盘完全退出小橙子，再运行兼容范围内的最新 Update；累积更新不需要依次安装中间版本。Update 不是联网下载器，也不是二进制差分补丁。
 
+当前正式版本为 [v1.2.4](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.4)，完整校验信息见 [v1.2.4 发布快照](docs/releases/v1.2.4.md)。
+
 v1.2.0 起不再构建或发布 Portable。历史留存的 v1.0.0 Portable 只作归档，不能用 Update 原地升级。
 
 用户数据位于 Windows 用户数据目录而不是安装目录。正式发布前仍必须实际验证旧版覆盖安装，不能仅依靠目录配置推断兼容。
