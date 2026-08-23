@@ -39,13 +39,22 @@ describe('desktop pet visual regressions', () => {
     }
     const flightArms = css.slice(css.indexOf('@keyframes flight-arm-left'), css.indexOf('@keyframes flight-leg-left'));
     expect(flightArms).not.toContain('translate');
+    expect(css).toContain('.interaction-dragging .arm{z-index:1}');
+    expect(css).toContain('.interaction-dragging .pet-body{z-index:4}');
   });
 
   it('exposes growth, life, exploration, lock, and privacy controls in the panel', () => {
     const panel = read('src/renderer/panel-view.tsx');
-    for (const text of ['在线陪伴效率', '用品', '服务', '探索', '背包', '桌面锁定', '键盘陪打']) expect(panel).toContain(text);
+    for (const text of ['在线陪伴效率', '用品', '服务', '探索', '背包', '桌面锁定', '键盘陪打', '散步活跃度', '安静', '活跃']) expect(panel).toContain(text);
     expect(panel).toContain('不会读取、传递或保存按键内容');
     expect(panel).not.toContain('离线收益');
+  });
+
+  it('only applies the sleepy doze loop while the sleepy expression is idle', () => {
+    const css = read('src/renderer/styles.css');
+    expect(css).toContain('.expression-sleepy.interaction-idle .pet-rig');
+    expect(css).toContain('@keyframes sleepy-doze');
+    expect(css).not.toContain('.expression-sleepy .pet-rig{animation:');
   });
 
   it('surfaces queued effects and pending expedition rewards on the status tab', () => {

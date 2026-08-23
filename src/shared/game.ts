@@ -37,6 +37,7 @@ import type {
   PetStats,
   SaveData,
   SaveDataV1,
+  WalkActivity,
 } from './types';
 
 export {
@@ -58,6 +59,7 @@ const HOUR_MS = 60 * 60 * 1000;
 const STABLE_OUTFIT_IDS = new Set(SHOP_ITEMS.map((item) => item.id));
 const PET_BEHAVIORS = new Set<PetBehavior>(['idle', 'walking', 'eating', 'playing', 'cleaning', 'sleeping', 'sad']);
 const ANIMATION_INTENSITIES = new Set<AnimationIntensity>(['gentle', 'normal', 'lively']);
+const WALK_ACTIVITIES = new Set<WalkActivity>(['quiet', 'normal', 'active']);
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const roundStat = (value: number) => Math.round(value * 100) / 100;
@@ -79,6 +81,7 @@ export function createDefaultSave(now = Date.now()): SaveData {
       alwaysOnTop: true,
       launchAtLogin: false,
       animationIntensity: 'normal',
+      walkActivity: 'quiet',
       petPosition: null,
       desktopLocked: false,
       mouseInteractionsEnabled: true,
@@ -321,9 +324,15 @@ function validateLegacySettings(value: unknown): value is SaveDataV1['settings']
 function validateSettings(value: unknown): value is AppSettings {
   if (!validateLegacySettings(value)) return false;
   const settings = value as unknown as AppSettings;
+  if (typeof settings.walkActivity !== 'string' || !WALK_ACTIVITIES.has(settings.walkActivity as WalkActivity)) return false;
   if (typeof settings.desktopLocked !== 'boolean' || typeof settings.mouseInteractionsEnabled !== 'boolean' || typeof settings.keyboardInteractionEnabled !== 'boolean') return false;
   if (!Number.isSafeInteger(settings.keyboardConsentVersion) || settings.keyboardConsentVersion < 0 || settings.keyboardConsentVersion > KEYBOARD_CONSENT_VERSION) return false;
   return !settings.keyboardInteractionEnabled || settings.keyboardConsentVersion === KEYBOARD_CONSENT_VERSION;
+}
+
+export function applyCurrentSettingsDefaults(value: unknown): unknown {
+  if (!isRecord(value) || value.schemaVersion !== 2 || !isRecord(value.settings) || 'walkActivity' in value.settings) return value;
+  return { ...value, settings: { ...value.settings, walkActivity: 'quiet' } };
 }
 
 export function validateLegacySave(value: unknown): value is SaveDataV1 {
@@ -363,6 +372,7 @@ export function migrateSaveV1ToV2(legacy: SaveDataV1): SaveData {
     economy,
     settings: {
       ...copyState(legacy.settings),
+      walkActivity: 'quiet',
       desktopLocked: false,
       mouseInteractionsEnabled: true,
       keyboardInteractionEnabled: false,

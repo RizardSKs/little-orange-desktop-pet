@@ -16,9 +16,9 @@ import {
   useInventoryItem,
 } from '../shared/economy';
 import { isExpeditionId, isInventoryItemId, type EconomyActionCode } from '../shared/economy-types';
-import type { AnimationIntensity, EconomyIpcResult, OfflineSummary, PetAction, PetBehavior, PetPosition, PetRuntimeState, SaveData, SettingKey } from '../shared/types';
+import type { AnimationIntensity, EconomyIpcResult, OfflineSummary, PetAction, PetBehavior, PetPosition, PetRuntimeState, SaveData, SettingKey, WalkActivity } from '../shared/types';
 import { SaveStore } from './store';
-import { createMotionPlan, positionAt } from './motion';
+import { createMotionPlan, positionAt, walkDelayMs, walkDeltaPx } from './motion';
 import { InteractionController } from './interaction-controller';
 import { RuntimeScheduler } from './runtime-scheduler';
 
@@ -30,6 +30,7 @@ const UNLOCK_SIZE = 40;
 const KEYBOARD_CONSENT_VERSION = 1;
 const VALID_ACTIONS = new Set<PetAction>(['feed', 'play', 'clean', 'sleep']);
 const VALID_INTENSITIES = new Set<AnimationIntensity>(['gentle', 'normal', 'lively']);
+const VALID_WALK_ACTIVITIES = new Set<WalkActivity>(['quiet', 'normal', 'active']);
 
 let petWindow: BrowserWindow | null = null;
 let panelWindow: BrowserWindow | null = null;
@@ -420,6 +421,9 @@ function updateSetting(key: SettingKey, value: boolean | string): SaveData {
   } else if (key === 'animationIntensity') {
     if (typeof value !== 'string' || !VALID_INTENSITIES.has(value as AnimationIntensity)) throw new Error('无效动画强度');
     state.settings.animationIntensity = value as AnimationIntensity;
+  } else if (key === 'walkActivity') {
+    if (typeof value !== 'string' || !VALID_WALK_ACTIVITIES.has(value as WalkActivity)) throw new Error('无效散步活跃度');
+    state.settings.walkActivity = value as WalkActivity;
   } else {
     if (typeof value !== 'boolean') throw new Error('设置值必须为布尔值');
     state.settings[key] = value;
@@ -600,7 +604,7 @@ function setupIpc() {
   });
   ipcMain.handle('settings:set', (event, key: unknown, value: unknown) => {
     assertPanelRequest(event);
-    const validKeys: SettingKey[] = ['autoWalk', 'alwaysOnTop', 'launchAtLogin', 'animationIntensity', 'petName'];
+    const validKeys: SettingKey[] = ['autoWalk', 'alwaysOnTop', 'launchAtLogin', 'animationIntensity', 'walkActivity', 'petName'];
     if (typeof key !== 'string' || !validKeys.includes(key as SettingKey)) throw new Error('无效设置项');
     if (typeof value !== 'boolean' && typeof value !== 'string') throw new Error('无效设置值');
     return updateSetting(key as SettingKey, value);
@@ -797,11 +801,10 @@ function startTimers() {
     }
     const bounds = petWindow.getBounds();
     const area = screen.getDisplayMatching(bounds).workArea;
-    const maxStep = state.settings.animationIntensity === 'gentle' ? 40 : state.settings.animationIntensity === 'lively' ? 110 : 75;
-    const delta = Math.round((Math.random() - 0.5) * maxStep * 2);
+    const delta = walkDeltaPx(state.settings.walkActivity);
     animatePetTo({ x: bounds.x + delta, y: area.y + area.height - PET_SIZE - 8 });
     scheduleWalk();
-  }, 8_000 + Math.round(Math.random() * 8_000));
+  }, walkDelayMs(state.settings.walkActivity));
   scheduleWalk();
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createMotionPlan, easeInOutSine, positionAt } from './motion';
+import { createMotionPlan, easeInOutSine, positionAt, walkDelayMs, walkDeltaPx } from './motion';
 
 describe('desktop movement planning', () => {
   it('chooses direction and clamps duration by animation intensity', () => {
@@ -18,5 +18,14 @@ describe('desktop movement planning', () => {
     expect(points.map(({ x }) => x)).toEqual([...points.map(({ x }) => x)].sort((a, b) => a - b));
     expect(easeInOutSine(-1)).toBe(0);
     expect(easeInOutSine(2)).toBe(1);
+  });
+
+  it('keeps walk activity delay and range independent from animation intensity', () => {
+    expect([walkDelayMs('quiet', 0), walkDelayMs('quiet', 1)]).toEqual([20_000, 35_000]);
+    expect([walkDelayMs('normal', 0), walkDelayMs('normal', 1)]).toEqual([12_000, 22_000]);
+    expect([walkDelayMs('active', 0), walkDelayMs('active', 1)]).toEqual([8_000, 16_000]);
+    expect([walkDeltaPx('quiet', 0), walkDeltaPx('quiet', 1)]).toEqual([-35, 35]);
+    expect([walkDeltaPx('normal', 0), walkDeltaPx('normal', 1)]).toEqual([-70, 70]);
+    expect([walkDeltaPx('active', 0), walkDeltaPx('active', 1)]).toEqual([-110, 110]);
   });
 });

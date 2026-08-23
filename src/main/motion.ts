@@ -1,6 +1,22 @@
-import type { AnimationIntensity, PetDirection, PetPosition } from '../shared/types';
+import type { AnimationIntensity, PetDirection, PetPosition, WalkActivity } from '../shared/types';
 
 const SPEEDS: Record<AnimationIntensity, number> = { gentle: 55, normal: 85, lively: 120 };
+export const WALK_ACTIVITY_PROFILES: Record<WalkActivity, { minDelayMs: number; maxDelayMs: number; maxStepPx: number }> = {
+  quiet: { minDelayMs: 20_000, maxDelayMs: 35_000, maxStepPx: 35 },
+  normal: { minDelayMs: 12_000, maxDelayMs: 22_000, maxStepPx: 70 },
+  active: { minDelayMs: 8_000, maxDelayMs: 16_000, maxStepPx: 110 },
+};
+
+export function walkDelayMs(activity: WalkActivity, randomValue = Math.random()): number {
+  const profile = WALK_ACTIVITY_PROFILES[activity];
+  const random = Math.min(1, Math.max(0, randomValue));
+  return Math.round(profile.minDelayMs + random * (profile.maxDelayMs - profile.minDelayMs));
+}
+
+export function walkDeltaPx(activity: WalkActivity, randomValue = Math.random()): number {
+  const random = Math.min(1, Math.max(0, randomValue));
+  return Math.round((random - .5) * WALK_ACTIVITY_PROFILES[activity].maxStepPx * 2);
+}
 
 export interface MotionPlan {
   from: PetPosition;

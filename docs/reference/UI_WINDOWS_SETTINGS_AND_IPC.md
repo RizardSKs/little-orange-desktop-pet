@@ -45,7 +45,8 @@
 | `autoWalk` | `boolean` | `true` | 关闭时取消当前移动；开启后允许周期散步 |
 | `alwaysOnTop` | `boolean` | `true` | 未锁定时调用桌宠窗口 `setAlwaysOnTop`；桌面锁定会临时强制置顶 |
 | `launchAtLogin` | `boolean` | `false` | 调用 `app.setLoginItemSettings` |
-| `animationIntensity` | `gentle | normal | lively` | `normal` | 影响移动速度、自动步长和步态 |
+| `animationIntensity` | `gentle | normal | lively` | `normal` | 影响移动速度、步态和互动动作幅度 |
+| `walkActivity` | `quiet | normal | active` | `quiet` | 独立控制自动散步触发间隔和单次移动范围；旧 schema 2 存档缺失时补 quiet |
 | `petPosition` | `{x,y} | null` | `null` | 决定桌宠恢复位置；不是 `setSetting` 可直接写入的键 |
 | `desktopLocked` | `boolean` | `false` | 开启主体穿透、强制置顶、位置固定和独立解锁窗口 |
 | `mouseInteractionsEnabled` | `boolean` | `true` | 决定是否采样全局光标并运行注视/环境互动 |
@@ -100,7 +101,7 @@
 ### 参数验证
 
 - 照料动作仅允许 `feed`、`play`、`clean`、`sleep`。
-- 通用设置仅允许 `autoWalk`、`alwaysOnTop`、`launchAtLogin`、`animationIntensity`和伪键 `petName`；布尔/字符串类型、动画强度与名称长度分别校验。
+- 通用设置仅允许 `autoWalk`、`alwaysOnTop`、`launchAtLogin`、`animationIntensity`、`walkActivity` 和伪键 `petName`；布尔/字符串类型、两个三档枚举与名称长度分别校验。
 - 桌面锁定、鼠标和键盘开关必须是布尔值；首次启用键盘还必须提交当前同意版本。
 - 拖动坐标必须是有限数，且只能在主进程状态为 `dragging` 时修改；最终位置按显示器工作区限制。
 - 用品和探索 ID 使用稳定 ID 集合守卫；购买数量必须是受限正整数。使用物品先计算属性结果，只有属性预检和库存/效果领域函数均成功才原子提交；服务类在属性已满时仍可消耗并提供仪式/视觉效果。

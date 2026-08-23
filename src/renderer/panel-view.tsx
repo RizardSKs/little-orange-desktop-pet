@@ -249,6 +249,7 @@ function SettingsTab({ state, runtime, setState, flash }: { state: SaveData; run
       <Toggle label="键盘陪打" desc={`默认关闭 · 组件状态：${{ disabled: '未启用', starting: '启动中', ready: '已就绪', unavailable: '组件不可用' }[runtime.keyboardStatus]}`} checked={state.settings.keyboardInteractionEnabled} onChange={(value) => void updateKeyboard(value)} />
     </div>
     <div className="card"><label className="field-label">动画强度</label><div className="segmented">{([['gentle', '轻柔'], ['normal', '标准'], ['lively', '活泼']] as const).map(([id, label]) => <button key={id} className={state.settings.animationIntensity === id ? 'active' : ''} onClick={() => void update('animationIntensity', id)}>{label}</button>)}</div></div>
+    <div className="card"><label className="field-label">散步活跃度</label><small className="field-help">同时调节多久走一次和单次移动范围</small><div className="segmented">{([['quiet', '安静'], ['normal', '标准'], ['active', '活跃']] as const).map(([id, label]) => <button key={id} className={state.settings.walkActivity === id ? 'active' : ''} onClick={() => void update('walkActivity', id)}>{label}</button>)}</div></div>
     <div className="card lock-card"><div><strong>桌面锁定</strong><p>锁定后宠物主体置顶并完全点击穿透，只能通过独立解锁按钮或托盘恢复。</p></div><button onClick={() => void updateLock(true)}>🔒 锁定在桌面</button></div>
     <button className="quit-button" onClick={() => window.orangePet.quitApp()}>完全退出小橙子</button>
   </div>;

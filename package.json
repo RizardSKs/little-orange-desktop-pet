@@ -1,6 +1,6 @@
 {
   "name": "little-orange-desktop-pet",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "小橙子 Windows 桌面宠物",
   "main": "dist-electron/main/main.js",
   "author": "小橙子桌宠",

@@ -51,8 +51,21 @@ describe('SaveStore', () => {
       mouseInteractionsEnabled: true,
       keyboardInteractionEnabled: false,
       keyboardConsentVersion: 0,
+      walkActivity: 'quiet',
     });
     expect(fs.existsSync(path.join(directory, 'save.json'))).toBe(true);
+  });
+
+  it('adds the quiet walk default to an older schema 2 save without changing its schema', () => {
+    const directory = tempDirectory();
+    const oldSave = createDefaultSave(1_000) as unknown as { settings: Record<string, unknown> };
+    delete oldSave.settings.walkActivity;
+    writeJson(path.join(directory, 'save.json'), oldSave);
+
+    const loaded = new SaveStore(directory).load(1_000);
+    expect(loaded.schemaVersion).toBe(2);
+    expect(loaded.settings.walkActivity).toBe('quiet');
+    expect((readJson(path.join(directory, 'save.json')).settings as Record<string, unknown>).walkActivity).toBe('quiet');
   });
 
   it('returns an offline summary containing only elapsed time and stat changes', () => {

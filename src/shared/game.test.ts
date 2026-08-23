@@ -192,6 +192,10 @@ describe('save validation and migration', () => {
     badCurrent.economy.coins = 30;
     badCurrent.settings.keyboardInteractionEnabled = true;
     expect(validateSave(badCurrent)).toBe(false);
+
+    const badWalkActivity = createDefaultSave(0);
+    badWalkActivity.settings.walkActivity = 'restless' as never;
+    expect(validateSave(badWalkActivity)).toBe(false);
   });
 
   it('enforces effect queue and expedition invariants', () => {

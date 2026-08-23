@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   createDefaultSave,
+  applyCurrentSettingsDefaults,
   migrateSaveV1ToV2,
   settleOffline,
   validateLegacySave,
@@ -82,7 +83,7 @@ export class SaveStore {
   }
 
   private readCandidate(filePath: string): SaveCandidate | null {
-    const parsed = this.readJson(filePath);
+    const parsed = applyCurrentSettingsDefaults(this.readJson(filePath));
     if (validateSave(parsed)) return { state: parsed, sourcePath: filePath, migratedFrom: null };
     if (validateLegacySave(parsed)) {
       return { state: migrateSaveV1ToV2(parsed), sourcePath: filePath, migratedFrom: parsed };

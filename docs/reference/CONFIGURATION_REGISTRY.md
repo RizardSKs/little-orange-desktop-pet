@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理可在对应代码或测试已经变更并完成核对时修改；不得仅为设想改写“当前值”，不得重排、复用或删除既有 CFG 编号。  
-> 适用版本：1.2.4  
+> 适用版本：1.2.5  
 > 最后核对：2026-08-23  
 > 权威源码：src/shared/types.ts、src/shared/growth.ts、src/shared/game.ts、src/shared/catalog.ts、src/shared/economy-types.ts、src/shared/economy.ts、src/shared/expression.ts、src/shared/interaction.ts、src/main/store.ts、src/main/main.ts、src/main/motion.ts、src/main/interaction-controller.ts、src/renderer  
 > 更新触发：默认存档、领域类型、公式、阈值、计时器、窗口尺寸、动作、互动、表情、装扮或经济目录、设置项及其测试发生变化时。
@@ -77,15 +77,15 @@
 | CFG-043 | 面板与桌宠间距 | 12 | CSS 像素 | 面板定位逻辑 | 面板左右定位 | 无直接测试 | 低：影响窗口视觉关系 |
 | CFG-044 | 在线状态推进周期 | 60,000 | 毫秒；每分钟衰减、在线奖励检查、保存与广播 | `startTimers()` | 主进程 | 无定时器集成测试 | 高：影响存盘频率和前台数值刷新 |
 | CFG-045 | 前台全屏轮询 | 每 5,000 毫秒；Windows 检测命令超时 2,500 毫秒；边界容差 2 像素 | 毫秒、像素 | `detectForegroundFullscreen()`、`startTimers()` | 自动散步、环境互动抑制 | `interaction-integration.test.ts` 部分覆盖 | 中：影响全屏兼容和系统开销 |
-| CFG-046 | 自动散步调度间隔 | 8,000 + round(random × 8,000) | 毫秒；约 8–16 秒 | `startTimers()` | 自动散步 | 无直接计时测试 | 中：影响打扰频率 |
-| CFG-047 | 自动散步最大水平步长 | gentle=40；normal=75；lively=110 | CSS 像素；随机正负方向 | 主进程散步调度 | 自动散步目标 | 无直接测试 | 中：与速度共同决定移动观感 |
+| CFG-046 | 自动散步调度间隔 | quiet 20–35 秒；normal 12–22 秒；active 8–16 秒 | 毫秒；按 `walkActivity` 独立选择 | `WALK_ACTIVITY_PROFILES`、`walkDelayMs()` | 自动散步 | `motion.test.ts` | 中：影响打扰频率 |
+| CFG-047 | 自动散步最大水平步长 | quiet=35；normal=70；active=110 | CSS 像素；按 `walkActivity` 随机正负方向 | `WALK_ACTIVITY_PROFILES`、`walkDeltaPx()` | 自动散步目标 | `motion.test.ts` | 中：与速度共同决定移动观感 |
 | CFG-048 | 自动散步底部边距 | 工作区底部 8 | CSS 像素 | 主进程散步调度 | 自动散步目标 Y | 无直接测试 | 低：影响脚底贴边程度 |
 | CFG-049 | 移动位置刷新周期 | 33 | 毫秒；约 30 FPS | 主进程移动计时器 | BrowserWindow 连续移动 | `motion.test.ts` 间接覆盖轨迹 | 中：影响流畅度和主进程负担 |
 | CFG-050 | 移动速度 | gentle=55；normal=85；lively=120 | 像素/秒 | `motion.ts` | MotionPlan | `motion.test.ts` | 高：影响强度差异和移动时长 |
 | CFG-051 | 单次移动时长限制 | 最短 500；最长 2,400 | 毫秒 | `motion.ts` | MotionPlan | `motion.test.ts` | 中：影响远近距离一致性 |
 | CFG-052 | 移动插值 | ease-in-out sine；位置逐帧四舍五入 | 进度 0..1；整数像素 | `motion.ts` | BrowserWindow 移动 | `motion.test.ts` | 中：改变路径观感与落点 |
 | CFG-053 | 步态参数 | normal 0.58 秒、手臂 ±12°、腿 ±9°、弹跳 -4px；gentle 0.78 秒、±7°、±5°、-2px；lively 0.42 秒、±17°、±13°、-6px | 秒、角度、像素 | `styles.css` | 角色分层步态 | 无逐值测试 | 中：需与移动速度和素材联调 |
-| CFG-054 | 常驻与照顾反馈动画 | 呼吸 3 秒；眨眼 4.8 秒；气泡循环 8 秒；咀嚼 0.4 秒交替；睡眠嘴部 2.2 秒；Z 浮动 2 秒；闪光旋转 1 秒；闪耀光晕 2 秒 | CSS 动画周期 | `styles.css` | 桌宠视觉反馈 | `ui-regressions.test.ts` 部分覆盖 | 中：改变动作节奏和阶段辨识 |
+| CFG-054 | 常驻与照顾反馈动画 | 呼吸 3 秒；眨眼 4.8 秒；气泡循环 8 秒；困倦点头基础 5.2 秒并乘阶段性格时长；咀嚼 0.4 秒交替；睡眠嘴部 2.2 秒；Z 浮动 2 秒；闪光旋转 1 秒；闪耀光晕 2 秒 | CSS 动画周期 | `styles.css` | 桌宠视觉反馈 | `ui-regressions.test.ts` 部分覆盖 | 中：改变动作节奏和阶段辨识 |
 | CFG-055 | 经济实际运行时推进周期 | 5,000 | 毫秒；推进效果 FIFO 和单个探索任务；进程退出或系统 suspend/sleep/hibernate 时暂停，OS lock-screen 不暂停；完成探索时立即保存，否则广播，常规保存仍由 CFG-044 等时机负责 | `advanceActualEconomyRuntime()`、`startTimers()` | 效果、探索、状态页 | `economy.test.ts`、`interaction-integration.test.ts` | 高：影响付费消耗时长和任务完成时机 |
 
 ### 表情与行为
@@ -125,9 +125,9 @@
 | CFG-090 | 自动散步 | 默认 true | 布尔值 | `createDefaultSave()`、`AppSettings` | 调度器、托盘、设置页 | `store.test.ts` | 中：影响默认打扰程度和移动 |
 | CFG-091 | 始终置顶 | 默认 true | 布尔值 | `createDefaultSave()`、窗口设置 | BrowserWindow、托盘、设置页 | `interaction-integration.test.ts` 部分覆盖 | 中：影响桌面可见性 |
 | CFG-092 | 开机启动 | 默认 false | 布尔值 | `createDefaultSave()`、登录项设置 | Electron 登录项、设置页 | 无 Windows 实机自动测试 | 高：涉及系统副作用 |
-| CFG-093 | 动画强度 | 默认 normal；gentle、normal、lively | `AnimationIntensity` | `types.ts`、移动与样式 | 速度、步长、CSS、设置页 | `motion.test.ts` | 高：新增档位需同步领域、主进程、CSS 和 UI |
+| CFG-093 | 动画强度 | 默认 normal；gentle、normal、lively | `AnimationIntensity` | `types.ts`、移动与样式 | 移动速度、步态、拖动幅度、CSS、设置页；不再控制散步间隔或范围 | `motion.test.ts` | 高：新增档位需同步领域、主进程、CSS 和 UI |
 | CFG-094 | 桌宠位置 | 默认 null；运行后为有限 x、y | 主进程限制在匹配显示器工作区 | `AppSettings.petPosition`、移动逻辑 | BrowserWindow、拖动、唤回 | `interaction-integration.test.ts` | 高：影响多显示器、DPI 与存档 |
-| CFG-095 | 通用设置入口白名单 | autoWalk、alwaysOnTop、launchAtLogin、animationIntensity、petName | `SettingKey`；布尔或字符串 | `types.ts`、设置 IPC | preload、设置页、托盘 | `interaction-integration.test.ts` 部分覆盖 | 高：其他设置使用专用校验 API |
+| CFG-095 | 通用设置入口白名单 | autoWalk、alwaysOnTop、launchAtLogin、animationIntensity、walkActivity、petName | `SettingKey`；布尔或字符串；两个三档枚举分别校验 | `types.ts`、设置 IPC | preload、设置页、托盘 | `game.test.ts`、`interaction-integration.test.ts` 部分覆盖 | 高：其他设置使用专用校验 API |
 | CFG-096 | 桌面锁定 | 默认 false；锁定后主体保持置顶并完全点击穿透，只能由独立解锁窗或托盘解锁 | 持久布尔值；锁定时禁止面板写操作和拖动 | `desktopLocked`、锁定 IPC | 主窗、解锁窗、托盘、面板 | `interaction-integration.test.ts`、`ui-regressions.test.ts` | 高：关系到误触防护、窗口安全和可恢复性 |
 | CFG-097 | 鼠标环境互动 | 默认 true | 持久布尔值；关闭不影响基本拖动 | `mouseInteractionsEnabled` | 采样器、互动控制器、设置页 | `interaction-controller.test.ts` | 中：影响注视和自发鼠标互动 |
 | CFG-098 | 键盘陪打 | 默认 false | 持久布尔值；启用必须有当前同意版本 | `keyboardInteractionEnabled`、键盘 worker | 设置页、互动控制器 | `interaction-integration.test.ts` | 高：涉及全局键盘事件最小化采集和明确同意 |
@@ -145,6 +145,7 @@
 | CFG-105 | 自发互动与鼠标拉扯限制 | 自发动作间隔≥12秒且每分钟≤4次；鼠标距中心≤100持续250ms，再于1200ms内移动≥80触发拉扯；弹簧系数0.22，单 tick 位移≤24；paw/tug/chase/nearby 冷却分别为15/20/30/45秒 | 毫秒、像素、比例、次数 | `InteractionController` | 鼠标环境互动、窗口移动 | `interaction-controller.test.ts` | 高：限制打扰频率并防止窗口突跳 |
 | CFG-106 | 独立解锁窗 | 40 × 40；主体锁定时显示，始终置顶；只能执行解锁 | CSS 像素；独立 preload/API | `UNLOCK_SIZE`、`createUnlockWindow()` | 锁定恢复 | `interaction-integration.test.ts`、`ui-regressions.test.ts` | 高：尺寸或入口错误可能让用户无法解锁 |
 | CFG-107 | 统一启动快照与成长事件 | `state:bootstrap` 返回 `{ state, runtime, offlineSummary, growthProgress }`；`growthProgress` 可为 null，当前启动值为 null；后续 `growth:progress` 的 source 只允许 online 或 care | IPC 数据契约；成长事件含 fromLevel、toLevel、milestones | `StartupSnapshot`、`GrowthProgressEvent`、`setupIpc()` | preload、面板、桌宠窗口 | `interaction-integration.test.ts`、`ui-regressions.test.ts` | 高：防止初始化竞态、重复升级提示和离线误报 |
+| CFG-108 | 散步活跃度 | 默认 quiet；quiet、normal、active；缺少字段的旧 schema 2 存档读取时补 quiet | `WalkActivity`；同时选择 CFG-046 与 CFG-047，不影响动画速度 | `types.ts`、`applyCurrentSettingsDefaults()`、`motion.ts` | 存档、主进程调度、设置页 | `motion.test.ts`、`store.test.ts`、`ui-regressions.test.ts` | 高：字段需保持向后兼容，非法枚举必须拒绝 |
 
 ## 尚未实现
 

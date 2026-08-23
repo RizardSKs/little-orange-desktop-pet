@@ -5,6 +5,7 @@ export type PetBehavior = 'idle' | 'walking' | 'eating' | 'playing' | 'cleaning'
 export type PetAction = 'feed' | 'play' | 'clean' | 'sleep';
 export type GrowthStage = 'sprout' | 'lively' | 'mature' | 'radiant';
 export type AnimationIntensity = 'gentle' | 'normal' | 'lively';
+export type WalkActivity = 'quiet' | 'normal' | 'active';
 export type PetExpression = 'neutral' | 'happy' | 'curious' | 'surprised' | 'proud' | 'focused' | 'delighted' | 'excited' | 'refreshed' | 'asleep' | 'sad' | 'sleepy' | 'hungry' | 'uncomfortable';
 export type PetDirection = 'left' | 'right';
 export type KeyboardHookStatus = 'disabled' | 'starting' | 'ready' | 'unavailable';
@@ -70,6 +71,7 @@ export interface AppSettings {
   alwaysOnTop: boolean;
   launchAtLogin: boolean;
   animationIntensity: AnimationIntensity;
+  walkActivity: WalkActivity;
   petPosition: PetPosition | null;
   desktopLocked: boolean;
   mouseInteractionsEnabled: boolean;
@@ -77,7 +79,7 @@ export interface AppSettings {
   keyboardConsentVersion: number;
 }
 
-export type LegacyAppSettings = Omit<AppSettings, 'desktopLocked' | 'mouseInteractionsEnabled' | 'keyboardInteractionEnabled' | 'keyboardConsentVersion'>;
+export type LegacyAppSettings = Omit<AppSettings, 'walkActivity' | 'desktopLocked' | 'mouseInteractionsEnabled' | 'keyboardInteractionEnabled' | 'keyboardConsentVersion'>;
 
 export interface SaveDataV1 {
   schemaVersion: 1;
@@ -108,7 +110,7 @@ export interface StartupSnapshot {
   growthProgress: GrowthProgressEvent | null;
 }
 
-export type SettingKey = keyof Pick<AppSettings, 'autoWalk' | 'alwaysOnTop' | 'launchAtLogin' | 'animationIntensity'> | 'petName';
+export type SettingKey = keyof Pick<AppSettings, 'autoWalk' | 'alwaysOnTop' | 'launchAtLogin' | 'animationIntensity' | 'walkActivity'> | 'petName';
 
 export interface ShopItem {
   id: string;
