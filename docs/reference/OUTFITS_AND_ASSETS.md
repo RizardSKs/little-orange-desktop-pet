@@ -2,7 +2,7 @@
 
 > 文档级别：`LIVING`（随实现持续维护）  
 > 修改权限：装扮目录、购买/装备逻辑、渲染锚点、角色素材或测试变化时同步更新；既有物品 ID、存档兼容规则和美术方向不得擅自改变。  
-> 适用版本：1.2.6 预览  
+> 适用版本：1.2.6  
 > 最后核对：2026-08-23  
 > 权威源码：`src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`src/renderer/pet-view.tsx`、`scripts/prepare_v1_2_3_outfit_assets.py`、`assets/outfits/`、`assets/props/`  
 > 更新触发：稳定 ID、装扮所有权、旅行外观、限时视觉、阶段素材、素材处理流程或相关测试变化。
@@ -57,7 +57,7 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 - 旅行装只在视觉上暂时覆盖普通装扮，不修改 `equippedItem`；正常返程或提前返程后，原永久装扮自动恢复。
 - 键盘、鼠标、主题和光环由持久化效果队列驱动。1.2.6 起，新使用的用品和服务由临时 `inventory-use` 立即播放专属动作；旧存档消费庆典和探索返程庆典仍可从 `celebration` 队列继续显示，队列推进由主进程按实际运行时间完成。
 - 探索正常完成时，返程庆典和对应主题奖励原子入队；提前返程不入队，且原永久装扮仍会恢复。
-- 1.2.4 的键盘陪打和光标抓握分别使用 `assets/props/mini-keyboard.png` 与 `assets/props/cursor-grab.png`。1.2.6 预览在 `assets/props/inventory/` 增加十二张用品/服务透明 PNG，迷你键盘动作复用现有键盘；十三种正式使用动作均不依赖系统 emoji。逐项映射见[用品与服务专属动作规格](INVENTORY_USE_ACTIONS.md)。
+- 1.2.4 的键盘陪打和光标抓握分别使用 `assets/props/mini-keyboard.png` 与 `assets/props/cursor-grab.png`。1.2.6 在 `assets/props/inventory/` 增加十二张用品/服务透明 PNG，迷你键盘动作复用现有键盘；十三种正式使用动作均不依赖系统 emoji。逐项映射见[用品与服务专属动作规格](INVENTORY_USE_ACTIONS.md)。
 
 ## 素材处理流程
 

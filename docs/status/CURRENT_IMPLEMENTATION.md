@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随实现更新；不得把未完成的发行验证或候选规划改写成现有能力 |
-| 适用版本 | 1.2.6 专属动作预览（`package.json` 正式版本仍为 1.2.5） |
+| 适用版本 | 1.2.6 正式候选 |
 | 最后核对 | 2026-08-23 |
 | 权威来源 | 当前源码、`package.json`、`package-lock.json`、自动化测试、实际发行物和 GitHub Release |
 | 更新触发 | 功能、缺口、工具链、发布产物、测试基线或仓库状态变化 |
@@ -46,10 +46,11 @@
 - 八件永久装扮现使用本地 512×512 RGBA PNG，按四阶段共 32 组布局校准，并跟随角色呼吸、步态、拖拽与左右朝向；稳定 ID、价格和存档字段不变。
 - 键盘陪打、光标抓握以及用品/服务动作使用本地透明 PNG；用品/服务新增十二张统一 3D 卡通道具并复用迷你键盘，不依赖平台 emoji 或远程素材。
 - 管理面板已拆分为状态、互动、生活和设置视图，生活页包含装扮、用品、服务、探索和背包；状态页显示成长称号、闪耀星、旅行和限时效果剩余运行时间。用品/服务的庆典、主题与光环，以及探索返程效果，均已映射到桌宠视觉。
-- `dist:win` 现为 `dist:setup` 的别名，生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 与 `update-manifest.json`。v1.2.5 不生成或发布 Portable。
+- `dist:win` 现为 `dist:setup` 的别名，生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 与 `update-manifest.json`。v1.2.6 不生成或发布 Portable。
 - 2026-08-23 已通过 1.2.3 的 `npm.cmd test`（15 个测试文件、86 项测试）、完整 `npm.cmd run build`、本地三件套 `npm.cmd run verify:release`、四阶段 × 八装扮视觉矩阵、全新安装、v1.0.0 直升、v1.2.2 覆盖升级和 16 次退出循环；GitHub 标签、Release 与三项远端回下载摘要已完成核对，详见[正式发布快照](../releases/v1.2.3.md)。
 - 2026-08-23 已通过 1.2.4 的 15 个测试文件、90 项测试、完整生产构建、24 格拖动关节矩阵、四阶段互动道具矩阵、全新安装、v1.0.0 直升、v1.2.3 覆盖升级与安装版鼠标抓握；PR #5、Windows CI、不可变标签、固定名三件套、GitHub Release 及远端 SHA-256 均已完成核对，详见[正式发布快照](../releases/v1.2.4.md)。
 - 2026-08-23 已通过 1.2.5 的 15 个测试文件、93 项测试、完整生产构建、四阶段困倦素材与肩部安全扩展检查、全新安装、原版 v1.0.0 直升和不可变 v1.2.4 标签构建版覆盖升级；Windows CI、不可变标签、固定名三件套、GitHub Release、服务器 SHA-256 与 manifest 回下载均已完成核对，详见[正式发布快照](../releases/v1.2.5.md)。
+- 2026-08-23 已通过 1.2.6 的 15 个测试文件、97 项测试、完整生产构建、29 份治理文档校验、固定名三件套与 `verify:release`；Windows 11 x64 全新安装、原版 v1.0.0 直升和不可变 v1.2.5 标签构建版覆盖升级均通过，正式 GitHub 标签、Release 与远端摘要仍以本轮发布闭环结果为准。
 
 ## 已知实现与发行边界
 

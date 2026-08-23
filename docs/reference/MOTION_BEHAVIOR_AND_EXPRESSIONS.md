@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在行为类型、移动调度、动画、表达式解析、交互手势、视觉素材或测试已经变更并核对后更新；新增动作方向或角色性格规则必须先取得用户批准。  
-> 适用版本：1.2.6 预览  
+> 适用版本：1.2.6  
 > 最后核对：2026-08-23  
 > 权威源码：`src/shared/types.ts`、`src/shared/interaction.ts`、`src/shared/expression.ts`、`src/main/interaction-controller.ts`、`src/main/motion.ts`、`src/main/main.ts`、`src/renderer/pet-view.tsx`、`src/renderer/styles.css`  
 > 更新触发：`PetBehavior`、`PetInteractionKind`、互动优先级、触发阈值、自动散步条件、速度/缓动、动画强度、拖动/点击手势、四阶段变体、表情文案或相关测试变化时。

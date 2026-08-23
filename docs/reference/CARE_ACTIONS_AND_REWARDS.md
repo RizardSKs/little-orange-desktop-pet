@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在领域规则、主进程调用链、界面或测试已经变更并核对后更新；新增货币、付费、联网奖励或惩罚性养成必须先取得用户批准。  
-> 适用版本：1.2.6 预览  
+> 适用版本：1.2.6  
 > 最后核对：2026-08-23  
 > 权威源码：src/shared/game.ts、src/shared/growth.ts、src/shared/economy.ts、src/shared/catalog.ts、src/main/main.ts、src/main/store.ts、src/renderer/panel-view.tsx  
 > 更新触发：属性、衰减、动作成本或收益、动作失败条件、金币来源与消耗、在线或离线公式、结算时机、动作反馈或相关测试变化时。

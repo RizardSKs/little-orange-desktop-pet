@@ -2,7 +2,7 @@
 
 > 文档级别：`LIVING`（随实现持续维护）  
 > 修改权限：用品或服务目录、使用动作、道具素材、运行时优先级或验收规则变化时同步更新；长期专属动作底线以 `PRODUCT_GUARDRAILS.md` 为准。  
-> 适用版本：1.2.6 预览及后续版本。  
+> 适用版本：1.2.6 及后续版本。  
 > 最后核对：2026-08-23。  
 > 权威来源：`docs/governance/PRODUCT_GUARDRAILS.md`、`src/shared/catalog.ts`、`src/shared/types.ts`、`src/main/interaction-controller.ts`、`src/main/main.ts`、`src/renderer/pet-view.tsx`、`src/renderer/styles.css`、`assets/props/inventory/` 与相关测试。  
 > 更新触发：新增、删除或调整用品和服务；改变动作阶段、持续时间、表情、道具、优先级、打断方式、减少动态效果或素材路径。
