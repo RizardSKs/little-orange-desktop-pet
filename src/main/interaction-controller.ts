@@ -10,6 +10,7 @@ import {
   isTeasingCursor,
   keyboardRhythmIsBusy,
   keyboardRhythmIsQuiet,
+  keyboardTempoForBuckets,
   TAP_SETTLE_MS,
   type TimedPoint,
 } from '../shared/interaction';
@@ -56,6 +57,7 @@ export class InteractionController {
     interaction: { kind: 'idle', sequenceId: 0, startedAt: 0, durationMs: null, direction: 'right' },
     gaze: { x: 0, y: 0 },
     keyboardStatus: 'disabled',
+    keyboardTempo: 'calm',
   };
 
   private actionEndsAt: number | null = null;
@@ -63,9 +65,7 @@ export class InteractionController {
   private keyboardBuckets: { count: number; endedAt: number }[] = [];
   private tapCount = 0;
   private lastTapAt = 0;
-  private keyboardLowSince: number | null = null;
   private pendingDizzy = false;
-  private pawPrimedUntil = 0;
   private tugNearSince: number | null = null;
   private tugAnchor: { point: PetPosition; expiresAt: number } | null = null;
   private lastSpontaneousAt = 0;
@@ -89,7 +89,7 @@ export class InteractionController {
     this.runtime.keyboardStatus = status;
     if (status !== 'ready') {
       this.keyboardBuckets = [];
-      this.keyboardLowSince = null;
+      this.setKeyboardTempo('calm');
       if (this.runtime.interaction.kind === 'keyboard-typing' || this.runtime.interaction.kind === 'keyboard-rest') this.forceIdle(now);
     }
     this.emit();
@@ -214,7 +214,6 @@ export class InteractionController {
       return;
     }
     if (isTeasingCursor(this.cursorSamples, center) && this.cooldownReady('cursor-paw', now)) {
-      this.pawPrimedUntil = now + 2_500;
       this.startSpontaneous('cursor-paw', now, directionToward(center.x, cursor.x), 15_000);
       return;
     }
@@ -226,10 +225,11 @@ export class InteractionController {
   private updateKeyboard(context: InteractionContext, now: number): void {
     this.keyboardBuckets = this.keyboardBuckets.filter(({ endedAt }) => endedAt > now - 8_000);
     if (!context.keyboardEnabled || this.runtime.keyboardStatus !== 'ready' || context.sleeping || context.careBusy || context.foregroundFullscreen) {
-      this.keyboardLowSince = null;
+      this.setKeyboardTempo('calm');
       if (this.runtime.interaction.kind === 'keyboard-typing' || this.runtime.interaction.kind === 'keyboard-rest') this.forceIdle(now);
       return;
     }
+    this.setKeyboardTempo(keyboardTempoForBuckets(this.keyboardBuckets, now));
     if (this.runtime.interaction.kind === 'keyboard-typing') {
       if (now - this.runtime.interaction.startedAt >= 18_000) {
         this.cooldowns.set('keyboard-typing', now + 12_000);
@@ -238,19 +238,20 @@ export class InteractionController {
         return;
       }
       if (keyboardRhythmIsQuiet(this.keyboardBuckets, now)) {
-        this.keyboardLowSince ??= now;
-        if (now - this.keyboardLowSince >= 1_000 && now - this.runtime.interaction.startedAt >= 2_000) this.forceIdle(now);
-      } else this.keyboardLowSince = null;
+        if (now - this.runtime.interaction.startedAt >= 1_500) {
+          this.forceIdle(now);
+          this.startInteraction('keyboard-rest', now, INTERACTION_DURATION_MS['keyboard-rest']!, this.runtime.motion.direction, true);
+        }
+      }
       return;
     }
     if (keyboardRhythmIsBusy(this.keyboardBuckets, now) && this.cooldownReady('keyboard-typing', now)) {
-      this.keyboardLowSince = null;
       this.startInteraction('keyboard-typing', now, null, this.runtime.motion.direction);
     }
   }
 
   private updateTugPrime(cursor: PetPosition, center: PetPosition, context: InteractionContext, now: number): void {
-    if (now > this.pawPrimedUntil || context.locked || context.sleeping || context.careBusy
+    if (context.locked || context.sleeping || context.careBusy
       || context.foregroundFullscreen || this.runtime.motion.moving || this.isDragging()) {
       this.tugNearSince = null;
       this.tugAnchor = null;
@@ -258,18 +259,19 @@ export class InteractionController {
     }
     if (this.tugAnchor) {
       if (now > this.tugAnchor.expiresAt) this.tugAnchor = null;
-      else if (distanceBetween(cursor, this.tugAnchor.point) >= 120 && this.cooldownReady('cursor-tug', now)) {
+      else if (distanceBetween(cursor, this.tugAnchor.point) >= 80 && this.cooldownReady('cursor-tug', now) && this.canStartSpontaneous(now)) {
         if (this.startInteraction('cursor-tug', now, INTERACTION_DURATION_MS['cursor-tug']!, directionToward(center.x, cursor.x))) {
-          this.cooldowns.set('cursor-tug', now + 30_000);
-          this.pawPrimedUntil = 0;
+          this.lastSpontaneousAt = now;
+          this.spontaneousStarts.push(now);
+          this.cooldowns.set('cursor-tug', now + 20_000);
           this.tugAnchor = null;
         }
       }
       return;
     }
-    if (distanceBetween(cursor, center) <= 90) {
+    if (distanceBetween(cursor, center) <= 100) {
       this.tugNearSince ??= now;
-      if (now - this.tugNearSince >= 300) this.tugAnchor = { point: { ...cursor }, expiresAt: now + 900 };
+      if (now - this.tugNearSince >= 250) this.tugAnchor = { point: { ...cursor }, expiresAt: now + 1_200 };
     } else this.tugNearSince = null;
   }
 
@@ -339,6 +341,12 @@ export class InteractionController {
   private updateGaze(gaze: PetPosition): void {
     if (Math.abs(gaze.x - this.runtime.gaze.x) < 0.04 && Math.abs(gaze.y - this.runtime.gaze.y) < 0.04) return;
     this.runtime.gaze = gaze;
+    this.emit();
+  }
+
+  private setKeyboardTempo(tempo: PetRuntimeState['keyboardTempo']): void {
+    if (this.runtime.keyboardTempo === tempo) return;
+    this.runtime.keyboardTempo = tempo;
     this.emit();
   }
 

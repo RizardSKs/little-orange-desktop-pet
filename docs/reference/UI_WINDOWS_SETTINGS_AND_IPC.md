@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 窗口、设置、菜单、IPC 或公开 API 变化时同步更新 |
-| 适用版本 | 1.2.3 |
+| 适用版本 | 1.2.4 |
 | 最后核对 | 2026-08-23 |
 | 权威源码 | `src/main/main.ts`、`src/preload/preload.ts`、`src/preload/unlock.ts`、`src/shared/types.ts`、`src/shared/economy-types.ts`、`src/renderer/App.tsx`、`src/renderer/pet-view.tsx`、`src/renderer/panel-view.tsx` |
 | 更新触发 | 增删窗口、设置键、IPC 通道、公开方法、事件、sender 验证、参数验证或系统副作用 |
@@ -120,6 +120,7 @@
 - `OrangePetApi.setPetPosition` 声明为 `Promise<void>`，主进程当前实际返回限制后的坐标；渲染层不使用返回值，新代码也不应依赖这个未声明差异。
 - 解锁 HTML 通过本地 data URL 异步加载。同步窗口创建失败会阻止锁定；异步页面加载失败当前没有专用 UI 错误提示，但托盘/应用菜单解锁路径仍存在。
 - 键盘原生组件启动超时、报错或退出时，`keyboardStatus` 变为 `unavailable`，不会中断桌宠、存档或其他互动。
+- `PetRuntimeState.keyboardTempo` 仅为主进程从聚合计数派生的 `calm | steady | rapid` 视觉档位，不包含按键内容且不持久化。
 - 所有退出入口共用 `requestQuit()`；`before-quit` 在窗口销毁前停止周期、递归和短时定时器，已关闭窗口的引用由 `closed` 事件清空。
 - `launchAtLogin`、真实 BrowserWindow 点击穿透、多显示器解锁定位与打包后原生键盘组件仍依赖 Windows/Electron 实装冒烟测试。
 

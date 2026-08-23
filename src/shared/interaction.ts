@@ -1,8 +1,10 @@
-import type { GrowthStage, PetDirection, PetInteractionKind, PetPosition } from './types';
+import type { GrowthStage, KeyboardTempo, PetDirection, PetInteractionKind, PetPosition } from './types';
 
 export const CURSOR_SAMPLE_MS = 50;
 export const TAP_SETTLE_MS = 320;
 export const DRAG_THRESHOLD_DIP = 7;
+export const KEYBOARD_TRIGGER_WINDOW_MS = 800;
+export const KEYBOARD_QUIET_WINDOW_MS = 900;
 
 export interface TimedPoint extends PetPosition { at: number }
 
@@ -39,7 +41,7 @@ export const INTERACTION_DURATION_MS: Partial<Record<PetInteractionKind, number>
   petting: 1_200,
   dodge: 900,
   landing: 650,
-  'keyboard-rest': 3_500,
+  'keyboard-rest': 700,
   'cursor-paw': 1_350,
   'cursor-tug': 2_200,
   'cursor-chase': 2_400,
@@ -133,13 +135,22 @@ export function isNearbyCursor(samples: readonly TimedPoint[], center: PetPositi
 }
 
 export function keyboardRhythmIsBusy(buckets: readonly { count: number; endedAt: number }[], now: number): boolean {
-  const recent = buckets.filter(({ endedAt }) => endedAt > now - 1_500 && endedAt <= now + 250);
-  return recent.reduce((sum, bucket) => sum + bucket.count, 0) >= 10
-    && recent.filter(({ count }) => count > 0).length >= 4;
+  return buckets
+    .filter(({ endedAt }) => endedAt > now - KEYBOARD_TRIGGER_WINDOW_MS && endedAt <= now + 250)
+    .reduce((sum, bucket) => sum + bucket.count, 0) >= 3;
 }
 
 export function keyboardRhythmIsQuiet(buckets: readonly { count: number; endedAt: number }[], now: number): boolean {
   return buckets
-    .filter(({ endedAt }) => endedAt > now - 1_500 && endedAt <= now + 250)
-    .reduce((sum, bucket) => sum + bucket.count, 0) < 3;
+    .filter(({ endedAt }) => endedAt > now - KEYBOARD_QUIET_WINDOW_MS && endedAt <= now + 250)
+    .reduce((sum, bucket) => sum + bucket.count, 0) === 0;
+}
+
+export function keyboardTempoForBuckets(buckets: readonly { count: number; endedAt: number }[], now: number): KeyboardTempo {
+  const count = buckets
+    .filter(({ endedAt }) => endedAt > now - KEYBOARD_TRIGGER_WINDOW_MS && endedAt <= now + 250)
+    .reduce((sum, bucket) => sum + bucket.count, 0);
+  if (count >= 8) return 'rapid';
+  if (count >= 5) return 'steady';
+  return 'calm';
 }

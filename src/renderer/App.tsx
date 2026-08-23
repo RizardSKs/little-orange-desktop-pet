@@ -8,6 +8,7 @@ const DEFAULT_RUNTIME: PetRuntimeState = {
   interaction: { kind: 'idle', sequenceId: 0, startedAt: 0, durationMs: null, direction: 'right' },
   gaze: { x: 0, y: 0 },
   keyboardStatus: 'disabled',
+  keyboardTempo: 'calm',
 };
 
 export interface GrowthCelebrationState {

@@ -27,6 +27,18 @@ describe('desktop pet visual regressions', () => {
     expect(component).toContain('outfitStyle(state.growth.stage');
     expect(component).toContain('CELEBRATION_PROPS');
     expect(component).toContain('effect-grand-tour-return');
+    expect(component).toContain('/mini-keyboard.png');
+    expect(component).toContain('/cursor-grab.png');
+  });
+
+  it('keeps every growth-stage arm anchored during drag animation', () => {
+    const css = read('src/renderer/styles.css');
+    for (const stage of ['sprout', 'lively', 'mature', 'radiant']) {
+      const rule = css.match(new RegExp(`\\.pet-character\\.stage-${stage} \\{[^}]+\\}`))?.[0] ?? '';
+      for (const token of ['--shoulder-left-x', '--shoulder-left-y', '--shoulder-right-x', '--shoulder-right-y']) expect(rule).toContain(token);
+    }
+    const flightArms = css.slice(css.indexOf('@keyframes flight-arm-left'), css.indexOf('@keyframes flight-leg-left'));
+    expect(flightArms).not.toContain('translate');
   });
 
   it('exposes growth, life, exploration, lock, and privacy controls in the panel', () => {
@@ -63,6 +75,15 @@ describe('desktop pet visual regressions', () => {
         expect(image.readUInt32BE(20)).toBe(512);
         expect(image[25]).toBe(6);
       }
+    }
+  });
+
+  it('ships transparent local props for keyboard and cursor-grab interactions', () => {
+    for (const name of ['mini-keyboard.png', 'cursor-grab.png']) {
+      const image = fs.readFileSync(path.join(process.cwd(), 'assets', 'props', name));
+      expect(image.readUInt32BE(16)).toBeGreaterThanOrEqual(512);
+      expect(image.readUInt32BE(20)).toBeGreaterThanOrEqual(512);
+      expect(image[25]).toBe(6);
     }
   });
 

@@ -9,6 +9,7 @@ import {
   isTeasingCursor,
   keyboardRhythmIsBusy,
   keyboardRhythmIsQuiet,
+  keyboardTempoForBuckets,
   type TimedPoint,
 } from './interaction';
 
@@ -43,10 +44,13 @@ describe('interaction rules', () => {
   });
 
   it('recognizes busy and quiet aggregate keyboard rhythm without key data', () => {
-    const busy = Array.from({ length: 6 }, (_, index) => ({ count: 2, endedAt: 250 + index * 250 }));
-    expect(keyboardRhythmIsBusy(busy, 1_500)).toBe(true);
-    expect(keyboardRhythmIsQuiet(busy, 1_500)).toBe(false);
-    expect(keyboardRhythmIsQuiet([], 1_500)).toBe(true);
+    const busy = [{ count: 3, endedAt: 750 }];
+    expect(keyboardRhythmIsBusy(busy, 800)).toBe(true);
+    expect(keyboardRhythmIsQuiet(busy, 800)).toBe(false);
+    expect(keyboardRhythmIsQuiet(busy, 1_700)).toBe(true);
+    expect(keyboardTempoForBuckets([{ count: 3, endedAt: 750 }], 800)).toBe('calm');
+    expect(keyboardTempoForBuckets([{ count: 5, endedAt: 750 }], 800)).toBe('steady');
+    expect(keyboardTempoForBuckets([{ count: 8, endedAt: 750 }], 800)).toBe('rapid');
     expect(Object.keys(busy[0])).toEqual(['count', 'endedAt']);
   });
 

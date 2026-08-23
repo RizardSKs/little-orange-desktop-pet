@@ -8,6 +8,7 @@ export type AnimationIntensity = 'gentle' | 'normal' | 'lively';
 export type PetExpression = 'neutral' | 'happy' | 'curious' | 'surprised' | 'proud' | 'focused' | 'delighted' | 'excited' | 'refreshed' | 'asleep' | 'sad' | 'sleepy' | 'hungry' | 'uncomfortable';
 export type PetDirection = 'left' | 'right';
 export type KeyboardHookStatus = 'disabled' | 'starting' | 'ready' | 'unavailable';
+export type KeyboardTempo = 'calm' | 'steady' | 'rapid';
 export type PetInteractionKind = 'idle' | 'nearby' | 'petting' | 'dodge' | 'dragging' | 'landing' | 'keyboard-typing' | 'keyboard-rest' | 'cursor-paw' | 'cursor-tug' | 'cursor-chase' | 'cursor-dizzy';
 
 export type { EconomyState } from './economy-types';
@@ -31,6 +32,7 @@ export interface PetRuntimeState {
   interaction: PetInteractionVisualState;
   gaze: { x: number; y: number };
   keyboardStatus: KeyboardHookStatus;
+  keyboardTempo: KeyboardTempo;
 }
 
 export interface PetStats {
