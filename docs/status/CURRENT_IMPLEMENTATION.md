@@ -43,15 +43,15 @@
 - 八件永久装扮现使用本地 512×512 RGBA PNG，按四阶段共 32 组布局校准，并跟随角色呼吸、步态、拖拽与左右朝向；稳定 ID、价格和存档字段不变。
 - 管理面板已拆分为状态、互动、生活和设置视图，生活页包含装扮、用品、服务、探索和背包；状态页显示成长称号、闪耀星、旅行和限时效果剩余运行时间。用品/服务的庆典、主题与光环，以及探索返程效果，均已映射到桌宠视觉。
 - `dist:win` 现为 `dist:setup` 的别名，生成固定名 `Little-Orange-Desktop-Pet-Setup-x64.exe`；`dist:update` 生成固定名 `Little-Orange-Desktop-Pet-Update-x64.exe` 与 `update-manifest.json`。v1.2.3 不生成或发布 Portable。
-- 2026-08-22 已通过 1.2.2 的 `npm.cmd test`（12 个测试文件、78 项测试）、完整 `npm.cmd run build`、本地三件套 `npm.cmd run verify:release`、真实窗口素材验收，以及全新安装、v1.0.0 直升和 v1.2.1 覆盖升级；GitHub 标签、Release 和远端摘要已完成核对，详见[正式发布快照](../releases/v1.2.2.md)。
+- 2026-08-23 已通过 1.2.3 的 `npm.cmd test`（15 个测试文件、86 项测试）、完整 `npm.cmd run build`、本地三件套 `npm.cmd run verify:release`、四阶段 × 八装扮视觉矩阵、全新安装、v1.0.0 直升、v1.2.2 覆盖升级和 16 次退出循环；GitHub 标签、Release 与三项远端回下载摘要已完成核对，详见[正式发布快照](../releases/v1.2.3.md)。
 
 ## 已知实现与发行边界
 
 - 全局键盘节奏依赖 `uiohook-napi` 原生组件。Setup 与 Update 已验证包含同一份解包后的 Windows x64 二进制；安装版在启用键盘互动后成功保持独立 Node utilityProcess 存活，并提供不可用降级。真实全局输入、停用、挂起恢复与退出清理仍需人工冒烟。
 - 自动化测试不等于真实 Windows 窗口验收；桌面点击穿透、独立解锁按钮、全局输入、托盘、多显示器、DPI、全屏和挂起恢复仍需使用打包程序人工冒烟。
-- v1.2.0 因 GitHub 自动移除中文资产名而停止发布，错误 Release 已删除且不可变标签保留。v1.2.1 与 [v1.2.2](../releases/v1.2.2.md) 均使用 GitHub 兼容的 ASCII 固定名并完成正式 Release 与发布快照。
+- v1.2.0 因 GitHub 自动移除中文资产名而停止发布，错误 Release 已删除且不可变标签保留。v1.2.1、v1.2.2 与 [v1.2.3](../releases/v1.2.3.md) 均使用 GitHub 兼容的 ASCII 固定名并完成正式 Release 与发布快照。
 - 当前发行程序尚未代码签名，可能触发 Windows SmartScreen“未知发布者”提示；发布说明必须披露实际 `NotSigned` 状态。
-- `compatibleFrom: 1.0.0` 已在 Windows x64 隔离目录通过 v1.0.0→v1.2.1 直升及 v1.0.0→v1.1.0→v1.2.1 累计安装；两条路径均验证丰富 schema 1 存档迁移和备份。
+- `compatibleFrom: 1.0.0` 已在 Windows x64 隔离目录通过 v1.0.0→v1.2.3 直升；同时完成 v1.2.2→v1.2.3 覆盖升级，验证丰富 schema 1/2 存档、稳定装扮 ID 和迁移备份。
 - 依赖声明仍使用 `latest`；本版可复现安装必须依赖已提交的 `package-lock.json` 和 `npm.cmd ci`。
 - 仓库仍没有自动创建 GitHub Release、上传三件套或回读远端哈希的发布脚本。
 - Setup 与 Update 包装命令显式传入 `--publish never`；Windows CI 只构建和校验产物，不读取发布令牌、不自动上传或修改 GitHub Release。
