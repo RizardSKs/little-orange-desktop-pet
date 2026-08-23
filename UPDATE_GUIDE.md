@@ -184,6 +184,12 @@ Get-FileHash -LiteralPath `
 
 ## 8. 当前正式发布状态
 
+- v1.2.5 已于 2026-08-23 正式发布：[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.5)；不可变标签指向最终提交 `42d3c908b552d0f1ca61f35a063ef4674e251925`。
+- 本版 93 项自动化测试、生产构建、Windows CI、固定名 Setup/Update/清单、PE 版本、哈希、两份原生二进制、全新安装、v1.0.0 直升和 v1.2.4 覆盖升级均已通过。
+- GitHub 三项资产的名称、大小与服务器 SHA-256 均与本地正式文件一致；清单完成实际回下载，详见 [v1.2.5 正式快照](docs/releases/v1.2.5.md)。
+
+### 历史补充：v1.2.4
+
 - v1.2.4 已于 2026-08-23 正式发布：[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.4)；不可变标签指向合并提交 `72fe3455d8937ad1b753d4dfd3002cfc4d564cb9`。
 - 本版 90 项自动化测试、生产构建、两代 Windows CI、固定名 Setup/Update/清单、PE 版本、哈希、两份原生二进制、全新安装、v1.0.0 直升和 v1.2.3 覆盖升级均已通过。
 - GitHub 三项资产的名称、大小与服务器 SHA-256 均与本地正式文件一致；清单完成实际回下载，大文件全量回下载受当前带宽限制，详见 [v1.2.4 正式快照](docs/releases/v1.2.4.md)。

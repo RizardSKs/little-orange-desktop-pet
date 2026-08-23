@@ -92,4 +92,4 @@
 - [存档结构与迁移](docs/reference/SAVE_SCHEMA_AND_MIGRATIONS.md)
 - [测试与验收](docs/reference/TESTING_AND_ACCEPTANCE.md)
 
-当前源码版本为 1.2.5；正式发布完成前，最近一份已完成的 GitHub Release、三件套、远端摘要和实装升级证据仍见 [v1.2.4 发布快照](docs/releases/v1.2.4.md)。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。
+当前源码与正式版本为 1.2.5；已完成的 GitHub Release、三件套、远端摘要和实装升级证据见 [v1.2.5 发布快照](docs/releases/v1.2.5.md)。任何代理开始开发前必须先阅读根目录 [AGENTS.md](AGENTS.md)。
