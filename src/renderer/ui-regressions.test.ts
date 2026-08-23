@@ -39,6 +39,7 @@ describe('desktop pet visual regressions', () => {
     }
     const flightArms = css.slice(css.indexOf('@keyframes flight-arm-left'), css.indexOf('@keyframes flight-leg-left'));
     expect(flightArms).not.toContain('translate');
+    expect(flightArms).toContain('scale(1.08)');
     expect(css).toContain('.interaction-dragging .arm{z-index:1}');
     expect(css).toContain('.interaction-dragging .pet-body{z-index:4}');
   });
