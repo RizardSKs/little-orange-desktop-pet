@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在行为类型、移动调度、动画、表达式解析、交互手势、视觉素材或测试已经变更并核对后更新；新增动作方向或角色性格规则必须先取得用户批准。  
-> 适用版本：1.2.3  
+> 适用版本：1.2.4  
 > 最后核对：2026-08-23  
 > 权威源码：`src/shared/types.ts`、`src/shared/interaction.ts`、`src/shared/expression.ts`、`src/main/interaction-controller.ts`、`src/main/motion.ts`、`src/main/main.ts`、`src/renderer/pet-view.tsx`、`src/renderer/styles.css`  
 > 更新触发：`PetBehavior`、`PetInteractionKind`、互动优先级、触发阈值、自动散步条件、速度/缓动、动画强度、拖动/点击手势、四阶段变体、表情文案或相关测试变化时。
@@ -27,6 +27,7 @@
 - `interaction`：当前互动种类、序列号、开始时间、持续时间和朝向。
 - `gaze`：归一化的鼠标注视偏移。
 - `keyboardStatus`：键盘节奏组件的 `disabled | starting | ready | unavailable` 状态。
+- `keyboardTempo`：只由聚合次数派生的 `calm | steady | rapid` 视觉节奏，不持久化。
 
 `PetInteractionKind` 已包含 `idle`、`nearby`、`petting`、`dodge`、`dragging`、`landing`、`keyboard-typing`、`keyboard-rest`、`cursor-paw`、`cursor-tug`、`cursor-chase`和 `cursor-dizzy`。每次状态变更都增加 `sequenceId`，便于渲染层重启同类动画。
 
@@ -55,7 +56,7 @@
 - 注视：`gazeForCursor` 把光标相对桌宠中心的位置归一化；超出跟踪范围时回中。
 - 附近陪伴：光标在桌宠附近低速停留后进入 `nearby`。
 - 挑逗与扒拉：在规定环形范围内足够长距离地往返挑逗后进入 `cursor-paw`。
-- 被拖走：扒拉后的短时窗内，光标先靠近再快速拉开，可进入 `cursor-tug`。窗口按限速弹簧步进跟随光标，结束时立即保存位置。
+- 被拖走：光标在桌宠中心手部区域停留后快速拉开，可直接进入 `cursor-tug`。窗口按限速弹簧步进跟随光标，真实系统光标不被控制，结束时立即保存位置。
 - 环绕与眩晕：光标绕行达到规则阈值后进入 `cursor-chase`，继续多圈则在追逐结束后接 `cursor-dizzy`。
 
 自发互动有最小间隔、每分钟上限和分类冷却，防止持续特效干扰。桌面锁定时仍可更新注视和纯视觉的被动反应，但 `cursor-tug`、自动散步和用户拖动都不能改变窗口位置。
@@ -69,7 +70,7 @@
 3. 只有主进程确认未锁定并进入 `dragging` 后，渲染层才能继续发送 `pet:set-position`。
 4. 释放或取消已开始的拖动时发送 `pet:drag-end`，主进程保存位置并进入 `landing`。
 
-拖动视觉由渲染层根据相邻指针样本计算限幅速度和方向，不扩展 IPC 或存档。`dragging` 时使用 `excited` 图片表情，身体朝移动方向倾斜并轻微拉伸，双臂展开、双腿后摆；动画强度控制幅度。释放后使用 `happy` 表情和三段软弹落地。减少动态效果模式保留静态飞行姿态，但取消持续摆动。
+拖动视觉由渲染层平滑相邻指针速度并计算方向、身体滞后、拉伸和末速度，不扩展 IPC 或存档。四阶段分别以素材肩部连接点作为手臂旋转锚点，手臂关键帧不平移肩根；`dragging` 时使用 `excited` 图片表情和悬空摆动，释放后使用 `happy` 表情并按末速度进入三段软弹落地。减少动态效果模式保留关节稳定的静态飞行姿态。
 
 未进入拖动的点击由主进程在 `TAP_SETTLE_MS` 窗口后统一结算：单击是 `petting`，双击打开管理面板，三击及以上是 `dodge`。桌面锁定时桌宠主体点击穿透，上述手势不可达。
 
@@ -77,9 +78,9 @@
 
 ### 键盘陪打的视觉行为
 
-键盘互动默认关闭，只有当用户已明确同意且隔离键盘组件处于 `ready` 时才会参与状态机。`keyboardRhythmIsBusy` 只根据按键次数和时间桶判断节奏，达到忙碌条件后进入 `keyboard-typing`；持续上限到期后进入 `keyboard-rest`，静默足够长时则提前回待机。
+键盘互动默认关闭，只有当用户已明确同意且隔离键盘组件处于 `ready` 时才会参与状态机。800 毫秒内累计三个按键即可进入 `keyboard-typing`；计数继续派生三档视觉节奏。持续上限到期或静默约 900 毫秒后进入短暂 `keyboard-rest` 收起动作。
 
-渲染层在 `keyboard-typing` 显示小键盘并让双手交替敲击。幼芽阶段较慢、活力阶段较快；其他阶段使用各自性格节奏。键盘内容隔离和隐私边界详见 [ARCHITECTURE_AND_DATA_FLOW.md](ARCHITECTURE_AND_DATA_FLOW.md)。
+渲染层使用本地透明 PNG 小键盘，让双手按 `calm | steady | rapid` 交替敲击，并在 `keyboard-rest` 中播放收起。键盘内容隔离和隐私边界详见 [ARCHITECTURE_AND_DATA_FLOW.md](ARCHITECTURE_AND_DATA_FLOW.md)。
 
 ### 四阶段差异
 

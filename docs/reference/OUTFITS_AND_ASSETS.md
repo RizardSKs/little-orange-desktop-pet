@@ -2,9 +2,9 @@
 
 > 文档级别：`LIVING`（随实现持续维护）  
 > 修改权限：装扮目录、购买/装备逻辑、渲染锚点、角色素材或测试变化时同步更新；既有物品 ID、存档兼容规则和美术方向不得擅自改变。  
-> 适用版本：1.2.3  
+> 适用版本：1.2.4  
 > 最后核对：2026-08-23  
-> 权威源码：`src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`src/renderer/pet-view.tsx`、`scripts/prepare_v1_2_3_outfit_assets.py`、`assets/outfits/`  
+> 权威源码：`src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`src/renderer/pet-view.tsx`、`scripts/prepare_v1_2_3_outfit_assets.py`、`assets/outfits/`、`assets/props/`  
 > 更新触发：稳定 ID、装扮所有权、旅行外观、限时视觉、阶段素材、素材处理流程或相关测试变化。
 
 精确目录价格、解锁等级和视觉参数统一登记在[配置与变量总账](CONFIGURATION_REGISTRY.md)。本文件说明稳定资产契约和渲染关系。
@@ -57,7 +57,7 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 - 旅行装只在视觉上暂时覆盖普通装扮，不修改 `equippedItem`；正常返程或提前返程后，原永久装扮自动恢复。
 - 键盘、鼠标、庆典、主题和光环由持久化效果队列驱动。`pet-view.tsx` 只渲染每个槽位的队首效果，并已把全部消费庆典/主题/光环及四种探索返程庆典/主题映射到桌宠动作、道具、背景或辉光；队列推进由主进程按实际运行时间完成。
 - 探索正常完成时，返程庆典和对应主题奖励原子入队；提前返程不入队，且原永久装扮仍会恢复。
-- 当前旅行装和互动道具仍是 emoji/CSS 表现；只有四阶段角色主体属于本地分层 PNG 素材。
+- 1.2.4 的键盘陪打和光标抓握分别使用 `assets/props/mini-keyboard.png` 与 `assets/props/cursor-grab.png` 本地透明 PNG；旅行装和其他临时道具仍使用 emoji/CSS。
 
 ## 素材处理流程
 
@@ -76,7 +76,7 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 
 - 分层或当前表情加载失败会降级为带中性表情的整图，因此降级状态无法显示独立手脚步态或动态表情，外围效果仍可工作。
 - `layerFailed` 在成长阶段改变时重置；同阶段内的临时加载失败不会自动重试分层模式。
-- 旅行装和限时道具没有独立 PNG 美术，外观会受平台 emoji 字体影响。
+- 旅行装和未迁移的限时道具没有独立 PNG 美术，外观仍会受平台 emoji 字体影响；键盘与光标抓握不再依赖平台 emoji。
 - 自动测试验证装扮稳定 ID、文件名、512×512 RGBA 和 32 组边界，不替代透明边缘、DPI、左右镜像和动作遮挡的人工截图检查。
 
 ## 相关测试

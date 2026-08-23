@@ -53,6 +53,9 @@ interface DragState {
   lastX: number;
   lastY: number;
   lastAt: number;
+  velocityX: number;
+  velocityY: number;
+  landingDriftPx: number;
   target: HTMLDivElement;
 }
 
@@ -62,18 +65,22 @@ export function PetView({ state, runtime, growthCelebration }: {
   growthCelebration: GrowthCelebrationState | null;
 }) {
   const drag = useRef<DragState | null>(null);
+  const petElement = useRef<HTMLDivElement | null>(null);
   const dragFrame = useRef<number | null>(null);
   const [idleRoll, setIdleRoll] = useState(() => Math.random());
   const [layerFailed, setLayerFailed] = useState(false);
   const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(null);
   const restingExpression = resolvePetExpression(state, idleRoll);
-  const expression = runtime.interaction.kind === 'dragging'
+  const expression = runtime.interaction.kind === 'dragging' || runtime.interaction.kind === 'cursor-tug'
     ? 'excited'
-    : runtime.interaction.kind === 'landing' ? 'happy' : restingExpression;
+    : runtime.interaction.kind === 'landing'
+      ? 'happy'
+      : runtime.interaction.kind === 'keyboard-typing' ? 'focused' : restingExpression;
   const assetRoot = location.protocol === 'file:' ? '../assets/pet' : '/assets/pet';
   const stageRoot = `${assetRoot}/${state.growth.stage}`;
   const fallbackSprite = `${assetRoot}/${state.growth.stage}.png`;
   const expressionSprite = `${stageRoot}/expressions/${expression}.png`;
+  const propRoot = location.protocol === 'file:' ? '../assets/props' : '/assets/props';
   const equipped = SHOP_ITEMS.find((item) => item.id === state.economy.equippedItem);
   const equippedOutfitId = equipped && OUTFIT_IDS.includes(equipped.id as OutfitId) ? equipped.id as OutfitId : null;
   const expedition = state.economy.activeExpedition ? findExpedition(state.economy.activeExpedition.expeditionId) : null;
@@ -108,6 +115,9 @@ export function PetView({ state, runtime, growthCelebration }: {
   }, []);
 
   useEffect(() => setLayerFailed(false), [state.growth.stage]);
+  useEffect(() => {
+    if (runtime.interaction.kind !== 'landing') petElement.current?.style.removeProperty('--landing-drift');
+  }, [runtime.interaction.kind]);
 
   const moveWindow = (current: DragState, screenX: number, screenY: number) => {
     const dx = screenX - current.startX;
@@ -122,21 +132,32 @@ export function PetView({ state, runtime, growthCelebration }: {
   };
 
   const clearDragVisual = (current: DragState) => {
-    for (const property of ['--drag-tilt', '--drag-lift', '--drag-stretch-x', '--drag-stretch-y']) {
+    for (const property of ['--drag-tilt', '--drag-lift', '--drag-sway', '--drag-stretch-x', '--drag-stretch-y', '--drag-limb-swing']) {
       current.target.style.removeProperty(property);
     }
     setDragDirection(null);
   };
 
   const updateDragVisual = (current: DragState, screenX: number, screenY: number, now: number) => {
-    const visual = dragVisualForMovement(screenX - current.lastX, screenY - current.lastY, now - current.lastAt, state.settings.animationIntensity);
+    const visual = dragVisualForMovement(
+      screenX - current.lastX,
+      screenY - current.lastY,
+      now - current.lastAt,
+      state.settings.animationIntensity,
+      { x: current.velocityX, y: current.velocityY },
+    );
     current.lastX = screenX;
     current.lastY = screenY;
     current.lastAt = now;
+    current.velocityX = visual.velocityX;
+    current.velocityY = visual.velocityY;
+    current.landingDriftPx = visual.landingDriftPx;
     current.target.style.setProperty('--drag-tilt', `${visual.tiltDeg.toFixed(2)}deg`);
     current.target.style.setProperty('--drag-lift', `${visual.liftPx.toFixed(2)}px`);
+    current.target.style.setProperty('--drag-sway', `${visual.swayPx.toFixed(2)}px`);
     current.target.style.setProperty('--drag-stretch-x', visual.stretchX.toFixed(3));
     current.target.style.setProperty('--drag-stretch-y', visual.stretchY.toFixed(3));
+    current.target.style.setProperty('--drag-limb-swing', `${visual.limbSwingDeg.toFixed(2)}deg`);
     if (visual.direction) setDragDirection((currentDirection) => currentDirection === visual.direction ? currentDirection : visual.direction);
   };
 
@@ -152,6 +173,7 @@ export function PetView({ state, runtime, growthCelebration }: {
 
   const finishActiveDrag = async (current: DragState, moveToReleasePoint: boolean) => {
     cancelDragFrame();
+    current.target.style.setProperty('--landing-drift', `${current.landingDriftPx.toFixed(2)}px`);
     clearDragVisual(current);
     if (moveToReleasePoint) {
       try { await moveWindow(current, current.latestX, current.latestY); } catch { /* always clear main-process drag state */ }
@@ -162,6 +184,7 @@ export function PetView({ state, runtime, growthCelebration }: {
   const pointerDown = (event: React.PointerEvent) => {
     if (event.button !== 0 || state.settings.desktopLocked) return;
     event.currentTarget.setPointerCapture(event.pointerId);
+    event.currentTarget.style.removeProperty('--landing-drift');
     drag.current = {
       pointerId: event.pointerId,
       startX: event.screenX,
@@ -176,6 +199,9 @@ export function PetView({ state, runtime, growthCelebration }: {
       lastX: event.screenX,
       lastY: event.screenY,
       lastAt: event.timeStamp,
+      velocityX: 0,
+      velocityY: 0,
+      landingDriftPx: 0,
       target: event.currentTarget,
     };
   };
@@ -198,6 +224,7 @@ export function PetView({ state, runtime, growthCelebration }: {
           return;
         }
         current.active = true;
+        updateDragVisual(current, current.latestX, current.latestY, performance.now());
         if (current.released) {
           drag.current = null;
           void finishActiveDrag(current, true);
@@ -236,7 +263,8 @@ export function PetView({ state, runtime, growthCelebration }: {
       {growthCelebration && <div className={`growth-burst ${growthCelebration.kind}`}><strong>{growthCelebration.title}</strong><span>{growthCelebration.detail}</span></div>}
       <div className={`speech expression-${expression}`}>{EXPRESSION_TEXT[expression]}</div>
       <div
-        className={`pet-character stage-${state.growth.stage} expression-${expression} interaction-${runtime.interaction.kind} behavior-${state.pet.behavior} ${runtime.motion.moving ? 'is-moving' : ''} ${expedition ? 'is-travelling' : ''} ${activeEffects}`}
+        ref={petElement}
+        className={`pet-character stage-${state.growth.stage} expression-${expression} interaction-${runtime.interaction.kind} keyboard-tempo-${runtime.keyboardTempo} behavior-${state.pet.behavior} ${runtime.motion.moving ? 'is-moving' : ''} ${expedition ? 'is-travelling' : ''} ${activeEffects}`}
         onContextMenu={(event) => { event.preventDefault(); void window.orangePet.showContextMenu(); }}
         onPointerDown={pointerDown}
         onPointerMove={pointerMove}
@@ -266,8 +294,9 @@ export function PetView({ state, runtime, growthCelebration }: {
           </div>
         </div>
         {expedition && <span className={`travel-outfit ${expedition.travelOutfit}`}>{TRAVEL_ICONS[expedition.travelOutfit]}</span>}
-        {runtime.interaction.kind === 'keyboard-typing' && <span className="interaction-prop mini-keyboard">⌨️</span>}
+        {(runtime.interaction.kind === 'keyboard-typing' || runtime.interaction.kind === 'keyboard-rest') && <img className={`interaction-prop mini-keyboard ${runtime.interaction.kind === 'keyboard-rest' ? 'is-closing' : ''}`} src={`${propRoot}/mini-keyboard.png`} draggable={false} alt="" />}
         {runtime.interaction.kind === 'cursor-paw' && <span className="interaction-prop mouse-feather">🪶</span>}
+        {runtime.interaction.kind === 'cursor-tug' && <img className="interaction-prop cursor-grab" src={`${propRoot}/cursor-grab.png`} draggable={false} alt="" />}
         {celebrationProp && <span className={`celebration-prop ${celebrationEffect}`}>{celebrationProp}</span>}
         {state.pet.behavior === 'sleeping' && <span className="zzz">Z<small>z</small></span>}
         {(expression === 'refreshed' || stars > 0) && <span className="sparkles">{'✦'.repeat(Math.min(3, Math.max(1, stars)))}</span>}

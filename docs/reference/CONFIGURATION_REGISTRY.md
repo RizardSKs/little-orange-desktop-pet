@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理可在对应代码或测试已经变更并完成核对时修改；不得仅为设想改写“当前值”，不得重排、复用或删除既有 CFG 编号。  
-> 适用版本：1.2.3  
+> 适用版本：1.2.4  
 > 最后核对：2026-08-23  
 > 权威源码：src/shared/types.ts、src/shared/growth.ts、src/shared/game.ts、src/shared/catalog.ts、src/shared/economy-types.ts、src/shared/economy.ts、src/shared/expression.ts、src/shared/interaction.ts、src/main/store.ts、src/main/main.ts、src/main/motion.ts、src/main/interaction-controller.ts、src/renderer  
 > 更新触发：默认存档、领域类型、公式、阈值、计时器、窗口尺寸、动作、互动、表情、装扮或经济目录、设置项及其测试发生变化时。
@@ -137,12 +137,12 @@
 
 | 编号 | 变量或规则 | 当前值 | 类型、单位与范围 | 权威源码 | 使用方 | 相关测试 | 变更影响 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| CFG-100 | 鼠标采样、点击与拖动阈值 | 采样 50ms；点击组结算 320ms；拖动阈值 7 DIP；飞行速度在 1.4px/ms 归一封顶、基础最大倾斜 11°，gentle/normal/lively 幅度系数 0.65/1/1.25 | 毫秒、DIP、像素/毫秒、角度、倍率 | `interaction.ts`、`drag-visual.ts` | 主进程采样、PetView | `interaction.test.ts`、`drag-visual.test.ts` | 中：影响点击、抚摸和拖动观感 |
+| CFG-100 | 鼠标采样、点击与拖动阈值 | 采样 50ms；点击组结算 320ms；拖动阈值 7 DIP；拖动原始速度按 2.4px/ms 限幅并以 55ms 时间常数平滑、1.4px/ms 归一，基础最大倾斜 12°，gentle/normal/lively 幅度系数 0.65/1/1.25 | 毫秒、DIP、像素/毫秒、角度、倍率 | `interaction.ts`、`drag-visual.ts` | 主进程采样、PetView | `interaction.test.ts`、`drag-visual.test.ts` | 中：影响点击、抚摸和拖动观感 |
 | CFG-101 | 四阶段互动参数 | sprout 幅度0.75/时长1.12/shy；lively 1.15/0.86/bouncy；mature 0.95/1/steady；radiant 1.05/0.9/radiant | 幅度与时长倍率、性格标签 | `INTERACTION_STAGE_PROFILES` | 互动控制器、CSS | `interaction.test.ts`、`ui-regressions.test.ts` | 高：保证阶段动作差异显著 |
-| CFG-102 | 互动优先级与时长 | 优先级 idle0、nearby30、rest/paw50、tug/chase/dizzy60、keyboard70、petting90、dodge92、landing95、dragging100；基础时长 nearby3500、petting1200、dodge900、landing650、rest3500、paw1350、tug2200、chase2400、dizzy1800ms | 高优先级可中断低优先级；时长再乘阶段倍率 | `INTERACTION_PRIORITY`、`INTERACTION_DURATION_MS` | 互动控制器 | `interaction.test.ts`、`interaction-controller.test.ts` | 高：决定动作竞争与反馈辨识度 |
+| CFG-102 | 互动优先级与时长 | 优先级 idle0、nearby30、rest/paw50、tug/chase/dizzy60、keyboard70、petting90、dodge92、landing95、dragging100；基础时长 nearby3500、petting1200、dodge900、landing650、rest700、paw1350、tug2200、chase2400、dizzy1800ms | 高优先级可中断低优先级；时长再乘阶段倍率 | `INTERACTION_PRIORITY`、`INTERACTION_DURATION_MS` | 互动控制器 | `interaction.test.ts`、`interaction-controller.test.ts` | 高：决定动作竞争与反馈辨识度 |
 | CFG-103 | 注视与鼠标轨迹识别 | 注视半径700，x/y分别按350/250归一；挑逗2秒、半径70–230、路径≥420、横向反转≥4；环绕2.5秒且≥1.25圈，≥2圈后眩晕；附近停留6秒、距离≤160、速度≤25 | CSS 像素、毫秒、圈数、像素/秒 | `gazeForCursor()`、`isTeasingCursor()`、`accumulatedCursorTurns()`、`isNearbyCursor()` | 注视、扒拉、追逐、眩晕、陪伴 | `interaction.test.ts`、`interaction-controller.test.ts` | 中：改变环境互动触发率 |
-| CFG-104 | 键盘节奏识别 | worker 每250ms汇总；1.5秒内≥10次且至少4个非空桶触发；低于3次视为安静；连续陪打最多18秒，休息3500ms，结束冷却12秒；worker 2秒未 ready 则 unavailable | 只传计数与时间桶，不传按键内容 | `keyboard-worker.ts`、`keyboardRhythmIsBusy()`、`InteractionController`、主进程 worker | 键盘陪打 | `interaction.test.ts`、`interaction-controller.test.ts`、`interaction-integration.test.ts` | 高：涉及输入隐私、节奏和资源占用 |
-| CFG-105 | 自发互动与鼠标拉扯限制 | 自发动作间隔≥12秒且每分钟≤4次；扒拉后鼠标距中心≤90持续300ms，再于900ms内移动≥120触发拉扯；弹簧系数0.22，单 tick 位移≤24；paw/tug/chase/nearby 冷却分别由控制器设为15/30/30/45秒 | 毫秒、像素、比例、次数 | `InteractionController` | 鼠标环境互动、窗口移动 | `interaction-controller.test.ts` | 高：限制打扰频率并防止窗口突跳 |
+| CFG-104 | 键盘节奏识别 | worker 每250ms汇总；800ms内累计≥3次触发；900ms无新计数视为安静；累计3–4/5–7/≥8分别派生 calm/steady/rapid；连续陪打最多18秒，收起700ms，结束冷却12秒；worker 2秒未 ready 则 unavailable | 只传计数与时间桶，渲染层只接收派生节奏，不传按键内容 | `keyboard-worker.ts`、`keyboardRhythmIsBusy()`、`keyboardTempoForBuckets()`、`InteractionController` | 键盘陪打 | `interaction.test.ts`、`interaction-controller.test.ts`、`interaction-integration.test.ts` | 高：涉及输入隐私、节奏和资源占用 |
+| CFG-105 | 自发互动与鼠标拉扯限制 | 自发动作间隔≥12秒且每分钟≤4次；鼠标距中心≤100持续250ms，再于1200ms内移动≥80触发拉扯；弹簧系数0.22，单 tick 位移≤24；paw/tug/chase/nearby 冷却分别为15/20/30/45秒 | 毫秒、像素、比例、次数 | `InteractionController` | 鼠标环境互动、窗口移动 | `interaction-controller.test.ts` | 高：限制打扰频率并防止窗口突跳 |
 | CFG-106 | 独立解锁窗 | 40 × 40；主体锁定时显示，始终置顶；只能执行解锁 | CSS 像素；独立 preload/API | `UNLOCK_SIZE`、`createUnlockWindow()` | 锁定恢复 | `interaction-integration.test.ts`、`ui-regressions.test.ts` | 高：尺寸或入口错误可能让用户无法解锁 |
 | CFG-107 | 统一启动快照与成长事件 | `state:bootstrap` 返回 `{ state, runtime, offlineSummary, growthProgress }`；`growthProgress` 可为 null，当前启动值为 null；后续 `growth:progress` 的 source 只允许 online 或 care | IPC 数据契约；成长事件含 fromLevel、toLevel、milestones | `StartupSnapshot`、`GrowthProgressEvent`、`setupIpc()` | preload、面板、桌宠窗口 | `interaction-integration.test.ts`、`ui-regressions.test.ts` | 高：防止初始化竞态、重复升级提示和离线误报 |
 

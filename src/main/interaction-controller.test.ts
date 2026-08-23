@@ -65,12 +65,28 @@ describe('InteractionController', () => {
   it('starts keyboard accompaniment from aggregate buckets and fails closed', () => {
     const harness = createHarness();
     harness.controller.setKeyboardStatus('ready', 0);
-    for (let index = 0; index < 6; index += 1) harness.controller.recordKeyboardBucket(2, 250 + index * 250);
-    harness.controller.tick(null, 1_500);
+    harness.controller.recordKeyboardBucket(3, 750);
+    harness.controller.tick(null, 800);
     expect(harness.controller.snapshot().interaction.kind).toBe('keyboard-typing');
-    harness.controller.setKeyboardStatus('unavailable', 1_600);
+    expect(harness.controller.snapshot().keyboardTempo).toBe('calm');
+    harness.controller.recordKeyboardBucket(8, 1_000);
+    harness.controller.tick(null, 1_050);
+    expect(harness.controller.snapshot().keyboardTempo).toBe('rapid');
+    harness.controller.tick(null, 2_300);
+    expect(harness.controller.snapshot().interaction.kind).toBe('keyboard-rest');
+    harness.controller.setKeyboardStatus('unavailable', 2_400);
     expect(harness.controller.snapshot().interaction.kind).toBe('idle');
     expect(harness.controller.snapshot().keyboardStatus).toBe('unavailable');
+  });
+
+  it('grabs a cursor after a natural near-and-pull gesture without controlling it', () => {
+    const harness = createHarness();
+    harness.controller.tick({ x: 210, y: 210 }, 20_000);
+    harness.controller.tick({ x: 210, y: 210 }, 20_250);
+    harness.controller.tick({ x: 295, y: 210 }, 20_300);
+    expect(harness.controller.snapshot().interaction.kind).toBe('cursor-tug');
+    harness.controller.tick({ x: 330, y: 210 }, 20_350);
+    expect(harness.movePet).toHaveBeenCalled();
   });
 
   it('keeps a locked pet fixed while continuing gaze updates', () => {
@@ -84,12 +100,12 @@ describe('InteractionController', () => {
   it('clears passive reactions while care or a foreground fullscreen app has control', () => {
     const harness = createHarness();
     harness.controller.setKeyboardStatus('ready', 0);
-    for (let index = 0; index < 6; index += 1) harness.controller.recordKeyboardBucket(2, 250 + index * 250);
-    harness.controller.tick(null, 1_500);
+    harness.controller.recordKeyboardBucket(3, 750);
+    harness.controller.tick(null, 800);
     expect(harness.controller.snapshot().interaction.kind).toBe('keyboard-typing');
 
     harness.context.foregroundFullscreen = true;
-    harness.controller.tick({ x: 300, y: 150 }, 1_550);
+    harness.controller.tick({ x: 300, y: 150 }, 850);
     expect(harness.controller.snapshot().interaction.kind).toBe('idle');
     expect(harness.controller.snapshot().gaze).toEqual({ x: 0, y: 0 });
   });

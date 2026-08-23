@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 测试结构、支持环境、原生依赖、发布方式或验收要求变化时同步更新 |
-| 适用版本 | 1.2.3 |
+| 适用版本 | 1.2.4 |
 | 最后核对 | 2026-08-23 |
 | 权威来源 | `package.json`、`.github/workflows/windows-release.yml`、`src/**/*.test.ts`、构建配置、实际安装结果和 GitHub Release |
 | 更新触发 | 行为变化、新缺陷回归、测试增删、Node/Electron/原生组件基线、CI 门禁或正式发布变化 |
@@ -15,12 +15,15 @@
 - Node.js：`22.12.0` 或更高版本。
 - 可复现安装：`npm.cmd ci`，不得跳过 `package-lock.json`。
 - 单元与静态回归：`npm.cmd test`。
+- Vitest 只发现当前源码测试，显式排除 `tmp/` 历史源码副本、发行物和构建输出。
 - 生产构建：`npm.cmd run build`。
 - 全局键盘节奏依赖 `uiohook-napi@1.5.4` 原生组件；构建配置将其从 asar 解包，但自动类型检查不能证明安装包内原生二进制可正常加载。
 
 2026-08-22 已通过 1.2.2 的 `npm.cmd test`（12 个测试文件、78 项测试）和完整 `npm.cmd run build`；`npm.cmd run verify:release` 也已核对本地三件套、PE 内部版本、清单哈希及 Setup/Update 两份原生键盘二进制。
 
 2026-08-23 已通过 1.2.3 的 `npm.cmd ci`、`npm.cmd test`（15 个测试文件、86 项测试）、完整 `npm.cmd run build`、本地三件套校验、干净安装、v1.0.0 与 v1.2.2 覆盖升级、16 次打包程序退出循环，以及 GitHub 三项资产回下载 SHA-256 核对；完整证据见 [v1.2.3 正式发布快照](../releases/v1.2.3.md)。
+
+2026-08-23 已通过 1.2.4 候选源码的 `npm.cmd test`（15 个测试文件、90 项测试）和完整 `npm.cmd run build`。另以真实 Electron/Chromium 渲染四阶段 × 左右朝向 × 三档强度共 24 个最大摆幅拖动态，以及四阶段键盘/光标抓握道具矩阵；肩部均保持连接，道具位置与透明边界通过检查。正式安装、升级与远端发行证据在发布闭环完成后补充。
 
 ## GitHub Actions Windows 门禁
 
@@ -38,16 +41,16 @@
 | `src/shared/game.test.ts` | 默认档、照顾、有效恢复、在线奖励、离线零收益、深校验与迁移 |
 | `src/shared/catalog.test.ts` | 稳定装扮 ID、用品/服务/探索/故事目录、价格、属性和时长 |
 | `src/shared/economy.test.ts` | 原子购买、99 堆叠、服务使用、FIFO 效果、运行时推进、故事选择持久化和探索原子完成 |
-| `src/shared/interaction.test.ts` | 光标靠近、逗趣、绕圈、键盘节奏、优先级和阶段个性 |
+| `src/shared/interaction.test.ts` | 光标靠近、逗趣、绕圈、键盘快速触发、三档节奏、优先级和阶段个性 |
 | `src/shared/expression.test.ts` | 行为、低需求、待机表情和优先级 |
-| `src/main/interaction-controller.test.ts` | 点击、拖动、键盘、光标动作、冷却和打扰上限 |
+| `src/main/interaction-controller.test.ts` | 点击、拖动、键盘快速触发/收起、自然光标抓握、冷却和打扰上限 |
 | `src/main/interaction-integration.test.ts` | IPC 白名单、锁定窗口、隐私时间桶、原生组件降级、恢复路径与原子启动静态集成 |
 | `src/main/motion.test.ts` | 方向、速度、时长边界、缓动和落点 |
 | `src/main/store.test.ts` | 默认档、备份恢复、schema 1→2、迁移备份、未知或无效 schema 2 和离线加载 |
-| `src/main/release-config.test.ts` | 1.2.3 身份、ASCII 固定名 Setup/Update、用户数据保留和原生组件解包 |
-| `src/renderer/ui-regressions.test.ts` | 透明窗口、五层角色、四阶段各 14 张图片表情、消费效果视觉、成长/生活/锁定/隐私控件和中文菜单 |
+| `src/main/release-config.test.ts` | 1.2.4 身份、ASCII 固定名 Setup/Update、用户数据保留和原生组件解包 |
+| `src/renderer/ui-regressions.test.ts` | 透明窗口、五层角色、四阶段肩部锚点、14 张图片表情、本地互动道具、消费效果和界面控件 |
 | `src/main/runtime-scheduler.test.ts` | 退出时幂等停止周期、递归和短时定时器，停止后不能重新排程 |
-| `src/renderer/drag-visual.test.ts` | 开心飞行方向、速度限幅、强度倍率和静止姿态 |
+| `src/renderer/drag-visual.test.ts` | 拖动速度平滑、方向反转、强度倍率、末速度落地和静止悬空姿态 |
 | `src/renderer/outfit-layout.test.ts` | 八件本地装扮 PNG、稳定 ID 和四阶段 32 组布局边界 |
 
 ## 变更所需最小验证

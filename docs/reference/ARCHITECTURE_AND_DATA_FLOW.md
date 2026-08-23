@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 架构、进程职责或状态流变化时同步更新 |
-| 适用版本 | 1.2.3 |
+| 适用版本 | 1.2.4 |
 | 最后核对 | 2026-08-23 |
 | 权威源码 | `src/main/main.ts`、`src/main/store.ts`、`src/main/interaction-controller.ts`、`src/main/keyboard-worker.ts`、`src/preload/`、`src/shared/`、`src/renderer/`、`package.json` |
 | 更新触发 | 新增进程、窗口、IPC、持久化路径、原生依赖、领域模块、运行时时钟或状态所有权变化 |
@@ -68,7 +68,7 @@ flowchart LR
 
 主进程中的 `state: SaveData` 是持久状态的唯一运行时所有者。领域函数返回新结果，主进程验证意图、原子替换状态、保存并广播。渲染层的 `SaveData` 只是快照，不得假设本地副本一直最新。
 
-`PetRuntimeState` 同样由主进程拥有，但不进入存档。它把移动、互动、注视与键盘组件状态一次性广播给两个普通窗口。渲染层只将它映射为 CSS 类、朝向和视觉道具，不决定优先级或窗口移动权。
+`PetRuntimeState` 同样由主进程拥有，但不进入存档。它把移动、互动、注视、键盘组件状态与派生的 `calm | steady | rapid` 节奏一次性广播给两个普通窗口。渲染层只将它映射为 CSS 类、朝向、敲击速度和视觉道具，不决定优先级或窗口移动权。
 
 `state:bootstrap` 在一次 invoke 中返回 `state`、`runtime`、`offlineSummary` 和可选 `growthProgress`，避免渲染层启动时分别读取多个时间点的快照。后续 `growth:progress` 事件只由在线周期推进或有效照料发出，`source` 仅为 `online | care`。
 
