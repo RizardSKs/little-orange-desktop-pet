@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理可在对应代码或测试已经变更并完成核对时修改；不得仅为设想改写“当前值”，不得重排、复用或删除既有 CFG 编号。  
-> 适用版本：1.2.5  
+> 适用版本：1.2.6 预览  
 > 最后核对：2026-08-23  
 > 权威源码：src/shared/types.ts、src/shared/growth.ts、src/shared/game.ts、src/shared/catalog.ts、src/shared/economy-types.ts、src/shared/economy.ts、src/shared/expression.ts、src/shared/interaction.ts、src/main/store.ts、src/main/main.ts、src/main/motion.ts、src/main/interaction-controller.ts、src/renderer  
 > 更新触发：默认存档、领域类型、公式、阈值、计时器、窗口尺寸、动作、互动、表情、装扮或经济目录、设置项及其测试发生变化时。
@@ -117,6 +117,7 @@
 | CFG-081 | 背包目录与堆叠 | 8 种用品 + 5 种服务券，共 13 种；每种最多 99；单次购买 1–10 | 稳定 `InventoryItemId` 与安全整数数量 | `INVENTORY_ITEMS`、`INVENTORY_STACK_LIMIT`、`MAX_PURCHASE_QUANTITY` | 商店、背包、schema 校验 | `catalog.test.ts`、`economy.test.ts` | 高：价格、效果和 ID 影响经济与兼容；逐项数值以目录为权威 |
 | CFG-082 | 定时效果队列 | celebration、keyboard、mouse、theme、aura 五槽；每槽 FIFO 最多 32 段，总剩余实际运行时最多 14 天 | 正整数毫秒；有效效果与来源 ID | `MAX_EFFECT_SEGMENTS_PER_SLOT`、`MAX_EFFECT_RUNTIME_PER_SLOT_MS` | 使用物品、探索奖励、PetView | `economy.test.ts`、`game.test.ts` | 高：影响可预付时长、schema 和渲染效果 |
 | CFG-083 | 探索任务 | 4 种；同一时间最多一个活动任务或一个待领取奖励；开始扣费，只按应用实际运行时间推进，提前返回不退款 | 稳定探索/故事 ID；价格与时长以 `EXPEDITIONS` 为权威 | `EXPEDITIONS`、`advanceEconomyRuntime()` | 生活页、旅行册、效果奖励 | `catalog.test.ts`、`economy.test.ts`、`game.test.ts` | 高：持续消耗金币并涉及任务恢复与故事兼容 |
+| CFG-084 | 用品与服务专属使用动作 | 13 种目录项均有 `useVisual`；用品 8/8/12/12/10/10/8/8 秒，服务 20/45/60/90/120 秒；逐项表情与素材路径以目录为权威 | 非持久 `inventory-use` 运行时状态；正整数毫秒；稳定 `InventoryItemId` | `INVENTORY_ITEMS[].useVisual`、`InteractionController.playInventoryUse()` | 主进程使用 IPC、PetView、动作规格文档 | `catalog.test.ts`、`interaction-controller.test.ts`、`ui-regressions.test.ts` | 高：新增目录项必须同步动作、素材、文档与测试 |
 
 ### 用户设置
 
@@ -139,7 +140,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | CFG-100 | 鼠标采样、点击与拖动阈值 | 采样 50ms；点击组结算 320ms；拖动阈值 7 DIP；拖动原始速度按 2.4px/ms 限幅并以 55ms 时间常数平滑、1.4px/ms 归一，基础最大倾斜 12°，gentle/normal/lively 幅度系数 0.65/1/1.25 | 毫秒、DIP、像素/毫秒、角度、倍率 | `interaction.ts`、`drag-visual.ts` | 主进程采样、PetView | `interaction.test.ts`、`drag-visual.test.ts` | 中：影响点击、抚摸和拖动观感 |
 | CFG-101 | 四阶段互动参数 | sprout 幅度0.75/时长1.12/shy；lively 1.15/0.86/bouncy；mature 0.95/1/steady；radiant 1.05/0.9/radiant | 幅度与时长倍率、性格标签 | `INTERACTION_STAGE_PROFILES` | 互动控制器、CSS | `interaction.test.ts`、`ui-regressions.test.ts` | 高：保证阶段动作差异显著 |
-| CFG-102 | 互动优先级与时长 | 优先级 idle0、nearby30、rest/paw50、tug/chase/dizzy60、keyboard70、petting90、dodge92、landing95、dragging100；基础时长 nearby3500、petting1200、dodge900、landing650、rest700、paw1350、tug2200、chase2400、dizzy1800ms | 高优先级可中断低优先级；时长再乘阶段倍率 | `INTERACTION_PRIORITY`、`INTERACTION_DURATION_MS` | 互动控制器 | `interaction.test.ts`、`interaction-controller.test.ts` | 高：决定动作竞争与反馈辨识度 |
+| CFG-102 | 互动优先级与时长 | 优先级 idle0、nearby30、rest/paw50、tug/chase/dizzy60、keyboard70、petting90、dodge92、landing95、inventory-use98、dragging100；基础时长 nearby3500、petting1200、dodge900、landing650、rest700、paw1350、tug2200、chase2400、dizzy1800ms；inventory-use 时长见 CFG-084 | 高优先级可中断低优先级；一般互动时长乘阶段倍率，用品/服务使用时长保持目录值 | `INTERACTION_PRIORITY`、`INTERACTION_DURATION_MS`、`useVisual` | 互动控制器 | `interaction.test.ts`、`interaction-controller.test.ts` | 高：决定动作竞争与反馈辨识度 |
 | CFG-103 | 注视与鼠标轨迹识别 | 注视半径700，x/y分别按350/250归一；挑逗2秒、半径70–230、路径≥420、横向反转≥4；环绕2.5秒且≥1.25圈，≥2圈后眩晕；附近停留6秒、距离≤160、速度≤25 | CSS 像素、毫秒、圈数、像素/秒 | `gazeForCursor()`、`isTeasingCursor()`、`accumulatedCursorTurns()`、`isNearbyCursor()` | 注视、扒拉、追逐、眩晕、陪伴 | `interaction.test.ts`、`interaction-controller.test.ts` | 中：改变环境互动触发率 |
 | CFG-104 | 键盘节奏识别 | worker 每250ms汇总；800ms内累计≥3次触发；900ms无新计数视为安静；累计3–4/5–7/≥8分别派生 calm/steady/rapid；连续陪打最多18秒，收起700ms，结束冷却12秒；worker 2秒未 ready 则 unavailable | 只传计数与时间桶，渲染层只接收派生节奏，不传按键内容 | `keyboard-worker.ts`、`keyboardRhythmIsBusy()`、`keyboardTempoForBuckets()`、`InteractionController` | 键盘陪打 | `interaction.test.ts`、`interaction-controller.test.ts`、`interaction-integration.test.ts` | 高：涉及输入隐私、节奏和资源占用 |
 | CFG-105 | 自发互动与鼠标拉扯限制 | 自发动作间隔≥12秒且每分钟≤4次；鼠标距中心≤100持续250ms，再于1200ms内移动≥80触发拉扯；弹簧系数0.22，单 tick 位移≤24；paw/tug/chase/nearby 冷却分别为15/20/30/45秒 | 毫秒、像素、比例、次数 | `InteractionController` | 鼠标环境互动、窗口移动 | `interaction-controller.test.ts` | 高：限制打扰频率并防止窗口突跳 |

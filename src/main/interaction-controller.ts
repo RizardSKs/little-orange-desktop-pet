@@ -14,6 +14,7 @@ import {
   TAP_SETTLE_MS,
   type TimedPoint,
 } from '../shared/interaction';
+import type { InventoryItemId } from '../shared/economy-types';
 import type {
   GrowthStage,
   KeyboardHookStatus,
@@ -54,7 +55,7 @@ function clampStep(value: number): number {
 export class InteractionController {
   private runtime: PetRuntimeState = {
     motion: { moving: false, direction: 'right' },
-    interaction: { kind: 'idle', sequenceId: 0, startedAt: 0, durationMs: null, direction: 'right' },
+    interaction: { kind: 'idle', sequenceId: 0, startedAt: 0, durationMs: null, direction: 'right', inventoryItemId: null },
     gaze: { x: 0, y: 0 },
     keyboardStatus: 'disabled',
     keyboardTempo: 'calm',
@@ -108,6 +109,14 @@ export class InteractionController {
     this.lastTapAt = now;
   }
 
+  playInventoryUse(itemId: InventoryItemId, durationMs: number, now = Date.now()): boolean {
+    if (this.options.getContext().locked || this.isDragging()
+      || !Number.isFinite(durationMs) || durationMs <= 0) return false;
+    this.tapCount = 0;
+    this.pendingDizzy = false;
+    return this.startInteraction('inventory-use', now, durationMs, this.runtime.motion.direction, true, itemId);
+  }
+
   beginDrag(now = Date.now()): boolean {
     if (this.options.getContext().locked) return false;
     this.tapCount = 0;
@@ -134,6 +143,7 @@ export class InteractionController {
     if (this.isDragging() || this.runtime.interaction.kind === 'cursor-tug') this.options.finishPetMove();
     if (this.runtime.interaction.kind === 'dragging'
       || this.runtime.interaction.kind === 'landing'
+      || this.runtime.interaction.kind === 'inventory-use'
       || this.runtime.interaction.kind === 'petting'
       || this.runtime.interaction.kind === 'dodge'
       || this.runtime.interaction.kind === 'cursor-tug') this.forceIdle(now);
@@ -144,6 +154,7 @@ export class InteractionController {
     if (this.runtime.interaction.kind === 'nearby'
       || this.runtime.interaction.kind === 'keyboard-rest'
       || this.runtime.interaction.kind === 'keyboard-typing'
+      || this.runtime.interaction.kind === 'inventory-use'
       || this.runtime.interaction.kind === 'cursor-paw'
       || this.runtime.interaction.kind === 'cursor-tug'
       || this.runtime.interaction.kind === 'cursor-chase'
@@ -306,19 +317,29 @@ export class InteractionController {
     this.cooldowns.set(kind, now + cooldownMs);
   }
 
-  private startInteraction(kind: PetInteractionKind, now: number, durationMs: number | null, direction: PetDirection, force = false): boolean {
+  private startInteraction(
+    kind: PetInteractionKind,
+    now: number,
+    durationMs: number | null,
+    direction: PetDirection,
+    force = false,
+    inventoryItemId: InventoryItemId | null = null,
+  ): boolean {
     if (!force && this.runtime.interaction.kind !== 'idle' && !canInterruptInteraction(this.runtime.interaction.kind, kind)) return false;
     const previousKind = this.runtime.interaction.kind;
     if (previousKind === 'cursor-tug' && kind !== 'cursor-tug') this.options.finishPetMove();
     if (previousKind === 'cursor-chase' && kind !== 'cursor-dizzy') this.pendingDizzy = false;
     const profile = INTERACTION_STAGE_PROFILES[this.options.getContext().stage];
-    const adjustedDuration = durationMs === null ? null : Math.round(durationMs * profile.duration);
+    const adjustedDuration = durationMs === null
+      ? null
+      : kind === 'inventory-use' ? Math.round(durationMs) : Math.round(durationMs * profile.duration);
     this.runtime.interaction = {
       kind,
       sequenceId: this.runtime.interaction.sequenceId + 1,
       startedAt: now,
       durationMs: adjustedDuration,
       direction,
+      inventoryItemId,
     };
     this.actionEndsAt = adjustedDuration === null ? null : now + adjustedDuration;
     this.emit();
@@ -333,6 +354,7 @@ export class InteractionController {
       startedAt: now,
       durationMs: null,
       direction: this.runtime.interaction.direction,
+      inventoryItemId: null,
     };
     this.actionEndsAt = null;
     this.emit();

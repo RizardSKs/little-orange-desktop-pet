@@ -2,7 +2,7 @@
 
 > 文档级别：`LIVING`（随实现持续维护）  
 > 修改权限：装扮目录、购买/装备逻辑、渲染锚点、角色素材或测试变化时同步更新；既有物品 ID、存档兼容规则和美术方向不得擅自改变。  
-> 适用版本：1.2.4  
+> 适用版本：1.2.6 预览  
 > 最后核对：2026-08-23  
 > 权威源码：`src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`src/renderer/pet-view.tsx`、`scripts/prepare_v1_2_3_outfit_assets.py`、`assets/outfits/`、`assets/props/`  
 > 更新触发：稳定 ID、装扮所有权、旅行外观、限时视觉、阶段素材、素材处理流程或相关测试变化。
@@ -55,9 +55,9 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 
 - 探索期间根据委托显示 `travel-satchel`、`travel-raincoat`、`travel-star-cape` 或 `travel-grand-backpack` 旅行标识。
 - 旅行装只在视觉上暂时覆盖普通装扮，不修改 `equippedItem`；正常返程或提前返程后，原永久装扮自动恢复。
-- 键盘、鼠标、庆典、主题和光环由持久化效果队列驱动。`pet-view.tsx` 只渲染每个槽位的队首效果，并已把全部消费庆典/主题/光环及四种探索返程庆典/主题映射到桌宠动作、道具、背景或辉光；队列推进由主进程按实际运行时间完成。
+- 键盘、鼠标、主题和光环由持久化效果队列驱动。1.2.6 起，新使用的用品和服务由临时 `inventory-use` 立即播放专属动作；旧存档消费庆典和探索返程庆典仍可从 `celebration` 队列继续显示，队列推进由主进程按实际运行时间完成。
 - 探索正常完成时，返程庆典和对应主题奖励原子入队；提前返程不入队，且原永久装扮仍会恢复。
-- 1.2.4 的键盘陪打和光标抓握分别使用 `assets/props/mini-keyboard.png` 与 `assets/props/cursor-grab.png` 本地透明 PNG；旅行装和其他临时道具仍使用 emoji/CSS。
+- 1.2.4 的键盘陪打和光标抓握分别使用 `assets/props/mini-keyboard.png` 与 `assets/props/cursor-grab.png`。1.2.6 预览在 `assets/props/inventory/` 增加十二张用品/服务透明 PNG，迷你键盘动作复用现有键盘；十三种正式使用动作均不依赖系统 emoji。逐项映射见[用品与服务专属动作规格](INVENTORY_USE_ACTIONS.md)。
 
 ## 素材处理流程
 
@@ -76,7 +76,7 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 
 - 分层或当前表情加载失败会降级为带中性表情的整图，因此降级状态无法显示独立手脚步态或动态表情，外围效果仍可工作。
 - `layerFailed` 在成长阶段改变时重置；同阶段内的临时加载失败不会自动重试分层模式。
-- 旅行装和未迁移的限时道具没有独立 PNG 美术，外观仍会受平台 emoji 字体影响；键盘与光标抓握不再依赖平台 emoji。
+- 旅行装和探索返程的遗留临时标识仍可能使用 emoji；用品和服务的正式使用动作、键盘与光标抓握均使用本地 PNG，不受平台字体影响。
 - 自动测试验证装扮稳定 ID、文件名、512×512 RGBA 和 32 组边界，不替代透明边缘、DPI、左右镜像和动作遮挡的人工截图检查。
 
 ## 相关测试
@@ -84,5 +84,6 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 - `src/renderer/ui-regressions.test.ts`：验证五层与图片表情加载、整图 fallback，以及全部 80 张 PNG 的尺寸与 RGBA 类型。
 - `src/renderer/outfit-layout.test.ts`：验证八件本地装扮、透明 PNG 契约和四阶段 32 组布局边界。
 - `src/shared/catalog.test.ts`：锁定八件永久装扮 ID，以及用品、服务、探索、故事和效果目录。
+- `src/renderer/ui-regressions.test.ts`：验证十二张新增用品/服务道具与复用键盘均为本地 RGBA PNG，并锁定十三种动作选择器。
 - `src/shared/game.test.ts`、`src/main/store.test.ts`：验证永久装扮购买规则和 schema 1 到 schema 2 的所有权/装备保留。
 - `scripts/prepare_v1_2_2_character_assets.py`：执行时验证全部 80 张阶段运行素材的透明画布契约。

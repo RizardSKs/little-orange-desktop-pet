@@ -46,13 +46,13 @@ describe('inventory purchases and use', () => {
     expect(full.coins).toBe(10_000);
   });
 
-  it('consumes exactly one voucher and enqueues all of its effects', () => {
+  it('consumes exactly one voucher and queues only its persistent effects', () => {
     const economy = withCoins(0);
     economy.inventory['service-sparkle-party'] = 2;
     const used = useInventoryItem(economy, 'service-sparkle-party');
     expect(used.ok).toBe(true);
     expect(used.economy.inventory['service-sparkle-party']).toBe(1);
-    expect(used.economy.effectQueues.celebration[0].effectId).toBe('effect-party-ceremony');
+    expect(used.economy.effectQueues.celebration).toEqual([]);
     expect(used.economy.effectQueues.theme[0].effectId).toBe('effect-party-theme');
     expect(used.economy.effectQueues.aura[0].effectId).toBe('effect-party-aura');
     expect(used.economy.coins).toBe(0);
@@ -84,15 +84,15 @@ describe('inventory purchases and use', () => {
 });
 
 describe('timed effect queues', () => {
-  it('runs FIFO within each slot and different slots in parallel using only the supplied runtime', () => {
+  it('keeps legacy celebrations compatible while persistent slots advance in parallel', () => {
     const economy = withCoins(0);
-    economy.inventory['item-citrus-cookie'] = 1;
-    economy.inventory['item-honey-soda'] = 1;
     economy.inventory['item-mini-keyboard'] = 1;
     economy.inventory['item-sunset-theme'] = 1;
-    let current = useInventoryItem(economy, 'item-citrus-cookie').economy;
-    current = useInventoryItem(current, 'item-honey-soda').economy;
-    current = useInventoryItem(current, 'item-mini-keyboard').economy;
+    economy.effectQueues.celebration = [
+      { effectId: 'effect-cookie-snack', sourceId: 'item-citrus-cookie', remainingRuntimeMs: 4_000 },
+      { effectId: 'effect-honey-soda', sourceId: 'item-honey-soda', remainingRuntimeMs: 12_000 },
+    ];
+    let current = useInventoryItem(economy, 'item-mini-keyboard').economy;
     current = useInventoryItem(current, 'item-sunset-theme').economy;
 
     const advanced = advanceEconomyRuntime(current, 10_000, 100_000);
@@ -113,9 +113,10 @@ describe('timed effect queues', () => {
       sourceId: 'item-citrus-cookie' as const,
       remainingRuntimeMs: 1,
     }));
-    const segmentRejected = useInventoryItem(segmentFull, 'item-citrus-cookie');
-    expect(segmentRejected.code).toBe('effect-queue-full');
-    expect(segmentRejected.economy.inventory['item-citrus-cookie']).toBe(1);
+    const transientUse = useInventoryItem(segmentFull, 'item-citrus-cookie');
+    expect(transientUse.code).toBe('used');
+    expect(transientUse.economy.inventory['item-citrus-cookie']).toBeUndefined();
+    expect(transientUse.economy.effectQueues.celebration).toHaveLength(MAX_EFFECT_SEGMENTS_PER_SLOT);
 
     let runtimeFull = withCoins(0);
     runtimeFull.inventory['service-grand-festival'] = 5;

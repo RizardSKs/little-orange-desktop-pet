@@ -2,9 +2,9 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在领域规则、主进程调用链、界面或测试已经变更并核对后更新；新增货币、付费、联网奖励或惩罚性养成必须先取得用户批准。  
-> 适用版本：1.2.0  
-> 最后核对：2026-08-16  
-> 权威源码：src/shared/game.ts、src/shared/growth.ts、src/shared/economy.ts、src/main/main.ts、src/main/store.ts、src/renderer/panel-view.tsx  
+> 适用版本：1.2.6 预览  
+> 最后核对：2026-08-23  
+> 权威源码：src/shared/game.ts、src/shared/growth.ts、src/shared/economy.ts、src/shared/catalog.ts、src/main/main.ts、src/main/store.ts、src/renderer/panel-view.tsx  
 > 更新触发：属性、衰减、动作成本或收益、动作失败条件、金币来源与消耗、在线或离线公式、结算时机、动作反馈或相关测试变化时。
 
 精确数值统一登记在 [CONFIGURATION_REGISTRY.md](CONFIGURATION_REGISTRY.md)。本文件定义当前数据流、照顾语义和奖励边界。
@@ -72,6 +72,8 @@
 
 用品或服务先购买进入背包，再由用户明确使用；探索开始时扣费，提前返回不退款。效果和探索只消耗应用实际运行时间，应用退出或系统 suspend、睡眠、休眠期间暂停。OS lock-screen 不算离线，也不暂停在线奖励、效果或探索计时；锁屏时只暂停原生鼠标/键盘互动和自动散步。具体目录价格、时长和效果以 `src/shared/catalog.ts` 为权威，数量和队列上限见 CFG-081 至 CFG-083。
 
+每种用品和服务在成功使用后还会立即触发角色实际参与的专属动作；失败使用不会播放动作。动作编排、素材、优先级和验收以[用品与服务专属动作规格](INVENTORY_USE_ACTIONS.md)为权威。使用动作是非持久运行时表现，键盘、鼠标、主题和光环等长期效果仍由持久化效果队列负责。
+
 ### 非经济环境互动
 
 鼠标注视、抚摸、连续点击、躲闪、拖动、落地、扒拉鼠标、追逐、眩晕和键盘陪打均是运行时视觉互动，不持久化冷却或采样数据，也不直接改变属性、金币或经验。桌面锁定、鼠标互动开关及键盘授权属于持久设置，但锁定本身不改变养成结算公式。
@@ -96,3 +98,4 @@
 - `src/shared/economy.test.ts`：背包购买、堆叠、服务使用、效果队列、探索扣费、实际运行时推进和失败码。
 - `src/main/store.test.ts`：加载后的离线结算、有效保存和坏档保护。
 - `src/main/interaction-controller.test.ts` 与 `src/shared/interaction.test.ts`：运行时鼠标、拖动、键盘互动及冷却边界。
+- `src/shared/catalog.test.ts` 与 `src/renderer/ui-regressions.test.ts`：十三种用品/服务的专属动作配置、本地道具素材和渲染契约。

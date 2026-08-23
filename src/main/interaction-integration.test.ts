@@ -67,6 +67,9 @@ describe('desktop lock and native input boundaries', () => {
     expect(main).toContain('assertPanelRequest(event)');
     expect(main).toContain('advanceEconomyRuntime(state.economy, elapsedRuntimeMs, now)');
     expect(main).toContain('if (advanceActualEconomyRuntime(now)) saveAndBroadcast()');
+    const itemUse = main.slice(main.indexOf("ipcMain.handle('economy:item-use'"), main.indexOf("ipcMain.handle('expedition:start'"));
+    expect(itemUse).toContain('if (!economyResult.ok)');
+    expect(itemUse).toContain('interactionController?.playInventoryUse(itemId, item.useVisual.durationMs)');
   });
 
   it('exposes only the validated economy channels through the regular preload', () => {

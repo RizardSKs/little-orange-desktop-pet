@@ -29,6 +29,9 @@ describe('desktop pet visual regressions', () => {
     expect(component).toContain('effect-grand-tour-return');
     expect(component).toContain('/mini-keyboard.png');
     expect(component).toContain('/cursor-grab.png');
+    expect(component).toContain('inventory-action-prop');
+    expect(component).toContain('inventory-action-particles');
+    expect(component).toContain('inventoryUseItem?.useVisual.expression');
   });
 
   it('keeps every growth-stage arm anchored during drag animation', () => {
@@ -95,6 +98,28 @@ describe('desktop pet visual regressions', () => {
       expect(image.readUInt32BE(20)).toBeGreaterThanOrEqual(512);
       expect(image[25]).toBe(6);
     }
+  });
+
+  it('ships and animates a dedicated transparent prop for every inventory action', () => {
+    const css = read('src/renderer/styles.css');
+    const inventoryProps = [
+      'citrus-cookie', 'honey-soda', 'ribbon-ball', 'bubble-bath', 'mouse-feather', 'sunset-orb',
+      'stage-sparkles', 'grooming-kit', 'picnic-set', 'party-popper', 'royal-fanfare', 'grand-fireworks',
+    ];
+    for (const name of inventoryProps) {
+      const image = fs.readFileSync(path.join(process.cwd(), 'assets', 'props', 'inventory', `${name}.png`));
+      expect(image.readUInt32BE(16)).toBeGreaterThanOrEqual(512);
+      expect(image.readUInt32BE(20)).toBeGreaterThanOrEqual(512);
+      expect(image[25]).toBe(6);
+    }
+    for (const id of [
+      'item-citrus-cookie', 'item-honey-soda', 'item-ribbon-ball', 'item-bubble-bath',
+      'item-mini-keyboard', 'item-mouse-feather', 'item-sunset-theme', 'item-stage-sparkle',
+      'service-cozy-grooming', 'service-desktop-picnic', 'service-sparkle-party',
+      'service-royal-celebration', 'service-grand-festival',
+    ]) expect(css).toContain(`.use-${id} .inventory-action-prop`);
+    expect(css).toContain('.interaction-inventory-use .arm-left');
+    expect(css).toContain('@media (prefers-reduced-motion:reduce)');
   });
 
   it('installs a Chinese application menu', () => {

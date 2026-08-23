@@ -5,7 +5,7 @@ import { PetView } from './pet-view';
 
 const DEFAULT_RUNTIME: PetRuntimeState = {
   motion: { moving: false, direction: 'right' },
-  interaction: { kind: 'idle', sequenceId: 0, startedAt: 0, durationMs: null, direction: 'right' },
+  interaction: { kind: 'idle', sequenceId: 0, startedAt: 0, durationMs: null, direction: 'right', inventoryItemId: null },
   gaze: { x: 0, y: 0 },
   keyboardStatus: 'disabled',
   keyboardTempo: 'calm',

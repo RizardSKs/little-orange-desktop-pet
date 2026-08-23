@@ -4,7 +4,7 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 import { advanceOnline, buyItem, performAction, settleOffline, statCap } from '../shared/game';
 import { deriveGrowthMilestones, type GrowthProgressEvent } from '../shared/growth';
-import { findShopItem } from '../shared/catalog';
+import { findInventoryItem, findShopItem } from '../shared/catalog';
 import {
   acknowledgeExpeditionReward,
   advanceEconomyRuntime,
@@ -697,6 +697,11 @@ function setupIpc() {
       economy: economyResult.economy,
     };
     saveAndBroadcast();
+    const item = findInventoryItem(itemId);
+    if (item) {
+      cancelPetMotion();
+      interactionController?.playInventoryUse(itemId, item.useVisual.durationMs);
+    }
     const message = statResult.code === 'no-stat-effect'
       ? economyResult.message
       : `${economyResult.message}${statResult.message}`;

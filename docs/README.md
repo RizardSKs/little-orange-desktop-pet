@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随项目演进更新；相关代码变化时必须在同一次修改中同步 |
-| 适用版本 | 1.2.5 |
+| 适用版本 | 1.2.6 预览（正式包仍为 1.2.5） |
 | 最后核对 | 2026-08-23 |
 | 权威来源 | 根目录 `AGENTS.md`、本目录下的治理与参考文档、当前源码与发布产物 |
 | 更新触发 | 新增、移动或改变文档职责；版本发布；文档控制规则经用户批准后变化 |
@@ -53,6 +53,7 @@
 | 照顾、经济、探索和收益 | [照顾、动作与收益](reference/CARE_ACTIONS_AND_REWARDS.md) | `src/shared/game.ts`、`src/shared/economy.ts`、`src/shared/catalog.ts` |
 | 装扮和素材 | [装扮与素材](reference/OUTFITS_AND_ASSETS.md) | `src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`assets/pet/`、`assets/outfits/` |
 | 行为、移动和表情 | [动作、行为与表情](reference/MOTION_BEHAVIOR_AND_EXPRESSIONS.md) | `src/shared/interaction.ts`、`src/main/interaction-controller.ts`、`src/shared/expression.ts` |
+| 用品与服务使用动作 | [用品与服务专属动作](reference/INVENTORY_USE_ACTIONS.md) | `src/shared/catalog.ts`、`src/main/interaction-controller.ts`、`src/renderer/pet-view.tsx`、`assets/props/inventory/` |
 | 窗口、设置和 IPC | [界面、窗口、设置与 IPC](reference/UI_WINDOWS_SETTINGS_AND_IPC.md) | `src/main/main.ts`、`src/preload/preload.ts`、`src/shared/types.ts` |
 | 存档 | [存档结构与迁移](reference/SAVE_SCHEMA_AND_MIGRATIONS.md) | `src/shared/types.ts`、`src/shared/game.ts`、`src/main/store.ts` |
 | 验证 | [测试与验收](reference/TESTING_AND_ACCEPTANCE.md) | `src/**/*.test.ts`、构建配置 |

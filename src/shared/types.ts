@@ -10,7 +10,7 @@ export type PetExpression = 'neutral' | 'happy' | 'curious' | 'surprised' | 'pro
 export type PetDirection = 'left' | 'right';
 export type KeyboardHookStatus = 'disabled' | 'starting' | 'ready' | 'unavailable';
 export type KeyboardTempo = 'calm' | 'steady' | 'rapid';
-export type PetInteractionKind = 'idle' | 'nearby' | 'petting' | 'dodge' | 'dragging' | 'landing' | 'keyboard-typing' | 'keyboard-rest' | 'cursor-paw' | 'cursor-tug' | 'cursor-chase' | 'cursor-dizzy';
+export type PetInteractionKind = 'idle' | 'nearby' | 'petting' | 'dodge' | 'inventory-use' | 'dragging' | 'landing' | 'keyboard-typing' | 'keyboard-rest' | 'cursor-paw' | 'cursor-tug' | 'cursor-chase' | 'cursor-dizzy';
 
 export type { EconomyState } from './economy-types';
 export type { GrowthProgressEvent } from './growth';
@@ -26,6 +26,7 @@ export interface PetInteractionVisualState {
   startedAt: number;
   durationMs: number | null;
   direction: PetDirection;
+  inventoryItemId: InventoryItemId | null;
 }
 
 export interface PetRuntimeState {

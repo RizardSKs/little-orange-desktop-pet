@@ -62,6 +62,33 @@ describe('InteractionController', () => {
     expect(harness.controller.snapshot().interaction.kind).toBe('dragging');
   });
 
+  it('plays dedicated inventory actions immediately and only dragging can interrupt them', () => {
+    const harness = createHarness();
+    expect(harness.controller.playInventoryUse('item-citrus-cookie', 8_000, 1_000)).toBe(true);
+    expect(harness.controller.snapshot().interaction).toMatchObject({
+      kind: 'inventory-use', inventoryItemId: 'item-citrus-cookie', startedAt: 1_000,
+    });
+
+    harness.controller.recordTap(1_100);
+    harness.controller.tick({ x: 300, y: 150 }, 1_500);
+    expect(harness.controller.snapshot().interaction.kind).toBe('inventory-use');
+
+    expect(harness.controller.playInventoryUse('service-cozy-grooming', 20_000, 2_000)).toBe(true);
+    expect(harness.controller.snapshot().interaction).toMatchObject({
+      kind: 'inventory-use', inventoryItemId: 'service-cozy-grooming', startedAt: 2_000,
+    });
+    expect(harness.controller.beginDrag(2_100)).toBe(true);
+    expect(harness.controller.snapshot().interaction).toMatchObject({ kind: 'dragging', inventoryItemId: null });
+  });
+
+  it('expires inventory actions cleanly and rejects invalid requests', () => {
+    const harness = createHarness();
+    expect(harness.controller.playInventoryUse('item-stage-sparkle', 8_000, 1_000)).toBe(true);
+    harness.controller.tick(null, 9_001);
+    expect(harness.controller.snapshot().interaction).toMatchObject({ kind: 'idle', inventoryItemId: null });
+    expect(harness.controller.playInventoryUse('item-stage-sparkle', Number.NaN, 10_000)).toBe(false);
+  });
+
   it('starts keyboard accompaniment from aggregate buckets and fails closed', () => {
     const harness = createHarness();
     harness.controller.setKeyboardStatus('ready', 0);

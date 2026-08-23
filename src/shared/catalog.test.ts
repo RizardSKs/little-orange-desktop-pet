@@ -28,6 +28,30 @@ describe('economy catalogs', () => {
     expect(INVENTORY_ITEMS.every((item) => item.id.length <= 40 && item.maxStack === 99)).toBe(true);
   });
 
+  it('requires a dedicated local use visual for every supply and service', () => {
+    expect(INVENTORY_ITEMS.map((item) => [
+      item.id,
+      item.useVisual.durationMs,
+      item.useVisual.expression,
+      item.useVisual.assetFile,
+    ])).toEqual([
+      ['item-citrus-cookie', 8_000, 'delighted', 'inventory/citrus-cookie.png'],
+      ['item-honey-soda', 8_000, 'refreshed', 'inventory/honey-soda.png'],
+      ['item-ribbon-ball', 12_000, 'excited', 'inventory/ribbon-ball.png'],
+      ['item-bubble-bath', 12_000, 'refreshed', 'inventory/bubble-bath.png'],
+      ['item-mini-keyboard', 10_000, 'focused', 'mini-keyboard.png'],
+      ['item-mouse-feather', 10_000, 'excited', 'inventory/mouse-feather.png'],
+      ['item-sunset-theme', 8_000, 'happy', 'inventory/sunset-orb.png'],
+      ['item-stage-sparkle', 8_000, 'surprised', 'inventory/stage-sparkles.png'],
+      ['service-cozy-grooming', 20_000, 'refreshed', 'inventory/grooming-kit.png'],
+      ['service-desktop-picnic', 45_000, 'delighted', 'inventory/picnic-set.png'],
+      ['service-sparkle-party', 60_000, 'excited', 'inventory/party-popper.png'],
+      ['service-royal-celebration', 90_000, 'proud', 'inventory/royal-fanfare.png'],
+      ['service-grand-festival', 120_000, 'proud', 'inventory/grand-fireworks.png'],
+    ]);
+    expect(new Set(INVENTORY_ITEMS.map((item) => item.useVisual.assetFile)).size).toBe(13);
+  });
+
   it('locks the intended price curve and ordinary spending ratios', () => {
     expect(SUPPLY_ITEMS.map((item) => item.price)).toEqual([12, 18, 24, 28, 36, 36, 54, 72]);
     expect(SERVICE_VOUCHERS.map((item) => item.price)).toEqual([120, 260, 680, 1_880, 5_200]);
@@ -103,15 +127,15 @@ describe('economy catalogs', () => {
 
   it('locks timed item, service, and return-effect durations', () => {
     expect(SUPPLY_ITEMS.map((item) => item.effects.map((effect) => effect.durationMs))).toEqual([
-      [8_000], [8_000], [12_000], [12_000],
+      [], [], [], [],
       [30 * 60 * 1000], [30 * 60 * 1000], [60 * 60 * 1000], [30 * 60 * 1000],
     ]);
     expect(SERVICE_VOUCHERS.map((item) => item.effects.map((effect) => effect.durationMs))).toEqual([
-      [20_000, 2 * 60 * 60 * 1000],
-      [45_000, 4 * 60 * 60 * 1000],
-      [60_000, 8 * 60 * 60 * 1000, 8 * 60 * 60 * 1000],
-      [90_000, 24 * 60 * 60 * 1000, 24 * 60 * 60 * 1000],
-      [120_000, 72 * 60 * 60 * 1000, 72 * 60 * 60 * 1000],
+      [2 * 60 * 60 * 1000],
+      [4 * 60 * 60 * 1000],
+      [8 * 60 * 60 * 1000, 8 * 60 * 60 * 1000],
+      [24 * 60 * 60 * 1000, 24 * 60 * 60 * 1000],
+      [72 * 60 * 60 * 1000, 72 * 60 * 60 * 1000],
     ]);
     expect(EXPEDITIONS.map((expedition) => expedition.completionAnimationMs)).toEqual([
       15_000, 20_000, 30_000, 45_000,

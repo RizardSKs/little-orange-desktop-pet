@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { findExpedition, SHOP_ITEMS } from '../shared/catalog';
+import { findExpedition, findInventoryItem, SHOP_ITEMS } from '../shared/catalog';
 import { activeEffectForSlot } from '../shared/economy';
 import { EFFECT_SLOTS, type EffectId } from '../shared/economy-types';
 import { resolvePetExpression } from '../shared/expression';
@@ -71,11 +71,16 @@ export function PetView({ state, runtime, growthCelebration }: {
   const [layerFailed, setLayerFailed] = useState(false);
   const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(null);
   const restingExpression = resolvePetExpression(state, idleRoll);
+  const inventoryUseItem = runtime.interaction.kind === 'inventory-use' && runtime.interaction.inventoryItemId
+    ? findInventoryItem(runtime.interaction.inventoryItemId)
+    : null;
   const expression = runtime.interaction.kind === 'dragging' || runtime.interaction.kind === 'cursor-tug'
     ? 'excited'
     : runtime.interaction.kind === 'landing'
       ? 'happy'
-      : runtime.interaction.kind === 'keyboard-typing' ? 'focused' : restingExpression;
+      : runtime.interaction.kind === 'keyboard-typing'
+        ? 'focused'
+        : inventoryUseItem?.useVisual.expression ?? restingExpression;
   const assetRoot = location.protocol === 'file:' ? '../assets/pet' : '/assets/pet';
   const stageRoot = `${assetRoot}/${state.growth.stage}`;
   const fallbackSprite = `${assetRoot}/${state.growth.stage}.png`;
@@ -264,7 +269,7 @@ export function PetView({ state, runtime, growthCelebration }: {
       <div className={`speech expression-${expression}`}>{EXPRESSION_TEXT[expression]}</div>
       <div
         ref={petElement}
-        className={`pet-character stage-${state.growth.stage} expression-${expression} interaction-${runtime.interaction.kind} keyboard-tempo-${runtime.keyboardTempo} behavior-${state.pet.behavior} ${runtime.motion.moving ? 'is-moving' : ''} ${expedition ? 'is-travelling' : ''} ${activeEffects}`}
+        className={`pet-character stage-${state.growth.stage} expression-${expression} interaction-${runtime.interaction.kind} ${inventoryUseItem ? `use-${inventoryUseItem.id}` : ''} keyboard-tempo-${runtime.keyboardTempo} behavior-${state.pet.behavior} ${runtime.motion.moving ? 'is-moving' : ''} ${expedition ? 'is-travelling' : ''} ${activeEffects}`}
         onContextMenu={(event) => { event.preventDefault(); void window.orangePet.showContextMenu(); }}
         onPointerDown={pointerDown}
         onPointerMove={pointerMove}
@@ -284,6 +289,12 @@ export function PetView({ state, runtime, growthCelebration }: {
               <img className="pet-layer pet-expression" src={expressionSprite} draggable={false} alt="" onError={() => setLayerFailed(true)} />
             </>}
             <div className="orange-fallback" />
+            {inventoryUseItem && <img
+              className="inventory-action-prop"
+              src={`${propRoot}/${inventoryUseItem.useVisual.assetFile}`}
+              draggable={false}
+              alt={inventoryUseItem.name}
+            />}
             {!expedition && equipped && equippedOutfitId && <img
               className={`outfit-layer outfit-${equippedOutfitId}`}
               src={outfitAssetPath(equipped.assetFile)}
@@ -293,6 +304,7 @@ export function PetView({ state, runtime, growthCelebration }: {
             />}
           </div>
         </div>
+        {inventoryUseItem && <span className="inventory-action-particles">✦</span>}
         {expedition && <span className={`travel-outfit ${expedition.travelOutfit}`}>{TRAVEL_ICONS[expedition.travelOutfit]}</span>}
         {(runtime.interaction.kind === 'keyboard-typing' || runtime.interaction.kind === 'keyboard-rest') && <img className={`interaction-prop mini-keyboard ${runtime.interaction.kind === 'keyboard-rest' ? 'is-closing' : ''}`} src={`${propRoot}/mini-keyboard.png`} draggable={false} alt="" />}
         {runtime.interaction.kind === 'cursor-paw' && <span className="interaction-prop mouse-feather">🪶</span>}
