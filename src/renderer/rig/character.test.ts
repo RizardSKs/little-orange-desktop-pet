@@ -17,7 +17,7 @@ describe('verified shoulder geometry', () => {
   it('atomically replaces all rig layers with a whole sprite on failure', () => {
     const pose = { body: REST_POSE, leftArm: 0, rightArm: 0, leftLeg: 0, rightLeg: 0 };
     for (const stage of STAGES) {
-      expect(characterFrame(stage, 'left', 'happy', pose, '/assets/pet')).toHaveLength(6);
+      expect(characterFrame(stage, 'left', 'happy', pose, '/assets/pet')).toHaveLength(7);
       const fallback = characterFrame(stage, 'left', 'happy', pose, '/assets/pet', true);
       expect(fallback.map(({ id }) => id)).toEqual(['fallback']);
       expect(fallback[0].src).toBe(`/assets/pet/${stage}.png`);

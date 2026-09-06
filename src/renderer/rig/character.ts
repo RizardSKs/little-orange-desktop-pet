@@ -22,7 +22,8 @@ export function characterFrame(stage: GrowthStage, direction: PetDirection, expr
     layer('leg-right', 'backArm', chain(body, around({ x: 292, y: 450 }, rotate(pose.rightLeg))), 'leg-right'),
     layer('arm-left', 'backArm', chain(body, armMatrix(stage, 'left', pose.leftArm)), 'arm-left'),
     layer('arm-right', 'backArm', chain(body, armMatrix(stage, 'right', pose.rightArm)), 'arm-right'),
-    layer('body', 'body', body, 'body'),
+    layer('body', 'body', body, 'torso'),
+    layer('leaves', 'leaf', body, 'leaves'),
     layer('expression', 'faceExpression', body, `expressions/${expression}`),
   ]);
 }
