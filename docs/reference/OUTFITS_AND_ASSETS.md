@@ -87,3 +87,7 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 - `src/renderer/ui-regressions.test.ts`：验证十二张新增用品/服务道具与复用键盘均为本地 RGBA PNG，并锁定十三种动作选择器。
 - `src/shared/game.test.ts`、`src/main/store.test.ts`：验证永久装扮购买规则和 schema 1 到 schema 2 的所有权/装备保留。
 - `scripts/prepare_v1_2_2_character_assets.py`：执行时验证全部 80 张阶段运行素材的透明画布契约。
+
+## 未发布手臂修复
+
+四阶段五层素材已通过 prepare_rig_attachments.py 确定性修整；肩部参数及预览验证见 [角色变换与附件实现](PET_RIG_AND_ATTACHMENTS.md)。原整图及表情仍保留，装扮迁移尚未完成。

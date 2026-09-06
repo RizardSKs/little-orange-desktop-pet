@@ -1,0 +1,114 @@
+{
+  "sprout": {
+    "left": {
+      "shoulder": {
+        "x": 136,
+        "y": 333
+      },
+      "hand": {
+        "x": 96,
+        "y": 353
+      },
+      "rootRadius": 20,
+      "minAngle": -90,
+      "maxAngle": 90
+    },
+    "right": {
+      "shoulder": {
+        "x": 376,
+        "y": 333
+      },
+      "hand": {
+        "x": 425,
+        "y": 353
+      },
+      "rootRadius": 21,
+      "minAngle": -90,
+      "maxAngle": 90
+    }
+  },
+  "lively": {
+    "left": {
+      "shoulder": {
+        "x": 151,
+        "y": 333
+      },
+      "hand": {
+        "x": 112,
+        "y": 362
+      },
+      "rootRadius": 19,
+      "minAngle": -90,
+      "maxAngle": 90
+    },
+    "right": {
+      "shoulder": {
+        "x": 361,
+        "y": 333
+      },
+      "hand": {
+        "x": 402,
+        "y": 361
+      },
+      "rootRadius": 19,
+      "minAngle": -90,
+      "maxAngle": 90
+    }
+  },
+  "mature": {
+    "left": {
+      "shoulder": {
+        "x": 133,
+        "y": 333
+      },
+      "hand": {
+        "x": 84,
+        "y": 381
+      },
+      "rootRadius": 21,
+      "minAngle": -90,
+      "maxAngle": 90
+    },
+    "right": {
+      "shoulder": {
+        "x": 379,
+        "y": 333
+      },
+      "hand": {
+        "x": 427,
+        "y": 381
+      },
+      "rootRadius": 21,
+      "minAngle": -90,
+      "maxAngle": 90
+    }
+  },
+  "radiant": {
+    "left": {
+      "shoulder": {
+        "x": 141,
+        "y": 348
+      },
+      "hand": {
+        "x": 104,
+        "y": 403
+      },
+      "rootRadius": 22,
+      "minAngle": -90,
+      "maxAngle": 90
+    },
+    "right": {
+      "shoulder": {
+        "x": 371,
+        "y": 338
+      },
+      "hand": {
+        "x": 417,
+        "y": 403
+      },
+      "rootRadius": 22,
+      "minAngle": -90,
+      "maxAngle": 90
+    }
+  }
+}

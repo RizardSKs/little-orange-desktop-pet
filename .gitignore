@@ -5,6 +5,7 @@ release/
 coverage/
 *.log
 tmp/
+__pycache__/
 
 # Local secrets and signing material
 .env

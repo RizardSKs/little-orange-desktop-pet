@@ -22,3 +22,7 @@ AssetSpace 是素材坐标，SceneSpace 使用相同的 512 逻辑单位，Windo
 Phase 1 测试验证坐标往返、单次阶段缩放、镜像还原、刚性附件无剪切、片段唯一性、播放/seek/种子重放一致性。Electron 截图验证由 `scripts/verify_rig_preview.cjs` 执行，使用隔离用户目录及隐藏窗口，不运行正式主进程。
 
 Phase 2–6 尚未实施；旧宠物仍使用原有渲染。不得将合成夹具通过描述为正式手臂、装扮、接触或 DPI 已修复。通过全部基础门槛后才允许迁移。
+
+## Phase 2 进展（2026-09-06）
+
+用户明确授权 Python/Pillow 确定性编辑素材。prepare_rig_attachments.py 从基础提交读取原图，清理手臂残片、补肩根，并修正身体/腿部连接处残片；输出 stage-data.json 与八只手臂的 1448 个角度重叠验证。characterFrame 及其测试提供固定肩点和完整 fallback。隔离 Electron 四阶段/左右/四摆角共 32 帧通过，全量 104 项测试、类型检查和构建通过。正式动作时间轴及完整附件仍待后续迁移验证。
