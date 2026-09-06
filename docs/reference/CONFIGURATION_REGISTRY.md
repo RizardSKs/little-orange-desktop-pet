@@ -181,4 +181,18 @@
 
 ## 未发布角色绘制参数
 
-角色逻辑画布为 512；阶段显示尺寸及窗口偏移统一由 src/renderer/rig/geometry.ts 的 DISPLAY 定义。正式宠物尚未迁移；新公共绘制组件仅在开发预览使用。
+角色逻辑画布为 512；阶段显示尺寸及窗口偏移统一由 `src/renderer/rig/geometry.ts` 的 `DISPLAY` 定义，正式宠物与开发预览共用唯一显示根变换。现有窗口保持 220×220 DIP，关键 alpha 轮廓距边缘至少 2 DIP。
+
+| 参数 | 当前值及源码权威 |
+| --- | --- |
+| 四阶段显示 size/x/y | sprout 146/38/67；lively 163/29/50；mature 170/25/46；radiant 170/25/45；`geometry.ts` |
+| 肩点、手点、根半径、完整旋转范围 | `rig/stage-data.json`；修复脚本按 1° 步进检查 −90° 至 90° |
+| 永久/旅行附件锚点、尺寸、继承 | `rig/attachments.ts` / `rig/travel.ts` 中逐阶段配方，其他文档不复制数值 |
+| 动作周期与道具姿态 | `rig/actions.ts` 的 `ACTIONS`；主进程总时长仍由目录 `useVisual` 定义 |
+| 接触相位边界 | 周期比例 0.2、0.3、0.72、0.84；安全提交点为 >=0.84 或 <0.04 |
+| 场景物件显示尺寸 | 键盘与野餐组合保持 116 DIP 画布尺寸，显式补偿阶段缩放；野餐中心 Window y=168 DIP |
+| 中断退场上限 | `MAX_INTERRUPTED_PROP_EXIT_MS` = 200 ms；减少动态效果时可立即清理 |
+| 减少动态效果过渡上限 | `MAX_REDUCED_TRANSITION_MS` = 120 ms；插值运动权重，不插值矩阵 |
+| 抓握容差 | `MAX_GRIP_ERROR_ASSET_PX` = 1；纯数学残差测试使用 1e-6，不用于截图 |
+| alpha 轮廓 | `prepare_rig_hulls.py` 使用 alpha >=16 的像素格凸包；独立验证真实接触点 alpha >=220 |
+| 接触手臂模板 | 512 RGBA 中线段端点 (224,256)/(288,256)，保持截面；避免极端非均匀缩小采样拖尾 |

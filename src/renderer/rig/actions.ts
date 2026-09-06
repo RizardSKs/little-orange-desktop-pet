@@ -62,9 +62,10 @@ function authoredArms(input: ActionInput, pose: CharacterPose, hands: { left: Po
   return (['left','right'] as const).flatMap(side => {
     const shoulder = transform(body,SHOULDERS[input.stage][side].shoulder);
     const hand = hands[side];
-    const outward = (side === 'left' ? -1 : 1)*(input.direction === 'left' ? -1 : 1);
-    const elbow = { x: lerp(shoulder.x,hand.x,.55)+outward*22, y: lerp(shoulder.y,hand.y,.55)+25 };
+    const bend = .18*(side === 'left' ? 1 : -1)*(input.direction === 'left' ? -1 : 1);
+    const elbow = { x: lerp(shoulder.x,hand.x,.5)-(hand.y-shoulder.y)*bend, y: lerp(shoulder.y,hand.y,.5)+(hand.x-shoulder.x)*bend };
     return [segment(`${side}-upper`,shoulder,elbow,'backArm',root), segment(`${side}-forearm`,elbow,hand,'frontArm',root),
+      { id: `${side}-elbow`, slot: 'frontArm' as const, src: `${root}/hand.png`, width:512,height:512,matrix:chain(translate(elbow.x,elbow.y),translate(-256,-256)) },
       { id: `${side}-hand`, slot: 'handFront' as const, src: `${root}/hand.png`, width: 512, height: 512, matrix: chain(translate(hand.x,hand.y),translate(-256,-256)) }];
   });
 }
@@ -146,13 +147,15 @@ export function actionAt(input: ActionInput, assetRoot = '/assets'): ActionFrame
     const initial = { x: 115, y: mouth.y-70 };
     const destination = transform(propAnchor,{x:0,y:0});
     const position = pointLerp(initial,destination,reach);
-    propMatrix = chain(translate(position.x,position.y),scale(input.direction === 'left' ? -1 : 1,1),rotate(contact*spec.rotation),scale(width/512),translate(-256,-256));
+    propMatrix = chain(translate(position.x,position.y),scale(input.direction === 'left' ? -1 : 1,1),rotate(pose.body.rotation+contact*spec.rotation),scale(width/512),translate(-256,-256));
   }
   const grips = { left: transform(propMatrix,graphicGrips.left), right: transform(propMatrix,graphicGrips.right) };
   const hands = { ...grips };
   if (spec.mode === 'picnic') {
     const foodMatrix = gripMatrix(anchorMatrix(pose.body,input.direction,{x:mouth.x,y:mouth.y+52-contact*38},'rigid-anchor'),{x:256,y:256},100);
     for (const side of ['left','right'] as const) {
+      const holdingSide=result.cycleIndex%2===0?'right':'left';
+      if(side!==holdingSide){hands[side]=transform(rig,SHOULDERS[input.stage][side].hand);continue;}
       grips[side] = transform(foodMatrix,{x:side==='left'?125:385,y:300});
       hands[side] = pointLerp(transform(rig,SHOULDERS[input.stage][side].hand),grips[side],contact);
       if(result.phase==='attached') result.grips.push({hand:hands[side],prop:grips[side]});
@@ -179,7 +182,7 @@ export function actionAt(input: ActionInput, assetRoot = '/assets'): ActionFrame
   result.replaceArms = true;
   result.extras.push(...authoredArms(input,pose,hands,`${assetRoot}/pet/${input.stage}`));
   const file = input.itemId === 'service-cozy-grooming' ? 'inventory/grooming-brush.png' : item?.useVisual.assetFile ?? (keyboard ? 'mini-keyboard.png' : input.kind === 'cursor-tug' ? 'cursor-arrow.png' : 'inventory/mouse-feather.png');
-  result.extras.push({ id: 'action-prop', slot: 'heldObject', src: `${assetRoot}/props/rig/${file}`, matrix: propMatrix, width: 512, height: 512, opacity: keyboard && input.kind === 'keyboard-rest' ? Math.max(0,1-seconds/.7) : 1 });
+  result.extras.push({ id: 'action-prop', slot: spec.mode==='picnic'?'backAccessory':'heldObject', src: `${assetRoot}/props/rig/${file}`, matrix: propMatrix, width: 512, height: 512, opacity: keyboard && input.kind === 'keyboard-rest' ? Math.max(0,1-seconds/.7) : 1 });
   if (spec.mode === 'effect' || spec.mode === 'wash' || input.itemId === 'service-sparkle-party') {
     if (!still) result.extras.push(...Array.from({length:8},(_,index) => particleAt(visualSeed(`${input.itemId}:${input.sequenceId}`),index,input.timeMs)));
   }

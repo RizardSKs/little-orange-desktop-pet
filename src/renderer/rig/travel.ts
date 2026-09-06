@@ -14,7 +14,7 @@ export function travelSpecs(stage: GrowthStage, id: TravelOutfitId): AttachmentS
     ];
     case 'travel-grand-backpack': return [
       {...base,anchor:{x:360,y:b.eyes.y+38},width:190,height:220,layers:[{file:'backpack-bag.png',slot:'backAccessory'}]},
-      {...base,inheritance:'full',height:185,layers:[{file:'backpack-straps.png',slot:'frontAccessory'}]},
+      {...base,inheritance:'full',anchor:{x:256,y:b.neck.y-8},height:185,layers:[{file:'backpack-straps.png',slot:'frontAccessory'}]},
     ];
     case 'travel-star-cape': return [
       {...base,width:b.width+90,height:250,anchor:{x:256,y:b.eyes.y+25},layers:[{file:'cape-back.png',slot:'backAccessory'}]},

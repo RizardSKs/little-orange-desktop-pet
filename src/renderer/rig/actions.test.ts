@@ -5,6 +5,20 @@ import type { InventoryItemId } from '../../shared/economy-types';
 import { renderAssignments } from './frame';
 
 describe('authored contact timelines', () => {
+  it('keeps free-prop transforms continuous at acquisition, release, and loop boundaries',()=>{
+    for(const itemId of ['item-ribbon-ball','item-mouse-feather'] as const)for(const direction of ['left','right'] as const){
+      const cycle=ACTIONS[itemId].cycleMs;
+      const input:ActionInput={stage:'lively',direction,itemId,kind:'inventory-use',timeMs:0,sequenceId:1,intensity:'normal',reduced:false,moving:false};
+      for(const boundary of [.3,.72,1]){
+        const before=actionAt({...input,timeMs:cycle*boundary-.0001}).extras.find(part=>part.id==='action-prop')!;
+        const after=actionAt({...input,timeMs:cycle*boundary+.0001}).extras.find(part=>part.id==='action-prop')!;
+        for(const point of [{x:0,y:0},{x:512,y:512}]){
+          const a=transform(before.matrix,point),b=transform(after.matrix,point);
+          expect(Math.hypot(a.x-b.x,a.y-b.y)).toBeLessThan(.01);
+        }
+      }
+    }
+  });
   it('keeps attached grips exact and assigns every contact part once across all actions', () => {
     for (const stage of STAGES) for (const direction of ['left','right'] as const) for (const id of Object.keys(ACTIONS) as InventoryItemId[]) {
       const spec=ACTIONS[id];

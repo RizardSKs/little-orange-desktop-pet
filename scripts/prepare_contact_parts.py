@@ -13,6 +13,8 @@ for stage in ['sprout','lively','mature','radiant']:
         shading=np.clip(1.05-(yy-244)*.009,.72,1.08)
         pixels[:,:,:3]=np.clip(color[None,None,:]*shading[:,:,None],0,255)
         pixels[:,:,3]=np.clip((19.5-distance)*255,0,255)
+        if name=='segment':
+            pixels[:,:,3]=np.minimum(pixels[:,:,3],np.clip(np.minimum(xx-224,288-xx)*255,0,255)).astype(np.uint8)
         pixels[pixels[:,:,3]==0]=0
         Image.fromarray(pixels).save(ROOT/f'assets/pet/{stage}/{name}.png')
     mouth={'sprout':(262,355),'lively':(270,340),'mature':(281,367),'radiant':(278,377)}[stage]

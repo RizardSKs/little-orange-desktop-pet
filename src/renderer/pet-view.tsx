@@ -7,22 +7,15 @@ import { radiantStarsForLevel } from '../shared/growth';
 import { DRAG_THRESHOLD_DIP } from '../shared/interaction';
 import type { PetExpression, PetRuntimeState, SaveData } from '../shared/types';
 import type { GrowthCelebrationState } from './App';
-import { dragVisualForMovement } from './drag-visual';
-import { OUTFIT_IDS, outfitAssetPath, outfitStyle, type OutfitId } from './outfit-layout';
+import { dragVisualForMovement, type DragVisual } from './drag-visual';
+import { OUTFIT_IDS, type OutfitId } from './outfit-layout';
+import { LivePet } from './rig/live-pet';
 
 const EXPRESSION_TEXT: Record<PetExpression, string> = {
   neutral: '今天也要元气满满！', happy: '心情真不错～', curious: '那边是什么？', surprised: '哇！', proud: '我超棒的！',
   focused: '一步、两步～', delighted: '好好吃！', excited: '一起玩吧！', refreshed: '亮晶晶～', asleep: '呼…呼…',
   sad: '想要抱抱…', sleepy: '有一点困啦…', hungry: '肚子咕咕叫…', uncomfortable: '想洗香香…',
 };
-
-const TRAVEL_ICONS = {
-  'travel-satchel': '👜',
-  'travel-raincoat': '🧥',
-  'travel-star-cape': '🌌',
-  'travel-grand-backpack': '🎒',
-} as const;
-
 const CELEBRATION_PROPS: Partial<Record<EffectId, string>> = {
   'effect-cookie-snack': '🍪',
   'effect-honey-soda': '🥤',
@@ -68,7 +61,7 @@ export function PetView({ state, runtime, growthCelebration }: {
   const petElement = useRef<HTMLDivElement | null>(null);
   const dragFrame = useRef<number | null>(null);
   const [idleRoll, setIdleRoll] = useState(() => Math.random());
-  const [layerFailed, setLayerFailed] = useState(false);
+  const dragVisual = useRef<DragVisual | undefined>(undefined);
   const [dragDirection, setDragDirection] = useState<'left' | 'right' | null>(null);
   const restingExpression = resolvePetExpression(state, idleRoll);
   const inventoryUseItem = runtime.interaction.kind === 'inventory-use' && runtime.interaction.inventoryItemId
@@ -81,11 +74,6 @@ export function PetView({ state, runtime, growthCelebration }: {
       : runtime.interaction.kind === 'keyboard-typing'
         ? 'focused'
         : inventoryUseItem?.useVisual.expression ?? restingExpression;
-  const assetRoot = location.protocol === 'file:' ? '../assets/pet' : '/assets/pet';
-  const stageRoot = `${assetRoot}/${state.growth.stage}`;
-  const fallbackSprite = `${assetRoot}/${state.growth.stage}.png`;
-  const expressionSprite = `${stageRoot}/expressions/${expression}.png`;
-  const propRoot = location.protocol === 'file:' ? '../assets/props' : '/assets/props';
   const equipped = SHOP_ITEMS.find((item) => item.id === state.economy.equippedItem);
   const equippedOutfitId = equipped && OUTFIT_IDS.includes(equipped.id as OutfitId) ? equipped.id as OutfitId : null;
   const expedition = state.economy.activeExpedition ? findExpedition(state.economy.activeExpedition.expeditionId) : null;
@@ -119,7 +107,6 @@ export function PetView({ state, runtime, growthCelebration }: {
     };
   }, []);
 
-  useEffect(() => setLayerFailed(false), [state.growth.stage]);
   useEffect(() => {
     if (runtime.interaction.kind !== 'landing') petElement.current?.style.removeProperty('--landing-drift');
   }, [runtime.interaction.kind]);
@@ -137,6 +124,7 @@ export function PetView({ state, runtime, growthCelebration }: {
   };
 
   const clearDragVisual = (current: DragState) => {
+    dragVisual.current = undefined;
     for (const property of ['--drag-tilt', '--drag-lift', '--drag-sway', '--drag-stretch-x', '--drag-stretch-y', '--drag-limb-swing']) {
       current.target.style.removeProperty(property);
     }
@@ -151,6 +139,7 @@ export function PetView({ state, runtime, growthCelebration }: {
       state.settings.animationIntensity,
       { x: current.velocityX, y: current.velocityY },
     );
+    dragVisual.current = visual;
     current.lastX = screenX;
     current.lastY = screenY;
     current.lastAt = now;
@@ -278,37 +267,8 @@ export function PetView({ state, runtime, growthCelebration }: {
       >
         <div className="stage-glow" />
         <div className="stage-particles">✦</div>
-        <div className={`pet-facing direction-${direction}`}>
-          <div className="pet-rig">
-            {layerFailed ? <img className="pet-texture fallback-texture" src={fallbackSprite} draggable={false} alt={state.pet.name} /> : <>
-              <img className="pet-layer limb leg leg-left" src={`${stageRoot}/leg-left.png`} draggable={false} alt="" onError={() => setLayerFailed(true)} />
-              <img className="pet-layer limb leg leg-right" src={`${stageRoot}/leg-right.png`} draggable={false} alt="" onError={() => setLayerFailed(true)} />
-              <img className="pet-layer limb arm arm-left" src={`${stageRoot}/arm-left.png`} draggable={false} alt="" onError={() => setLayerFailed(true)} />
-              <img className="pet-layer limb arm arm-right" src={`${stageRoot}/arm-right.png`} draggable={false} alt="" onError={() => setLayerFailed(true)} />
-              <img className="pet-layer pet-body" src={`${stageRoot}/body.png`} draggable={false} alt={state.pet.name} onError={() => setLayerFailed(true)} />
-              <img className="pet-layer pet-expression" src={expressionSprite} draggable={false} alt="" onError={() => setLayerFailed(true)} />
-            </>}
-            <div className="orange-fallback" />
-            {inventoryUseItem && <img
-              className="inventory-action-prop"
-              src={`${propRoot}/${inventoryUseItem.useVisual.assetFile}`}
-              draggable={false}
-              alt={inventoryUseItem.name}
-            />}
-            {!expedition && equipped && equippedOutfitId && <img
-              className={`outfit-layer outfit-${equippedOutfitId}`}
-              src={outfitAssetPath(equipped.assetFile)}
-              style={outfitStyle(state.growth.stage, equippedOutfitId)}
-              draggable={false}
-              alt={equipped.name}
-            />}
-          </div>
-        </div>
-        {inventoryUseItem && <span className="inventory-action-particles">✦</span>}
-        {expedition && <span className={`travel-outfit ${expedition.travelOutfit}`}>{TRAVEL_ICONS[expedition.travelOutfit]}</span>}
-        {(runtime.interaction.kind === 'keyboard-typing' || runtime.interaction.kind === 'keyboard-rest') && <img className={`interaction-prop mini-keyboard ${runtime.interaction.kind === 'keyboard-rest' ? 'is-closing' : ''}`} src={`${propRoot}/mini-keyboard.png`} draggable={false} alt="" />}
-        {runtime.interaction.kind === 'cursor-paw' && <span className="interaction-prop mouse-feather">🪶</span>}
-        {runtime.interaction.kind === 'cursor-tug' && <img className="interaction-prop cursor-grab" src={`${propRoot}/cursor-grab.png`} draggable={false} alt="" />}
+        <LivePet stage={state.growth.stage} outfit={equippedOutfitId} travel={expedition?.travelOutfit ?? null}
+          runtime={runtime} expression={expression} direction={direction} intensity={state.settings.animationIntensity} dragVisual={dragVisual} />
         {celebrationProp && <span className={`celebration-prop ${celebrationEffect}`}>{celebrationProp}</span>}
         {state.pet.behavior === 'sleeping' && <span className="zzz">Z<small>z</small></span>}
         {(expression === 'refreshed' || stars > 0) && <span className="sparkles">{'✦'.repeat(Math.min(3, Math.max(1, stars)))}</span>}

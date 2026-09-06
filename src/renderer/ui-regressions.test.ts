@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { ACTIONS, actionAt } from './rig/actions';
+import type { InventoryItemId } from '../shared/economy-types';
 
 const read = (file: string) => fs.readFileSync(path.join(process.cwd(), file), 'utf8');
 
@@ -14,37 +16,25 @@ describe('desktop pet visual regressions', () => {
 
   it('renders the aligned character rig, raster expressions, and whole-sprite fallback', () => {
     const component = read('src/renderer/pet-view.tsx');
-    for (const layer of ['body.png', 'arm-left.png', 'arm-right.png', 'leg-left.png', 'leg-right.png']) expect(component).toContain(layer);
-    expect(component).toContain('/expressions/${expression}.png');
-    expect(component).toContain('pet-expression');
-    expect(component).not.toContain('className="face"');
-    expect(component).toContain('fallbackSprite');
+    expect(component).toContain('<LivePet');
+    expect(component).not.toContain('className="pet-rig"');
+    expect(component).not.toContain('TRAVEL_ICONS');
     expect(component).toContain('DRAG_THRESHOLD_DIP');
     expect(component).toContain('requestAnimationFrame');
     expect(component).toContain('dragVisualForMovement');
     expect(component).toContain("runtime.interaction.kind === 'dragging'");
-    expect(component).toContain('outfit-layer');
-    expect(component).toContain('outfitStyle(state.growth.stage');
+    expect(component).toContain('outfit={equippedOutfitId}');
+    expect(component).toContain('travel={expedition?.travelOutfit ?? null}');
     expect(component).toContain('CELEBRATION_PROPS');
     expect(component).toContain('effect-grand-tour-return');
-    expect(component).toContain('/mini-keyboard.png');
-    expect(component).toContain('/cursor-grab.png');
-    expect(component).toContain('inventory-action-prop');
-    expect(component).toContain('inventory-action-particles');
     expect(component).toContain('inventoryUseItem?.useVisual.expression');
   });
 
-  it('keeps every growth-stage arm anchored during drag animation', () => {
-    const css = read('src/renderer/styles.css');
-    for (const stage of ['sprout', 'lively', 'mature', 'radiant']) {
-      const rule = css.match(new RegExp(`\\.pet-character\\.stage-${stage} \\{[^}]+\\}`))?.[0] ?? '';
-      for (const token of ['--shoulder-left-x', '--shoulder-left-y', '--shoulder-right-x', '--shoulder-right-y']) expect(rule).toContain(token);
-    }
-    const flightArms = css.slice(css.indexOf('@keyframes flight-arm-left'), css.indexOf('@keyframes flight-leg-left'));
-    expect(flightArms).not.toContain('translate');
-    expect(flightArms).toContain('scale(1.08)');
-    expect(css).toContain('.interaction-dragging .arm{z-index:1}');
-    expect(css).toContain('.interaction-dragging .pet-body{z-index:4}');
+  it('routes drag to the mathematical rig without nesting legacy CSS arm animation', () => {
+    const component=read('src/renderer/pet-view.tsx');
+    expect(component).toContain('dragVisual={dragVisual}');
+    expect(component).not.toContain('className="pet-rig"');
+    expect(component).not.toContain('className="pet-layer limb arm');
   });
 
   it('exposes growth, life, exploration, lock, and privacy controls in the panel', () => {
@@ -54,11 +44,10 @@ describe('desktop pet visual regressions', () => {
     expect(panel).not.toContain('离线收益');
   });
 
-  it('only applies the sleepy doze loop while the sleepy expression is idle', () => {
-    const css = read('src/renderer/styles.css');
-    expect(css).toContain('.expression-sleepy.interaction-idle .pet-rig');
-    expect(css).toContain('@keyframes sleepy-doze');
-    expect(css).not.toContain('.expression-sleepy .pet-rig{animation:');
+  it('only applies the sleepy doze pose during idle', () => {
+    const base={stage:'lively' as const,direction:'right' as const,intensity:'normal' as const,reduced:false,itemId:null,sequenceId:1,timeMs:200,moving:false,expression:'sleepy' as const};
+    expect(actionAt({...base,kind:'idle'}).pose.body.rotation).not.toBe(0);
+    expect(actionAt({...base,kind:'petting'})).toEqual(actionAt({...base,kind:'petting',expression:'neutral'}));
   });
 
   it('surfaces queued effects and pending expedition rewards on the status tab', () => {
@@ -101,7 +90,6 @@ describe('desktop pet visual regressions', () => {
   });
 
   it('ships and animates a dedicated transparent prop for every inventory action', () => {
-    const css = read('src/renderer/styles.css');
     const inventoryProps = [
       'citrus-cookie', 'honey-soda', 'ribbon-ball', 'bubble-bath', 'mouse-feather', 'sunset-orb',
       'stage-sparkles', 'grooming-kit', 'picnic-set', 'party-popper', 'royal-fanfare', 'grand-fireworks',
@@ -117,9 +105,12 @@ describe('desktop pet visual regressions', () => {
       'item-mini-keyboard', 'item-mouse-feather', 'item-sunset-theme', 'item-stage-sparkle',
       'service-cozy-grooming', 'service-desktop-picnic', 'service-sparkle-party',
       'service-royal-celebration', 'service-grand-festival',
-    ]) expect(css).toContain(`.use-${id} .inventory-action-prop`);
-    expect(css).toContain('.interaction-inventory-use .arm-left');
-    expect(css).toContain('@media (prefers-reduced-motion:reduce)');
+    ]) {
+      expect(ACTIONS[id as InventoryItemId]).toBeDefined();
+      const frame=actionAt({stage:'lively',direction:'right',intensity:'normal',reduced:false,itemId:id as InventoryItemId,kind:'inventory-use',sequenceId:1,timeMs:1000,moving:false});
+      expect(frame.replaceArms).toBe(true);
+      expect(frame.extras.some(part=>part.id==='action-prop'&&part.src?.endsWith('.png'))).toBe(true);
+    }
   });
 
   it('installs a Chinese application menu', () => {

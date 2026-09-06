@@ -7,7 +7,6 @@ ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'assets/outfits/travel';OUT.mkdir(parents=True,exist_ok=True)
 def canvas(): return Image.new('RGBA',(512,512))
 def save(image,name):
-    # Supersampling keeps painted edges clean at the desktop display size.
     image.save(OUT/f'{name}.png')
 def shaded(mask,top,bottom):
     alpha=np.asarray(mask); yy=np.arange(512)[:,None,None]/511
