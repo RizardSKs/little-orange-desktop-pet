@@ -30,7 +30,7 @@ export function outfitSpec(stage: GrowthStage, id: OutfitId): AttachmentSpec {
     crown: { ...base, width: 205, height: 150, layers: split },
     glasses: { ...base, anchor: body.eyes, graphicAnchor: { x: 256, y: 256 }, width: body.eyeGap/244*512, height: body.eyeGap/244*512 },
     headphones: { ...base, anchor: { x: 256, y: body.eyes.y }, graphicAnchor: { x: 256, y: 330 }, width: body.width + 165, height: 320, layers: split },
-    scarf: { ...base, space: 'body', inheritance: 'full', anchor: body.neck, graphicAnchor: { x: 256, y: 180 }, width: body.width*.96, height: 160, layers: split },
+    scarf: { ...base, space: 'body', inheritance: 'full', anchor: {x:body.neck.x,y:body.neck.y-8}, graphicAnchor: { x: 256, y: 180 }, width: body.width*.96, height: 160, layers: split },
     halo: { ...base, anchor: { x: 256, y: 30 }, graphicAnchor: { x: 256, y: 256 }, width: 220, height: 150 },
     'leaf-clip': { ...base, anchor: { x: 171, y: body.top.y - 49 }, graphicAnchor: { x: 256, y: 256 }, width: 105, height: 105, rotation: -18 },
     bow: { ...base, anchor: { x: 358, y: body.top.y + 35 }, graphicAnchor: { x: 256, y: 256 }, width: 113, height: 113, rotation: 10 },
