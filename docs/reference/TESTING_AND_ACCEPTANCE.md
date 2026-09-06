@@ -120,3 +120,7 @@
 - [装扮与素材](OUTFITS_AND_ASSETS.md)
 - [发布与兼容准则](../governance/RELEASE_AND_COMPATIBILITY.md)
 - [更新操作手册](../../UPDATE_GUIDE.md)
+
+## 未发布 Phase 1 证据（2026-09-06）
+
+新增 geometry.test.ts 验证六项基础门槛；全量 102 项测试、TypeScript 检查及生产构建通过。隔离 Electron 预览确认 15 个唯一片段同级绘制且无存档 API；截图与 JSON 位于 tmp/rig-evidence/phase1。此证据不代表正式角色或真实 Windows DPI 已验收。

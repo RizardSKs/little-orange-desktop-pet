@@ -209,7 +209,7 @@ function ExploreView({ state, setState, flash }: { state: SaveData; setState: (s
   const start = async (id: string) => {
     const item = findExpedition(id);
     if (!item || !window.confirm(`派小橙子进行「${item.name}」？\n花费 ${item.price} 金币，预计 ${formatDuration(item.durationRuntimeMs)}实际运行时间。关闭或系统挂起时暂停。`)) return;
-    const result = await window.orangePet.startExpedition(id); setState(result.state); flash(result.message);
+    const result = await window.orangePet.startExpedition(item.id); setState(result.state); flash(result.message);
   };
   const returnEarly = async () => {
     if (!window.confirm('确定提前回家吗？\n金币不退还，也不会获得故事或主题效果。')) return;

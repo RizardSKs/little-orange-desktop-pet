@@ -178,3 +178,7 @@
 - `src/main/store.test.ts`：默认档、深校验、备份恢复、schema 1 一次性备份、迁移与未来 schema 拒绝。
 - `src/renderer/ui-regressions.test.ts`：四阶段素材、成长反馈、互动表现、经济界面和锁定入口。
 - `src/main/release-config.test.ts`：发布配置与版本身份。
+
+## 未发布角色绘制参数
+
+角色逻辑画布为 512；阶段显示尺寸及窗口偏移统一由 src/renderer/rig/geometry.ts 的 DISPLAY 定义。正式宠物尚未迁移；新公共绘制组件仅在开发预览使用。

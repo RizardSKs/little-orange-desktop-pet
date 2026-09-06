@@ -95,7 +95,7 @@ export function PetView({ state, runtime, growthCelebration }: {
   const direction = dragDirection ?? (runtime.interaction.kind === 'idle' ? runtime.motion.direction : runtime.interaction.direction);
   const activeEffects = EFFECT_SLOTS
     .map((slot) => activeEffectForSlot(state.economy, slot)?.effectId)
-    .filter((effect): effect is string => Boolean(effect))
+    .filter((effect): effect is EffectId => Boolean(effect))
     .join(' ');
   const style = {
     '--gaze-x': runtime.gaze.x,
@@ -186,7 +186,7 @@ export function PetView({ state, runtime, growthCelebration }: {
     try { await window.orangePet.endPetDrag(); } catch { /* main process may already have cleared the drag */ }
   };
 
-  const pointerDown = (event: React.PointerEvent) => {
+  const pointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.button !== 0 || state.settings.desktopLocked) return;
     event.currentTarget.setPointerCapture(event.pointerId);
     event.currentTarget.style.removeProperty('--landing-drift');

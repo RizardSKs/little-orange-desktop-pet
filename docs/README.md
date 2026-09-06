@@ -85,3 +85,7 @@ v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删�
 ## 仓库级技能
 
 - [项目治理基线技能](../.agents/skills/bootstrap-project-governance/SKILL.md)：在其他项目中建立或审查 `LOCKED` / `LIVING` / `APPEND_ONLY` 文档、Git/GitHub 闭环和正式 Release 门槛。
+
+## 未发布渲染改进
+
+[角色变换与附件实现](reference/PET_RIG_AND_ATTACHMENTS.md)：分阶段实施及 Phase 1 验证。
