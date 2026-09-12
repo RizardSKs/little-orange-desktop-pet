@@ -89,3 +89,7 @@ v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删�
 ## 未发布渲染改进
 
 [角色变换与附件实现](reference/PET_RIG_AND_ATTACHMENTS.md)：分阶段实施及 Phase 1 验证。
+
+## 待确认项目计划
+
+- [动作与道具表现丰富化项目计划书](MOTION_AND_PROP_ENRICHMENT_PLAN.md)：现有十三项用品／服务的动作增强、样板顺序及验收方案；规划草案，尚未批准实施。
