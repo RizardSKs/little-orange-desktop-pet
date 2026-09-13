@@ -97,3 +97,5 @@ v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删�
 - [计划与 ChatGPT 传话话术](MOTION_AND_PROP_DISCUSSION_KIT.md)：首轮完整计划、第 2–5 轮备用追问及回传模板。
 
 - [首轮判断与第二轮话术](MOTION_AND_PROP_ROUND_TWO.md)：首轮评审取舍、已核实的图层与生命周期，以及第二轮转发消息。
+
+- [两轮评审结论](MOTION_AND_PROP_REVIEW_CONCLUSION.md)：2/5 轮提前收敛，独立修订与用户待定事项；当前约束见计划书第 13 节。
