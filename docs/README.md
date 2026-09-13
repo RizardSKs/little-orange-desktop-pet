@@ -93,3 +93,5 @@ v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删�
 ## 待确认项目计划
 
 - [动作与道具表现丰富化项目计划书](MOTION_AND_PROP_ENRICHMENT_PLAN.md)：现有十三项用品／服务的动作增强、样板顺序及验收方案；规划草案，尚未批准实施。
+
+- [计划与 ChatGPT 传话话术](MOTION_AND_PROP_DISCUSSION_KIT.md)：首轮完整计划、第 2–5 轮备用追问及回传模板。
