@@ -9,7 +9,7 @@ describe('offline cumulative update release', () => {
     const packageJson = JSON.parse(read('package.json'));
     expect(packageJson.name).toBe('little-orange-desktop-pet');
     expect(packageJson.build.appId).toBe('cn.littleorange.desktop.pet');
-    expect(packageJson.version).toBe('1.2.6');
+    expect(packageJson.version).toBe('1.2.7');
     expect(packageJson.releaseMetadata.compatibleFrom).toBe('1.0.0');
     expect(packageJson.scripts['dist:update']).toContain('electron-builder.update.cjs');
     expect(packageJson.scripts['dist:win']).toBe('npm run dist:setup');
