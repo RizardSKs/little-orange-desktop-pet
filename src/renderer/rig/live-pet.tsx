@@ -61,12 +61,14 @@ export function LivePet(props:Props) {
       const bundle=state.current.committed;
       const input:ActionInput={stage:bundle.stage,direction:p.direction,intensity:p.intensity,reduced:reduced.current,expression:p.expression,kind:p.runtime.interaction.kind,
         itemId:p.runtime.interaction.kind==='inventory-use'?p.runtime.interaction.inventoryItemId:null,sequenceId:sequence,
-        timeMs:Math.max(0,now-p.runtime.interaction.startedAt),motionWeight:weight,moving:p.runtime.motion.moving,drag:p.dragVisual.current,keyboardTempo:p.runtime.keyboardTempo};
+        timeMs:Math.max(0,now-p.runtime.interaction.startedAt),durationMs:p.runtime.interaction.durationMs,motionWeight:weight,moving:p.runtime.motion.moving,drag:p.dragVisual.current,keyboardTempo:p.runtime.keyboardTempo};
       if(last && lastSequence!==sequence) {
         exit=interruptProps(last.drawables,last.policy,now,lastSequence??0,reduced.current);
         failedProps.current.clear();
       }
-      const safe=actionAt(input,root).safe && exitAt(exit,now).length===0;
+      // The initial fallback has no held contact to preserve. Late first decode
+      // must not leave the entire first finite action hidden until its outro.
+      const safe=(bundle.generation===0 || actionAt(input,root).safe) && exitAt(exit,now).length===0;
       state.current.commit(safe);
       const committed=state.current.committed;
       let frame=petFrame({...input,stage:committed.stage},committed.outfit,p.expression,root,committed.fallback,committed.travel);

@@ -6,6 +6,7 @@ import { BODY_LANDMARKS } from './attachments';
 import { SHOULDERS, type CharacterPose } from './character';
 import { anchorMatrix, bodyMatrix, chain, DISPLAY, rotate, scale, transform, translate, REST_POSE, type Matrix, type Point } from './geometry';
 import { particleAt, visualSeed, type Drawable } from './frame';
+import { sampleActionAt } from './sample-actions';
 
 export type ContactPhase = 'approach' | 'acquire' | 'attached' | 'release' | 'retract';
 export type InterruptPolicy = 'fade-held-prop' | 'keep-in-scene' | 'resume-free-motion' | 'hide-immediately';
@@ -33,11 +34,13 @@ export const ACTIONS: Record<InventoryItemId, ActionSpec> = {
 export interface ActionInput {
   stage: GrowthStage; direction: PetDirection; intensity: AnimationIntensity; reduced: boolean;
   kind: PetInteractionKind; itemId: InventoryItemId | null; sequenceId: number; timeMs: number;
+  durationMs?: number | null;
   motionWeight?: number; expression?: PetExpression; moving: boolean; drag?: DragVisual; keyboardTempo?: 'calm' | 'steady' | 'rapid';
 }
 export interface ActionFrame {
   pose: CharacterPose; phase: ContactPhase; cycleIndex: number; cycleProgress: number; safe: boolean;
   extras: Drawable[]; replaceArms: boolean; grips: { hand: Point; prop: Point }[]; policy: InterruptPolicy;
+  expression?: PetExpression;
 }
 const smooth = (t: number) => { const x = Math.max(0, Math.min(1, t)); return x*x*(3-2*x); };
 const lerp = (a: number, b: number, t: number) => a+(b-a)*t;
@@ -92,6 +95,8 @@ export function actionAt(input: ActionInput, assetRoot = '/assets'): ActionFrame
     return result;
   }
   const keyboard = input.kind === 'keyboard-typing' || input.kind === 'keyboard-rest';
+  const sample = sampleActionAt(input, assetRoot, authoredArms);
+  if (sample) return sample;
   const cursor = input.kind === 'cursor-paw' || input.kind === 'cursor-tug';
   const item = input.itemId ? findInventoryItem(input.itemId) : null;
   const spec = input.itemId ? ACTIONS[input.itemId] : keyboard ? ACTIONS['item-mini-keyboard'] : cursor ? ACTIONS['item-mouse-feather'] : null;

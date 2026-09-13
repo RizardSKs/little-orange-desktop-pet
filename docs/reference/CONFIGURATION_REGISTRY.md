@@ -3,7 +3,7 @@
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理可在对应代码或测试已经变更并完成核对时修改；不得仅为设想改写“当前值”，不得重排、复用或删除既有 CFG 编号。  
 > 适用版本：1.2.6  
-> 最后核对：2026-08-23  
+> 最后核对：2026-09-14  
 > 权威源码：src/shared/types.ts、src/shared/growth.ts、src/shared/game.ts、src/shared/catalog.ts、src/shared/economy-types.ts、src/shared/economy.ts、src/shared/expression.ts、src/shared/interaction.ts、src/main/store.ts、src/main/main.ts、src/main/motion.ts、src/main/interaction-controller.ts、src/renderer  
 > 更新触发：默认存档、领域类型、公式、阈值、计时器、窗口尺寸、动作、互动、表情、装扮或经济目录、设置项及其测试发生变化时。
 
@@ -188,11 +188,13 @@
 | 四阶段显示 size/x/y | sprout 146/38/67；lively 163/29/50；mature 170/25/46；radiant 170/25/45；`geometry.ts` |
 | 肩点、手点、根半径、完整旋转范围 | `rig/stage-data.json`；修复脚本按 1° 步进检查 −90° 至 90° |
 | 永久/旅行附件锚点、尺寸、继承 | `rig/attachments.ts` / `rig/travel.ts` 中逐阶段配方，其他文档不复制数值 |
-| 动作周期与道具姿态 | `rig/actions.ts` 的 `ACTIONS`；主进程总时长仍由目录 `useVisual` 定义 |
-| 接触相位边界 | 周期比例 0.2、0.3、0.72、0.84；安全提交点为 >=0.84 或 <0.04 |
+| 动作周期与道具姿态 | `rig/actions.ts` 的 `ACTIONS` 用于原有周期动作；四项样板由 `rig/sample-actions.ts` 定义有限流程；主进程总时长仍由目录 `useVisual` 定义 |
+| 原有周期接触相位边界 | 周期比例 0.2、0.3、0.72、0.84；安全提交点为 >=0.84 或 <0.04；不适用于四项有限样板 |
+| 四项样板时间预算 | `sample-actions.ts` 的 `SAMPLE_TIMING`：开场 900 ms、收尾预算 1400 ms、入场淡入 200 ms；短于 3300 ms 的外部时长按比例压缩全部预算。道具完全退出后进入安全提交状态 |
+| 样板接触与节奏 | `sample-actions.ts` 内逐项配方为源码权威，包含吸管尖端、杯身握点、毛球截停点、刷头/刷柄、键面与停顿；只插值原始位置/角度参数 |
 | 场景物件显示尺寸 | 键盘与野餐组合保持 116 DIP 画布尺寸，显式补偿阶段缩放；野餐中心 Window y=168 DIP |
 | 中断退场上限 | `MAX_INTERRUPTED_PROP_EXIT_MS` = 200 ms；减少动态效果时可立即清理 |
 | 减少动态效果过渡上限 | `MAX_REDUCED_TRANSITION_MS` = 120 ms；插值运动权重，不插值矩阵 |
 | 抓握容差 | `MAX_GRIP_ERROR_ASSET_PX` = 1；纯数学残差测试使用 1e-6，不用于截图 |
-| alpha 轮廓 | `prepare_rig_hulls.py` 使用 alpha >=16 的像素格凸包；独立验证真实接触点 alpha >=220 |
+| alpha 轮廓 | `measure_rig_assets.cjs` 或 `prepare_rig_hulls.py` 使用 alpha >=16 的像素格凸包；独立验证真实接触点 alpha >=220。Electron 测量同时记录源图尺寸与 SHA-256 |
 | 接触手臂模板 | 512 RGBA 中线段端点 (224,256)/(288,256)，保持截面；避免极端非均匀缩小采样拖尾 |

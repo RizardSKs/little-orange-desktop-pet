@@ -6,6 +6,7 @@ const server=await createServer({configFile:false,server:{middlewareMode:true,wa
 try {
 const {petFrame} = await server.ssrLoadModule('/src/renderer/rig/pet-frame.ts');
 const {ACTIONS,CONTACT_BOUNDARIES} = await server.ssrLoadModule('/src/renderer/rig/actions.ts');
+const {SAMPLE_IDS,SAMPLE_TIMING} = await server.ssrLoadModule('/src/renderer/rig/sample-actions.ts');
 const {DISPLAY,STAGES,transform} = await server.ssrLoadModule('/src/renderer/rig/geometry.ts');
 const {findInventoryItem} = await server.ssrLoadModule('/src/shared/catalog.ts');
 const {OUTFIT_IDS,outfitSpec,attachmentDrawables}=await server.ssrLoadModule('/src/renderer/rig/attachments.ts');
@@ -30,8 +31,10 @@ function check(input) {
 }
 for(const stage of STAGES) for(const direction of ['left','right']) for(const intensity of ['gentle','normal','lively']) for(const reduced of [false,true]) {
  for(const [itemId,spec] of Object.entries(ACTIONS)) {
+  const duration=SAMPLE_IDS.includes(itemId)?findInventoryItem(itemId).useVisual.durationMs:spec.cycleMs;
   const times=new Set([0,.25,.5,.75,1,...CONTACT_BOUNDARIES].flatMap(p=>[-.001,0,.001].map(e=>Math.max(0,p*spec.cycleMs+e))));
-  for(let t=0;t<spec.cycleMs;t+=1000/60)times.add(t);
+  for(let t=0;t<=duration;t+=1000/60)times.add(t);
+  if(SAMPLE_IDS.includes(itemId))for(const boundary of [SAMPLE_TIMING.enterMs*.3,SAMPLE_TIMING.enterMs,duration-SAMPLE_TIMING.closeMs,duration-SAMPLE_TIMING.closeMs*.3,duration-SAMPLE_TIMING.closeMs*.1,duration])for(const delta of [-.001,0,.001])times.add(boundary+delta);
   for(const timeMs of times)check({stage,direction,itemId,kind:'inventory-use',timeMs,sequenceId:1,intensity,reduced,moving:false});
  }
  for(const kind of ['idle','nearby','petting','dodge','landing','keyboard-typing','keyboard-rest','cursor-paw','cursor-tug','cursor-chase','cursor-dizzy']) {

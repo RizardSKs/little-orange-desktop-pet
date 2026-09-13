@@ -3,6 +3,8 @@ import { ACTIONS, actionAt, CONTACT_BOUNDARIES, gripMatrix, type ActionInput } f
 import { STAGES, anchorMatrix, transform, REST_POSE } from './geometry';
 import type { InventoryItemId } from '../../shared/economy-types';
 import { renderAssignments } from './frame';
+import { SAMPLE_IDS } from './sample-actions';
+import { findInventoryItem } from '../../shared/catalog';
 
 describe('authored contact timelines', () => {
   it('keeps free-prop transforms continuous at acquisition, release, and loop boundaries',()=>{
@@ -50,7 +52,8 @@ describe('authored contact timelines', () => {
       const frame=actionAt(base);
       expect(frame.phase).toBe('attached');
       for(const pair of frame.grips)expect(pair.hand).toEqual(pair.prop);
-      expect(actionAt({...base,timeMs:ACTIONS[itemId].cycleMs*.9}).safe).toBe(true);
+      const safeTime = SAMPLE_IDS.some(id => id === itemId) ? findInventoryItem(itemId)!.useVisual.durationMs - 1 : ACTIONS[itemId].cycleMs*.9;
+      expect(actionAt({...base,timeMs:safeTime}).safe).toBe(true);
     }
   });
 });

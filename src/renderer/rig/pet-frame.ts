@@ -10,7 +10,7 @@ import { travelDrawables } from './travel';
 
 export function petFrame(input: ActionInput, outfit: OutfitId | null, expression: PetExpression, root: string, fallback = false, travel: TravelOutfitId | null = null) {
   const action = actionAt(input,root);
-  const character = characterFrame(input.stage,input.direction,expression,action.pose,`${root}/pet`,fallback)
+  const character = characterFrame(input.stage,input.direction,action.expression ?? expression,action.pose,`${root}/pet`,fallback)
     .filter(part => fallback || !action.replaceArms || !['arm-left','arm-right'].includes(part.id));
   if (!travel && outfit && (!fallback || ['glasses','bow','leaf-clip','halo'].includes(outfit))) character.push(...attachmentDrawables(outfitSpec(input.stage,outfit),`outfit-${outfit}`,action.pose.body,input.direction,`${root}/outfits`));
   if(travel && !fallback) character.push(...travelDrawables(input.stage,travel,action.pose.body,input.direction,root));
