@@ -33,6 +33,7 @@ export const INTERACTION_PRIORITY: Record<PetInteractionKind, number> = {
   petting: 90,
   dodge: 92,
   'inventory-use': 98,
+  care: 98,
   landing: 95,
   dragging: 100,
 };

@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 测试结构、支持环境、原生依赖、发布方式或验收要求变化时同步更新 |
-| 适用版本 | 1.2.4 |
+| 适用版本 | 1.2.7 后续开发（未正式发布） |
 | 最后核对 | 2026-09-14 |
 | 权威来源 | `package.json`、`.github/workflows/windows-release.yml`、`src/**/*.test.ts`、构建配置、实际安装结果和 GitHub Release |
 | 更新触发 | 行为变化、新缺陷回归、测试增删、Node/Electron/原生组件基线、CI 门禁或正式发布变化 |
@@ -140,3 +140,9 @@
 `measure_rig_assets.cjs` 读取当前 PNG 的尺寸、摘要、透明轮廓及接触像素；`verify_motion_samples.cjs` 检查正式 React 关键帧、动作中途首次加载和释放后成长提交，避免仅用静态求帧证明 LivePet 正确。`export_motion_samples.cjs` 生成离线前后对比，其内容是生产求帧函数的采样播放，不是安装版录屏。`benchmark_motion_samples.cjs` 使用隔离离屏 LivePet 取得短时帧间隔、CPU 和工作集观测；共享进程与缓存，不能据此推断长期内存稳定性。
 
 复现步骤、实测结果与尚未通过的用户视觉／实装门槛见 [四项动作样板实施与验收](../MOTION_SAMPLE_IMPLEMENTATION.md)。
+
+## 基础照顾回归（2026-09-14，未发布）
+
+新增 `care-controller.test.ts` 覆盖保存前后边界、busy与替换、重复身份、来源隔离、睡眠显式目标、失败不消费和表演故障不重复结算；控制器测试覆盖截止替换、入睡转循环、拖动后睡眠恢复、叫醒不复活旧状态及变体轮换。`care-actions.test.ts` 覆盖阶段／朝向／强度／减少动态／变体求帧、收尾、跳时、接触和无道具降级。
+
+`verify_care_animations.cjs` 使用隔离隐藏 Electron 窗口检查正式 React关键帧、LivePet晚到解码与离线预览；`verify_rig_bounds.cjs --care-only` 扫描基础动作真实alpha及所有既有附件。`export_care_preview.mjs` 输出无存档访问的离线可交互HTML。最新结果及仍需实机验证的项目集中在 [实施记录](../CARE_INTERACTION_IMPLEMENTATION.md)，不把模拟或静态检查当正式安装验收。

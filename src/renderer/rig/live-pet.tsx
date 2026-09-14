@@ -49,6 +49,7 @@ export function LivePet(props:Props) {
     let handle=0;
     let last:ReturnType<typeof petFrame>|null=null;
     let lastSequence:number|null=null;
+    let lastCareAction:ActionInput['careAction'];
     let exit:PropExit|null=null;
     let weight=reduced.current?0:1;
     let fromWeight=weight, targetWeight=weight, weightAt=0;
@@ -61,9 +62,10 @@ export function LivePet(props:Props) {
       const bundle=state.current.committed;
       const input:ActionInput={stage:bundle.stage,direction:p.direction,intensity:p.intensity,reduced:reduced.current,expression:p.expression,kind:p.runtime.interaction.kind,
         itemId:p.runtime.interaction.kind==='inventory-use'?p.runtime.interaction.inventoryItemId:null,sequenceId:sequence,
+        careAction:p.runtime.interaction.careAction,careVariant:p.runtime.interaction.careVariant,
         timeMs:Math.max(0,now-p.runtime.interaction.startedAt),durationMs:p.runtime.interaction.durationMs,motionWeight:weight,moving:p.runtime.motion.moving,drag:p.dragVisual.current,keyboardTempo:p.runtime.keyboardTempo};
       if(last && lastSequence!==sequence) {
-        exit=interruptProps(last.drawables,last.policy,now,lastSequence??0,reduced.current);
+        exit=lastCareAction==='sleep-in' && input.careAction==='sleep-loop' ? null : interruptProps(last.drawables,last.policy,now,lastSequence??0,reduced.current);
         failedProps.current.clear();
       }
       // The initial fallback has no held contact to preserve. Late first decode
@@ -80,10 +82,10 @@ export function LivePet(props:Props) {
         }
         return propAssets.current.get(src)==='ready';
       }).every(Boolean);
-      if(!propsReady) frame=petFrame({...input,stage:committed.stage,kind:'idle',itemId:null},committed.outfit,p.expression,root,committed.fallback,committed.travel);
+      if(!propsReady) frame=petFrame({...input,stage:committed.stage,kind:input.kind==='care'?'care':'idle',hideCareProps:true,itemId:null},committed.outfit,p.expression,root,committed.fallback,committed.travel);
       frame.drawables=frame.drawables.filter(part=>!failedProps.current.has(part.id));
       if(!committed.fallback)frame.drawables.push(...exitAt(exit,now));
-      last=frame;lastSequence=sequence;
+      last=frame;lastSequence=sequence;lastCareAction=input.careAction;
       setShownStage(committed.stage);setView(frame);
       handle=requestAnimationFrame(tick);
     };
@@ -92,7 +94,7 @@ export function LivePet(props:Props) {
   },[root]);
   const onAssetError=(id:string)=>{
     if(id.startsWith('outfit-')||id.startsWith('travel-'))state.current.failAttachment();
-    else if(id==='action-prop'||id==='picnic-food'||id.startsWith('exit-'))failedProps.current.add(id);
+    else if(id==='action-prop'||id==='picnic-food'||id==='care-food'||id.startsWith('exit-'))failedProps.current.add(id);
     else if(id!=='fallback')state.current.failCharacter();
   };
   return <div aria-hidden="true" data-visual-generation={state.current.committed.generation} data-visual-degraded={state.current.committed.degraded} style={{position:'absolute',left:-28,top:-49,width:220,height:220,pointerEvents:'none'}}>

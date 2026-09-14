@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { CARE_DURATION_MS } from '../../shared/care';
+import type { CareVisual } from '../../shared/types';
 import type { GrowthStage, PetDirection } from '../../shared/types';
 import { STAGES } from './geometry';
 import { gateFrame, visualSeed } from './frame';
@@ -33,7 +35,9 @@ export function RigPreview() {
   const character = characterFrame(stage, direction, 'neutral', { body: REST_POSE, leftArm: Number(query.get('angle') ?? 0), rightArm: -Number(query.get('angle') ?? 0), leftLeg: 0, rightLeg: 0 }, '/assets/pet');
   if (OUTFIT_IDS.includes(outfit as OutfitId)) character.push(...attachmentDrawables(outfitSpec(stage, outfit as OutfitId), outfit, REST_POSE, direction, '/assets/outfits'));
   const item = findInventoryItem(action);
-  const duration = item?.useVisual.durationMs ?? 3000;
+  const care = Object.hasOwn(CARE_DURATION_MS, action) ? action as CareVisual : undefined;
+  const variant = Number(query.get('variant') ?? 0);
+  const duration = care ? CARE_DURATION_MS[care] ?? 18000 : item?.useVisual.durationMs ?? 3000;
   useEffect(() => {
     if (!playing) return;
     const start = performance.now() - time;
@@ -47,11 +51,11 @@ export function RigPreview() {
     return () => cancelAnimationFrame(handle);
     // Time is a seek position captured when playback starts, not a per-frame dependency.
   }, [playing, duration, action, sequence]);
-  const actionFrame = item || travel ? petFrame({stage,direction,intensity:'normal',reduced,kind:item?'inventory-use':'idle',itemId:item?.id ?? null,sequenceId:1,timeMs:time,durationMs:duration,moving:!item},OUTFIT_IDS.includes(outfit as OutfitId) ? outfit as OutfitId : null,item?.useVisual.expression ?? 'neutral','/assets',false,TRAVEL_IDS.includes(travel as TravelOutfitId)?travel as TravelOutfitId:null) : null;
+  const actionFrame = item || travel || care ? petFrame({stage,direction,intensity:'normal',reduced,kind:care?'care':item?'inventory-use':'idle',careAction:care,careVariant:variant,itemId:item?.id ?? null,sequenceId:1,timeMs:time,durationMs:duration,moving:!item&&!care},OUTFIT_IDS.includes(outfit as OutfitId) ? outfit as OutfitId : null,item?.useVisual.expression ?? 'neutral','/assets',false,TRAVEL_IDS.includes(travel as TravelOutfitId)?travel as TravelOutfitId:null) : null;
   return <main style={{ background: '#f4f0e9', height: '100vh', overflow: 'auto', padding: 24 }}>
     <h1>角色与附件预览</h1><p>固定时间直接求帧；共用正式绘制组件，不连接存档。</p>
     <label>装扮 <select value={outfit} onChange={(event) => setOutfit(event.target.value)}><option value="">无</option>{OUTFIT_IDS.map((id) => <option key={id}>{id}</option>)}</select></label>
-    <label> 动作 <select value={action} onChange={(event) => {setAction(event.target.value);setTime(0);setSequence(value=>value+1);epoch.current=Date.now();}}><option value="">无</option>{Object.keys(ACTIONS).map(id=><option key={id} value={id}>{findInventoryItem(id)?.name ?? id}</option>)}</select></label>
+    <label> 动作 <select value={action} onChange={(event) => {setAction(event.target.value);setTime(0);setSequence(value=>value+1);epoch.current=Date.now();}}><option value="">无</option>{[...Object.keys(ACTIONS),...Object.keys(CARE_DURATION_MS)].map(id=><option key={id} value={id}>{findInventoryItem(id)?.name ?? id}</option>)}</select></label>
     <label> 旅行装 <select value={travel} onChange={event=>setTravel(event.target.value)}><option value="">无</option>{TRAVEL_IDS.map(id=><option key={id}>{id}</option>)}</select></label>
     <label>成长阶段 <select value={stage} onChange={(event) => setStage(event.target.value as GrowthStage)}>{STAGES.map((value) => <option key={value}>{value}</option>)}</select></label>
     <label> 朝向 <select value={direction} onChange={(event) => setDirection(event.target.value as PetDirection)}><option>right</option><option>left</option></select></label>
@@ -60,7 +64,7 @@ export function RigPreview() {
     <div data-preview-viewport style={{ position: 'relative', width: 220, height: 220, background: '#fff', outline: '1px solid #bda98b' }}>
       {query.get('fixture')==='live'?<div style={{position:'absolute',left:28,top:49}}><LivePet stage={stage} outfit={OUTFIT_IDS.includes(outfit as OutfitId)?outfit as OutfitId:null} travel={TRAVEL_IDS.includes(travel as TravelOutfitId)?travel as TravelOutfitId:null}
         expression={item?.useVisual.expression??'neutral'} direction={direction} intensity="normal" dragVisual={dragVisual}
-        runtime={{motion:{moving:!item,direction},interaction:{kind:item?'inventory-use':'idle',inventoryItemId:item?.id??null,sequenceId:sequence,startedAt:epoch.current-time,durationMs:item?.useVisual.durationMs??null,direction},gaze:{x:0,y:0},keyboardStatus:'disabled',keyboardTempo:'calm'}}/></div>
+        runtime={{motion:{moving:!item&&!care,direction},interaction:{kind:care?'care':item?'inventory-use':'idle',careAction:care,careVariant:variant,inventoryItemId:item?.id??null,sequenceId:sequence,startedAt:epoch.current-time,durationMs:care?CARE_DURATION_MS[care]:item?.useVisual.durationMs??null,direction},gaze:{x:0,y:0},keyboardStatus:'disabled',keyboardTempo:'calm'}}/></div>
         :<RigRenderer stage={stage} drawables={actionFrame?.drawables ?? (query.get('fixture') === 'character' || outfit ? character : gateFrame(time, direction, visualSeed('gate:1')))} />}
     </div>
   </main>;

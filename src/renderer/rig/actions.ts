@@ -7,6 +7,8 @@ import { SHOULDERS, type CharacterPose } from './character';
 import { anchorMatrix, bodyMatrix, chain, DISPLAY, rotate, scale, transform, translate, REST_POSE, type Matrix, type Point } from './geometry';
 import { particleAt, visualSeed, type Drawable } from './frame';
 import { sampleActionAt } from './sample-actions';
+import { careActionAt } from './care-actions';
+import type { CareVisual } from '../../shared/types';
 
 export type ContactPhase = 'approach' | 'acquire' | 'attached' | 'release' | 'retract';
 export type InterruptPolicy = 'fade-held-prop' | 'keep-in-scene' | 'resume-free-motion' | 'hide-immediately';
@@ -35,6 +37,9 @@ export interface ActionInput {
   stage: GrowthStage; direction: PetDirection; intensity: AnimationIntensity; reduced: boolean;
   kind: PetInteractionKind; itemId: InventoryItemId | null; sequenceId: number; timeMs: number;
   durationMs?: number | null;
+  careAction?: CareVisual;
+  careVariant?: number;
+  hideCareProps?: boolean;
   motionWeight?: number; expression?: PetExpression; moving: boolean; drag?: DragVisual; keyboardTempo?: 'calm' | 'steady' | 'rapid';
 }
 export interface ActionFrame {
@@ -95,6 +100,8 @@ export function actionAt(input: ActionInput, assetRoot = '/assets'): ActionFrame
     return result;
   }
   const keyboard = input.kind === 'keyboard-typing' || input.kind === 'keyboard-rest';
+  const care = careActionAt(input, assetRoot, authoredArms);
+  if (care) return care;
   const sample = sampleActionAt(input, assetRoot, authoredArms);
   if (sample) return sample;
   const cursor = input.kind === 'cursor-paw' || input.kind === 'cursor-tug';

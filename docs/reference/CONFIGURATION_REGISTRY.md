@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理可在对应代码或测试已经变更并完成核对时修改；不得仅为设想改写“当前值”，不得重排、复用或删除既有 CFG 编号。  
-> 适用版本：1.2.6  
+> 适用版本：1.2.7 后续开发（未正式发布）  
 > 最后核对：2026-09-14  
 > 权威源码：src/shared/types.ts、src/shared/growth.ts、src/shared/game.ts、src/shared/catalog.ts、src/shared/economy-types.ts、src/shared/economy.ts、src/shared/expression.ts、src/shared/interaction.ts、src/main/store.ts、src/main/main.ts、src/main/motion.ts、src/main/interaction-controller.ts、src/renderer  
 > 更新触发：默认存档、领域类型、公式、阈值、计时器、窗口尺寸、动作、互动、表情、装扮或经济目录、设置项及其测试发生变化时。
@@ -63,7 +63,7 @@
 | CFG-031 | 玩耍 | 心情未满且精力至少 8；实际恢复 min(20, 剩余空间)，精力 -8，经验 floor(8 × 实际恢复 / 20)，行为 playing；满心情不耗精力 | 属性点、经验点 | `performAction()` | 互动页、表情 | `game.test.ts` | 高：影响主动经验和精力循环 |
 | CFG-032 | 清洁 | 清洁未满时实际恢复 min(30, 剩余空间)，经验 floor(4 × 实际恢复 / 30)，行为 cleaning；满属性不发经验 | 属性点、经验点 | `performAction()` | 互动页、表情 | `game.test.ts` | 中：影响需求恢复和防刷 |
 | CFG-033 | 睡眠切换 | sleeping 与 idle 互切；无即时经验或金币 | 状态切换 | `performAction()` | 互动页、精力恢复 | `game.test.ts` | 高：影响自动散步和精力 |
-| CFG-034 | 临时行为复位 | 2,600 毫秒后恢复 idle；sleeping 不复位 | 毫秒 | 主进程动作复位计时器 | 喂食、玩耍、清洁反馈 | 无直接计时测试 | 中：改变反馈持续时间和中断体验 |
+| CFG-034 | 临时行为复位 | 由本文件基础照顾参数的 CARE_DURATION_MS 决定；结束／中断清理，sleeping 不复位 | 毫秒 | shared/care.ts、InteractionController | 基础照顾与叫醒 | interaction-controller.test.ts | 中：改变反馈持续时间和中断体验 |
 | CFG-035 | 可调用照顾动作 | feed、play、clean、sleep | `PetAction` 白名单 | `types.ts`、主进程 IPC | preload、面板 | `game.test.ts` | 高：新增动作需贯穿 API、领域、界面、动画和测试 |
 | CFG-036 | 环境互动奖励 | 鼠标、键盘、拖动、点击、追逐等运行时互动固定 0 金币、0 经验、0 属性变化 | 非经济视觉互动 | `InteractionController`、`PetView` | 桌宠窗口 | `interaction-controller.test.ts` | 中：若新增奖励必须重新评估防刷和经济曲线 |
 
@@ -198,3 +198,16 @@
 | 抓握容差 | `MAX_GRIP_ERROR_ASSET_PX` = 1；纯数学残差测试使用 1e-6，不用于截图 |
 | alpha 轮廓 | `measure_rig_assets.cjs` 或 `prepare_rig_hulls.py` 使用 alpha >=16 的像素格凸包；独立验证真实接触点 alpha >=220。Electron 测量同时记录源图尺寸与 SHA-256 |
 | 接触手臂模板 | 512 RGBA 中线段端点 (224,256)/(288,256)，保持截面；避免极端非均匀缩小采样拖尾 |
+
+## 基础照顾参数（2026-09-14，未发布）
+
+| 参数 | 值及权威源码 |
+| --- | --- |
+| 短片总时长 | feed 6000 ms、play 7000 ms、clean 6000 ms、sleep-in 4000 ms、wake 3000 ms；shared/care.ts 的 CARE_DURATION_MS；sleep-loop 无截止 |
+| 睡眠稀疏动作周期 | CARE_SLEEP_CYCLE_MS=18000 ms；shared/care.ts；周期内大部分时间安静呼吸 |
+| 照顾优先级 | INTERACTION_PRIORITY.care=98；shared/interaction.ts |
+| 去重缓存上限 | CARE_COMMAND_CACHE_SIZE=256；仅当前应用会话内最近请求结果 |
+| 变体 | 每短片三种，控制器按类别循环选择；sleep-loop 继承 sleep-in；不持久化 |
+| 接触／阶段／分镜参数 | renderer/rig/care-actions.ts 的逐动作配方；嘴部高度 CARE_MOUTH_Y、道具刚性矩阵及握点；真实 alpha 门槛沿上表 |
+
+旧基础照顾统一复位时间已由 CARE_DURATION_MS 取代，不能继续使用历史固定复位作为实现依据。

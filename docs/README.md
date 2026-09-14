@@ -93,7 +93,9 @@ v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删�
 
 ## 动作丰富化计划与样板
 
-- [四项基础互动动作开发计划](CARE_INTERACTION_ANIMATION_PLAN.md)：喂食、玩耍、清洁、睡觉／叫醒的新一轮计划，待用户审核；与下述用品动作项目分开管理。
+- [基础互动实施记录](CARE_INTERACTION_IMPLEMENTATION.md)：当前实现、复现命令、动态预览与未验证边界。
+
+- [四项基础互动动作开发计划](CARE_INTERACTION_ANIMATION_PLAN.md)：喂食、玩耍、清洁、睡觉／叫醒的新一轮计划，用户已启动开发；与下述用品动作项目分开管理。
 
 - [动作与道具表现丰富化项目计划书](MOTION_AND_PROP_ENRICHMENT_PLAN.md)：现有十三项用品／服务的动作增强、样板顺序及验收方案；用户已启动四项样板开发。
 - [四项动作样板实施与验收](MOTION_SAMPLE_IMPLEMENTATION.md)：当前样板、离线动态对比、复现命令与待验收边界。

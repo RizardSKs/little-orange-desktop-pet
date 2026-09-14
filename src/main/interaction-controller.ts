@@ -15,6 +15,8 @@ import {
   type TimedPoint,
 } from '../shared/interaction';
 import type { InventoryItemId } from '../shared/economy-types';
+import { CARE_DURATION_MS } from '../shared/care';
+import type { CareVisual, PetAction } from '../shared/types';
 import type {
   GrowthStage,
   KeyboardHookStatus,
@@ -44,6 +46,7 @@ export interface InteractionControllerOptions {
   openPanel(): void;
   movePet(position: PetPosition): void;
   finishPetMove(): void;
+  finishCare?(): void;
 }
 
 const AMBIENT_KINDS = new Set<PetInteractionKind>(['nearby', 'cursor-paw', 'cursor-tug', 'cursor-chase', 'cursor-dizzy']);
@@ -72,6 +75,7 @@ export class InteractionController {
   private lastSpontaneousAt = 0;
   private spontaneousStarts: number[] = [];
   private cooldowns = new Map<PetInteractionKind, number>();
+  private careVariants = new Map<CareVisual, number>();
 
   constructor(private readonly options: InteractionControllerOptions) {}
 
@@ -109,6 +113,20 @@ export class InteractionController {
     this.lastTapAt = now;
   }
 
+  careBusy(action: PetAction, now = Date.now()): boolean {
+    return this.options.getContext().locked || this.isDragging()
+      || (action !== 'sleep' && this.runtime.interaction.kind === 'care'
+        && this.runtime.interaction.careAction === action && this.actionEndsAt !== null && now < this.actionEndsAt);
+  }
+
+  playCare(action: CareVisual, now = Date.now()): void {
+    this.tapCount = 0;
+    const variant = action === 'sleep-loop' ? this.careVariants.get('sleep-in') ?? 0
+      : ((this.careVariants.get(action) ?? -1) + 1) % 3;
+    this.careVariants.set(action, variant);
+    this.startInteraction('care', now, CARE_DURATION_MS[action], this.runtime.motion.direction, true, null, action, variant);
+  }
+
   playInventoryUse(itemId: InventoryItemId, durationMs: number, now = Date.now()): boolean {
     if (this.options.getContext().locked || this.isDragging()
       || !Number.isFinite(durationMs) || durationMs <= 0) return false;
@@ -144,6 +162,7 @@ export class InteractionController {
     if (this.runtime.interaction.kind === 'dragging'
       || this.runtime.interaction.kind === 'landing'
       || this.runtime.interaction.kind === 'inventory-use'
+      || this.runtime.interaction.kind === 'care'
       || this.runtime.interaction.kind === 'petting'
       || this.runtime.interaction.kind === 'dodge'
       || this.runtime.interaction.kind === 'cursor-tug') this.forceIdle(now);
@@ -169,6 +188,7 @@ export class InteractionController {
     const context = this.options.getContext();
     this.expireAction(now);
     if (this.tapCount && now - this.lastTapAt >= TAP_SETTLE_MS) this.resolveTaps(now);
+    if (context.sleeping && this.runtime.interaction.kind === 'idle') this.playCare('sleep-loop', now);
     if (context.sleeping || context.careBusy || context.foregroundFullscreen) {
       this.tapCount = 0;
       this.updateKeyboard(context, now);
@@ -296,7 +316,7 @@ export class InteractionController {
       return;
     }
     const kind = !context.sleeping && count >= 3 ? 'dodge' : 'petting';
-    this.startInteraction(kind, now, INTERACTION_DURATION_MS[kind]!, this.runtime.motion.direction);
+    this.startInteraction(kind, now, INTERACTION_DURATION_MS[kind]!, this.runtime.motion.direction, this.runtime.interaction.careAction === 'sleep-loop');
   }
 
   private expireAction(now: number): void {
@@ -324,15 +344,18 @@ export class InteractionController {
     direction: PetDirection,
     force = false,
     inventoryItemId: InventoryItemId | null = null,
+    careAction?: CareVisual,
+    careVariant?: number,
   ): boolean {
     if (!force && this.runtime.interaction.kind !== 'idle' && !canInterruptInteraction(this.runtime.interaction.kind, kind)) return false;
     const previousKind = this.runtime.interaction.kind;
+    if (previousKind === 'care' && kind !== 'care') this.options.finishCare?.();
     if (previousKind === 'cursor-tug' && kind !== 'cursor-tug') this.options.finishPetMove();
     if (previousKind === 'cursor-chase' && kind !== 'cursor-dizzy') this.pendingDizzy = false;
     const profile = INTERACTION_STAGE_PROFILES[this.options.getContext().stage];
     const adjustedDuration = durationMs === null
       ? null
-      : kind === 'inventory-use' ? Math.round(durationMs) : Math.round(durationMs * profile.duration);
+      : kind === 'inventory-use' || kind === 'care' ? Math.round(durationMs) : Math.round(durationMs * profile.duration);
     this.runtime.interaction = {
       kind,
       sequenceId: this.runtime.interaction.sequenceId + 1,
@@ -340,6 +363,8 @@ export class InteractionController {
       durationMs: adjustedDuration,
       direction,
       inventoryItemId,
+      careAction,
+      careVariant,
     };
     this.actionEndsAt = adjustedDuration === null ? null : now + adjustedDuration;
     this.emit();
@@ -348,6 +373,7 @@ export class InteractionController {
 
   private forceIdle(now: number): void {
     if (this.runtime.interaction.kind === 'idle') return;
+    if (this.runtime.interaction.kind === 'care') this.options.finishCare?.();
     this.runtime.interaction = {
       kind: 'idle',
       sequenceId: this.runtime.interaction.sequenceId + 1,

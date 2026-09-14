@@ -6,6 +6,7 @@ const server=await createServer({configFile:false,server:{middlewareMode:true,wa
 try {
 const {petFrame} = await server.ssrLoadModule('/src/renderer/rig/pet-frame.ts');
 const {ACTIONS,CONTACT_BOUNDARIES} = await server.ssrLoadModule('/src/renderer/rig/actions.ts');
+const {CARE_DURATION_MS}=await server.ssrLoadModule('/src/shared/care.ts');
 const {SAMPLE_IDS,SAMPLE_TIMING} = await server.ssrLoadModule('/src/renderer/rig/sample-actions.ts');
 const {DISPLAY,STAGES,transform} = await server.ssrLoadModule('/src/renderer/rig/geometry.ts');
 const {findInventoryItem} = await server.ssrLoadModule('/src/shared/catalog.ts');
@@ -15,7 +16,7 @@ const {dragVisualForMovement}=await server.ssrLoadModule('/src/renderer/drag-vis
 const hulls=JSON.parse(fs.readFileSync('tmp/rig-evidence/alpha-hulls.json','utf8'));
 const failures=new Map(); let frames=0;
 function check(input) {
-  const {stage,direction,timeMs}=input;const itemId=input.itemId??input.kind;
+  const {stage,direction,timeMs}=input;const itemId=input.careAction??input.itemId??input.kind;
   const frame=petFrame(input,null,findInventoryItem(input.itemId)?.useVisual.expression??'neutral','/assets'); frames++;
   const attachments=[...OUTFIT_IDS.flatMap(id=>attachmentDrawables(outfitSpec(stage,id),id,frame.pose.body,direction,'/assets/outfits')),...TRAVEL_IDS.flatMap(id=>travelDrawables(stage,id,frame.pose.body,direction,'/assets').map(part=>({...part,id:id+part.id})))];
   for(const part of [...frame.drawables,...attachments]) {
@@ -30,6 +31,13 @@ function check(input) {
   }
 }
 for(const stage of STAGES) for(const direction of ['left','right']) for(const intensity of ['gentle','normal','lively']) for(const reduced of [false,true]) {
+ for(const [careAction,limit] of Object.entries(CARE_DURATION_MS))for(const careVariant of [0,1,2]) {
+  const duration=limit??18000;
+  const times=new Set([0,.04,.18,.22,.27,.3,.34,.42,.48,.49,.56,.65,.7,.71,.76,.8,.83,.85,.98,1].flatMap(p=>[-.001,0,.001].map(d=>Math.max(0,p*duration+d))));
+  for(let t=0;t<=duration;t+=1000/60)times.add(t);
+  for(const timeMs of times)check({stage,direction,itemId:null,kind:'care',careAction,careVariant,timeMs,durationMs:limit,sequenceId:1,intensity,reduced,moving:false});
+ }
+ if(process.argv.includes('--care-only'))continue;
  for(const [itemId,spec] of Object.entries(ACTIONS)) {
   const duration=SAMPLE_IDS.includes(itemId)?findInventoryItem(itemId).useVisual.durationMs:spec.cycleMs;
   const times=new Set([0,.25,.5,.75,1,...CONTACT_BOUNDARIES].flatMap(p=>[-.001,0,.001].map(e=>Math.max(0,p*spec.cycleMs+e))));

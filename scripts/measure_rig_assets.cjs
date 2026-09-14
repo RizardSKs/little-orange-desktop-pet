@@ -15,6 +15,10 @@ function hull(points) {
 app.whenReady().then(()=>{
   const hulls={}, assets=[], contacts=[];
   const contactPoints={
+    'assets/props/rig/care/bread.png':[[256,115],[350,330]],
+    'assets/props/rig/care/pillow.png':[[82,295],[430,295]],
+    'assets/props/rig/care/bowl.png':[[130,310],[382,310]],
+    'assets/props/rig/care/washcloth.png':[[256,330]],
     'assets/props/rig/inventory/honey-soda.png':[[151,310],[360,310],[354,34]],
     'assets/props/rig/inventory/grooming-brush.png':[[205,402],[118,205]],
     'assets/props/rig/inventory/ribbon-ball.png':[[353,300]],

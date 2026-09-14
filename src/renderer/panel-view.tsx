@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   EXPEDITIONS,
   findExpedition,
@@ -125,12 +125,17 @@ function StatusTab({ state, cap, efficiency, onOpenExplore }: { state: SaveData;
 
 function ActionsTab({ state, setState, flash }: { state: SaveData; setState: (state: SaveData) => void; flash: (message: string) => void }) {
   const cap = statCap(state.growth.level);
+  const requestPending = useRef(false);
+  const [pending, setPending] = useState(false);
   const action = async (kind: PetAction) => {
+    if (requestPending.current) return;
+    requestPending.current = true; setPending(true);
     try {
-      const result = await window.orangePet.performAction(kind);
+      const result = await window.orangePet.performAction(kind, { id: crypto.randomUUID(), ...(kind === 'sleep' ? { sleepTarget: state.pet.behavior === 'sleeping' ? 'awake' as const : 'asleep' as const } : {}) });
       setState(result.state);
       flash(result.message);
     } catch (error) { flash(error instanceof Error ? error.message : '互动失败'); }
+    finally { requestPending.current = false; setPending(false); }
   };
   const actions: { id: PetAction; icon: string; title: string; desc: string; disabled?: boolean }[] = [
     { id: 'feed', icon: '🥣', title: '喂食', desc: '饱食最多 +25 · 5 金币 · 按实际恢复发经验', disabled: state.economy.coins < 5 || state.pet.stats.satiety >= cap },
@@ -138,7 +143,7 @@ function ActionsTab({ state, setState, flash }: { state: SaveData; setState: (st
     { id: 'clean', icon: '🫧', title: '清洁', desc: '清洁最多 +30 · 按实际恢复发经验', disabled: state.pet.stats.cleanliness >= cap },
     { id: 'sleep', icon: state.pet.behavior === 'sleeping' ? '🌞' : '🌙', title: state.pet.behavior === 'sleeping' ? '叫醒' : '睡觉', desc: state.pet.behavior === 'sleeping' ? '恢复清醒状态' : '应用运行时每小时恢复 12 点精力' },
   ];
-  return <div className="stack"><div className="action-grid">{actions.map((item) => <button key={item.id} className="action-card" disabled={item.disabled} onClick={() => void action(item.id)}><span>{item.icon}</span><strong>{item.title}</strong><small>{item.desc}</small></button>)}</div><div className="card cozy-note"><b>有效照顾才会成长</b><p>属性已满时不会扣除金币、精力或发放经验。鼠标、键盘和旅行互动只带来表现，不会变成刷取途径。</p></div></div>;
+  return <div className="stack"><div className="action-grid">{actions.map((item) => <button key={item.id} className="action-card" disabled={pending || item.disabled} onClick={() => void action(item.id)}><span>{item.icon}</span><strong>{item.title}</strong><small>{item.desc}</small></button>)}</div><div className="card cozy-note"><b>有效照顾才会成长</b><p>属性已满时不会扣除金币、精力或发放经验。鼠标、键盘和旅行互动只带来表现，不会变成刷取途径。</p></div></div>;
 }
 
 function LifeTab({ state, setState, flash, section, setSection }: {

@@ -5,7 +5,7 @@ export interface PropExit { at: number; duration: number; drawables: Drawable[] 
 export function interruptProps(drawables: readonly Drawable[], policy: InterruptPolicy, at: number, sequenceId: number, reduced: boolean): PropExit {
   const eligible=policy==='fade-held-prop' || policy==='keep-in-scene';
   return { at, duration: reduced ? 0 : MAX_INTERRUPTED_PROP_EXIT_MS,
-    drawables:eligible ? drawables.filter(part=>part.id==='action-prop'||part.id==='picnic-food').map(part=>({...part,id:`exit-${sequenceId}-${part.id}`})) : [] };
+    drawables:eligible ? drawables.filter(part=>part.id==='action-prop'||part.id==='picnic-food'||part.id==='care-food').map(part=>({...part,id:`exit-${sequenceId}-${part.id}`})) : [] };
 }
 export function exitAt(exit: PropExit | null, now: number): Drawable[] {
   if(!exit || now>=exit.at+exit.duration || exit.duration===0)return [];
