@@ -3,7 +3,7 @@
 > 文档级别：`LIVING`  
 > 修改权限：发布脚本、目录、验证步骤或工具链变化时与实现同步；本手册不能覆盖或放宽 `LOCKED` 发布准则。  
 > 适用版本：`1.2.1` 起的 Setup 与离线累积 Update 发布流程。  
-> 最后核对日期：`2026-08-22`。  
+> 最后核对日期：`2026-09-14`。  
 > 权威来源：`package.json`、`package-lock.json`、`electron-builder.update.cjs`、`scripts/write_update_manifest.mjs`、实际发行物与 GitHub Release；策略以[发布与兼容性准则](docs/governance/RELEASE_AND_COMPATIBILITY.md)和[Git 与 GitHub 版本控制准则](docs/governance/GIT_VERSION_CONTROL.md)为准。  
 > 更新触发：构建命令、产物组合、原生依赖、签名、清单、兼容验证、存档迁移或 GitHub Release 流程变化时。
 
@@ -183,6 +183,12 @@ Get-FileHash -LiteralPath `
 凭据只能存放在 `gh` 自身凭据存储中，不得把令牌写入仓库、命令参数日志、Release 说明或文档。`gh release create` 返回 URL 不代表闭环完成；远端回读和 SHA-256 复核不可省略，全量回下载受阻时必须记录可信服务器摘要证据与限制。
 
 ## 8. 当前正式发布状态
+
+- v1.2.7 已于 2026-09-14 正式发布：[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.7)。不可变标签绑定发行提交 `441a16b94f125316f439dde6e2db2cdf4e75b4f9`。
+- 123 项测试、生产构建、Windows CI、Setup 全新安装、原版 v1.0.0 直升、官方 v1.2.6 覆盖升级及安装版十三项道具检查通过。
+- Setup、Update、manifest 均完整回下载，大小与 SHA-256 和上传源文件一致。两份 EXE 未签名，详情及人工验收边界见 [v1.2.7 发布快照](docs/releases/v1.2.7.md)。
+
+### 历史补充：v1.2.6
 
 - v1.2.6 已于 2026-08-23 正式发布：[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.6)；不可变标签指向最终提交 `64cd87bf28426430bd7d795e818eea419f12ad5d`。
 - 本版 97 项自动化测试、生产构建、Windows CI、29 份治理文档、固定名 Setup/Update/清单、PE 版本、哈希、两份原生二进制、全新安装、v1.0.0 直升和 v1.2.5 覆盖升级均已通过。
