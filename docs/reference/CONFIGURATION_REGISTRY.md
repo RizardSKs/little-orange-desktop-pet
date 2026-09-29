@@ -2,8 +2,8 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理可在对应代码或测试已经变更并完成核对时修改；不得仅为设想改写“当前值”，不得重排、复用或删除既有 CFG 编号。  
-> 适用版本：1.2.7 后续开发（未正式发布）  
-> 最后核对：2026-09-14  
+> 适用版本：1.2.8 候选（正式发布待完成）  
+> 最后核对：2026-09-29  
 > 权威源码：src/shared/types.ts、src/shared/growth.ts、src/shared/game.ts、src/shared/catalog.ts、src/shared/economy-types.ts、src/shared/economy.ts、src/shared/expression.ts、src/shared/interaction.ts、src/main/store.ts、src/main/main.ts、src/main/motion.ts、src/main/interaction-controller.ts、src/renderer  
 > 更新触发：默认存档、领域类型、公式、阈值、计时器、窗口尺寸、动作、互动、表情、装扮或经济目录、设置项及其测试发生变化时。
 
@@ -199,7 +199,7 @@
 | alpha 轮廓 | `measure_rig_assets.cjs` 或 `prepare_rig_hulls.py` 使用 alpha >=16 的像素格凸包；独立验证真实接触点 alpha >=220。Electron 测量同时记录源图尺寸与 SHA-256 |
 | 接触手臂模板 | 512 RGBA 中线段端点 (224,256)/(288,256)，保持截面；避免极端非均匀缩小采样拖尾 |
 
-## 基础照顾参数（2026-09-14，未发布）
+## 基础照顾参数（2026-09-29，未发布）
 
 | 参数 | 值及权威源码 |
 | --- | --- |
@@ -211,3 +211,4 @@
 | 接触／阶段／分镜参数 | renderer/rig/care-actions.ts 的逐动作配方；嘴部高度 CARE_MOUTH_Y、道具刚性矩阵及握点；真实 alpha 门槛沿上表 |
 
 旧基础照顾统一复位时间已由 CARE_DURATION_MS 取代，不能继续使用历史固定复位作为实现依据。
+
