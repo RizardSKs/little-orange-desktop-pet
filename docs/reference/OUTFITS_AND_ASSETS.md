@@ -2,7 +2,7 @@
 
 > 文档级别：`LIVING`（随实现持续维护）  
 > 修改权限：装扮目录、购买/装备逻辑、渲染锚点、角色素材或测试变化时同步更新；既有物品 ID、存档兼容规则和美术方向不得擅自改变。  
-> 适用版本：1.2.8 候选（正式发布待完成）  
+> 适用版本：1.2.8 正式发布
 > 最后核对：2026-09-29  
 > 权威源码：`src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`src/renderer/pet-view.tsx`、`scripts/prepare_v1_2_3_outfit_assets.py`、`assets/outfits/`、`assets/props/`  
 > 更新触发：稳定 ID、装扮所有权、旅行外观、限时视觉、阶段素材、素材处理流程或相关测试变化。
@@ -95,7 +95,7 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 
 新增的 `torso/leaves` 为身体的互补分层；`segment/hand` 为接触动作片段，嘴部遮挡单独导出。运行时道具使用 `assets/props/rig/` 的规范化透明素材；护理刷具、光标箭头独立于旧组合图，避免重复手部。旅行资源由 `prepare_travel_parts.py` 本地生成；素材美术仍需用户实际观看确认。所有生成结果随源码提供，应用运行不依赖 Python、图片生成工具或网络。
 
-## 基础照顾本地素材（2026-09-29，未发布）
+## 基础照顾本地素材（2026-09-14，v1.2.8）
 
 新增 `assets/props/rig/care/{bowl,bread,washcloth,pillow}.png`，内置 imagegen 生成并保留透明 alpha；原始生成图复制到仓库，不依赖远程地址。杯碗握持、面包顶部接触和毛巾／抱枕握点在 `measure_rig_assets.cjs` 中测量。PNG原始尺寸允许不同，渲染统一映射到既有逻辑画布。提示词、来源及证据见 [实施记录](../CARE_INTERACTION_IMPLEMENTATION.md)。既有永久装扮 ID、所有权及旅行装配方不变。
 

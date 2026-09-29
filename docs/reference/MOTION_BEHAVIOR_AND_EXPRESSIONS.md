@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在行为类型、移动调度、动画、表达式解析、交互手势、视觉素材或测试已经变更并核对后更新；新增动作方向或角色性格规则必须先取得用户批准。  
-> 适用版本：1.2.8 候选（正式发布待完成）  
+> 适用版本：1.2.8 正式发布
 > 最后核对：2026-09-29  
 > 权威源码：`src/shared/types.ts`、`src/shared/interaction.ts`、`src/shared/expression.ts`、`src/main/interaction-controller.ts`、`src/main/motion.ts`、`src/main/main.ts`、`src/renderer/pet-view.tsx`、`src/renderer/styles.css`  
 > 更新触发：`PetBehavior`、`PetInteractionKind`、互动优先级、触发阈值、自动散步条件、速度/缓动、动画强度、拖动/点击手势、四阶段变体、表情文案或相关测试变化时。
@@ -136,7 +136,7 @@
 
 当前仍缺少真实 BrowserWindow 下的多显示器拖动、鼠标手势时序、视觉截图以及原生键盘钩子端到端测试。
 
-## 基础照顾动画（2026-09-29，未发布）
+## 基础照顾动画（2026-09-14，v1.2.8）
 
 新增 `PetInteractionKind=care`，运行时携带 `careAction/careVariant`，包含 feed/play/clean/sleep-in/sleep-loop/wake。短片按主进程起始时刻及截止时间求帧，阶段不改变业务时长。连续同种主动作轮换三个可观察变体；睡眠循环继承入睡变体。睡眠循环可被单击抚摸和拖动暂时打断，逻辑睡眠不变；明确叫醒或成功照顾才退出。旧序列的截止时间不能结束新动作。
 
