@@ -23,6 +23,58 @@ function createHarness() {
 }
 
 describe('InteractionController', () => {
+  it('keeps care deadlines independent of growth stage and replaces old deadlines', () => {
+    const h = createHarness();
+    h.controller.playCare('feed', 1000);
+    expect(h.controller.snapshot().interaction.durationMs).toBe(6000);
+    expect(h.controller.careBusy('feed', 2000)).toBe(true);
+    expect(h.controller.careBusy('play', 2000)).toBe(false);
+    h.controller.playCare('play', 2000);
+    const sequence = h.controller.snapshot().interaction.sequenceId;
+    h.controller.tick(null, 7001);
+    expect(h.controller.snapshot().interaction.sequenceId).toBe(sequence);
+    expect(h.controller.snapshot().interaction.careAction).toBe('play');
+    h.controller.tick(null, 9000);
+    expect(h.controller.snapshot().interaction.kind).toBe('idle');
+  });
+
+  it('returns to the same sleeping variant after entry and drag without waking', () => {
+    const h = createHarness(); h.context.sleeping = true;
+    h.controller.playCare('sleep-in', 1000);
+    const variant = h.controller.snapshot().interaction.careVariant;
+    h.controller.tick(null, 5000);
+    expect(h.controller.snapshot().interaction.careAction).toBe('sleep-loop');
+    expect(h.controller.snapshot().interaction.careVariant).toBe(variant);
+    h.controller.beginDrag(6000);
+    expect(h.controller.careBusy('clean', 6100)).toBe(true);
+    h.controller.endDrag(7000);
+    h.controller.tick(null, 9000);
+    expect(h.context.sleeping).toBe(true);
+    expect(h.controller.snapshot().interaction.careAction).toBe('sleep-loop');
+  });
+
+  it('does not resurrect sleep after an explicit wake and cancels care on lock', () => {
+    const h = createHarness(); h.context.sleeping = true;
+    h.controller.playCare('sleep-in', 1000);
+    h.context.sleeping = false; h.controller.playCare('wake', 1200);
+    h.controller.tick(null, 8000);
+    expect(h.controller.snapshot().interaction.kind).toBe('idle');
+    h.controller.playCare('clean', 9000); h.controller.cancelForLock(9100);
+    h.controller.tick(null, 20000);
+    expect(h.controller.snapshot().interaction.kind).toBe('idle');
+  });
+
+  it('alternates behavioral variants and allows care and inventory to replace each other', () => {
+    const h = createHarness();
+    const variants = [];
+    for (let i = 0; i < 4; i++) {
+      h.controller.playCare('feed', 1000 + i * 1000);
+      variants.push(h.controller.snapshot().interaction.careVariant);
+      expect(h.controller.playInventoryUse('item-ribbon-ball', 12000, 1100 + i * 1000)).toBe(true);
+    }
+    expect(variants).toEqual([0, 1, 2, 0]);
+  });
+
   it('resolves one, two and repeated taps after the double-click window', () => {
     const one = createHarness();
     one.controller.recordTap(1_000);
@@ -60,6 +112,33 @@ describe('InteractionController', () => {
 
     expect(harness.controller.beginDrag(1_500)).toBe(true);
     expect(harness.controller.snapshot().interaction.kind).toBe('dragging');
+  });
+
+  it('plays dedicated inventory actions immediately and only dragging can interrupt them', () => {
+    const harness = createHarness();
+    expect(harness.controller.playInventoryUse('item-citrus-cookie', 8_000, 1_000)).toBe(true);
+    expect(harness.controller.snapshot().interaction).toMatchObject({
+      kind: 'inventory-use', inventoryItemId: 'item-citrus-cookie', startedAt: 1_000,
+    });
+
+    harness.controller.recordTap(1_100);
+    harness.controller.tick({ x: 300, y: 150 }, 1_500);
+    expect(harness.controller.snapshot().interaction.kind).toBe('inventory-use');
+
+    expect(harness.controller.playInventoryUse('service-cozy-grooming', 20_000, 2_000)).toBe(true);
+    expect(harness.controller.snapshot().interaction).toMatchObject({
+      kind: 'inventory-use', inventoryItemId: 'service-cozy-grooming', startedAt: 2_000,
+    });
+    expect(harness.controller.beginDrag(2_100)).toBe(true);
+    expect(harness.controller.snapshot().interaction).toMatchObject({ kind: 'dragging', inventoryItemId: null });
+  });
+
+  it('expires inventory actions cleanly and rejects invalid requests', () => {
+    const harness = createHarness();
+    expect(harness.controller.playInventoryUse('item-stage-sparkle', 8_000, 1_000)).toBe(true);
+    harness.controller.tick(null, 9_001);
+    expect(harness.controller.snapshot().interaction).toMatchObject({ kind: 'idle', inventoryItemId: null });
+    expect(harness.controller.playInventoryUse('item-stage-sparkle', Number.NaN, 10_000)).toBe(false);
   });
 
   it('starts keyboard accompaniment from aggregate buckets and fails closed', () => {

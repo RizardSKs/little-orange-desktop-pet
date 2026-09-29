@@ -2,8 +2,8 @@
 
 > 文档级别：`LIVING`（随实现持续维护）  
 > 修改权限：装扮目录、购买/装备逻辑、渲染锚点、角色素材或测试变化时同步更新；既有物品 ID、存档兼容规则和美术方向不得擅自改变。  
-> 适用版本：1.2.4  
-> 最后核对：2026-08-23  
+> 适用版本：1.2.8 候选（正式发布待完成）  
+> 最后核对：2026-09-29  
 > 权威源码：`src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`src/renderer/pet-view.tsx`、`scripts/prepare_v1_2_3_outfit_assets.py`、`assets/outfits/`、`assets/props/`  
 > 更新触发：稳定 ID、装扮所有权、旅行外观、限时视觉、阶段素材、素材处理流程或相关测试变化。
 
@@ -26,7 +26,7 @@
 
 购买仍按目录存在、未拥有、等级解锁和金币足够的顺序校验；成功购买不会自动装备。装备新物品会替换旧物品，卸下使用 `null`。schema 1 到 schema 2 的迁移会原样保留上述所有权和当前装备。
 
-八件永久装扮均使用 `assets/outfits/<stable-id>.png` 下的 512×512 RGBA 本地素材。`OUTFIT_LAYOUTS` 为四个成长阶段定义共 32 组位置、宽度和旋转；装扮位于 `pet-facing` 内的角色运动节点中，因此会跟随呼吸、步态、开心飞行拖拽和左右镜像。商店预览读取同一素材，不再依赖平台 emoji 字体。
+八件永久装扮均使用 `assets/outfits/<stable-id>.png` 下的 512×512 RGBA 本地素材。正式绘制使用 `rig/attachments.ts` 的阶段锚点与互补分层配方；刚性附件只继承锚点位置和原始旋转，柔性围巾继承完整身体姿态。旧 `OUTFIT_LAYOUTS` 保留兼容，已不驱动正式宠物。商店预览读取同一素材，不再依赖平台 emoji 字体。
 
 ## v1.2.2 阶段角色素材
 
@@ -49,15 +49,15 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 | `mature` | 10–19 | 更完整、稳定的成熟轮廓 |
 | `radiant` | 20–50 | 柔和晨曦与星尘质感、五叶中央分枝，并由等级星数继续强化 |
 
-全部整图、身体、手脚和表情层均为 512×512 RGBA，共用同一透明坐标系。渲染时按左右腿、左右手、身体、图片表情的顺序叠放；任一层加载失败后，整套角色切换到带中性表情的 `<stage>.png`，避免残缺角色。14 种表情与 `PetExpression` 稳定值一一对应。`radiant` 默认只保留低强度哑光星尘，不再使用身体外发光或金属油亮滤镜；用品、服务和庆典主动触发的光环仍按各自效果显示。
+全部整图、身体、手脚和表情层均为 512×512 RGBA，共用同一透明坐标系。正式绘制先生成同级 Drawable，再按语义图层排序；身体与叶片已拆分，接触动作使用独立手臂段和手掌；任一层加载失败后，整套角色切换到带中性表情的 `<stage>.png`，避免残缺角色。14 种表情与 `PetExpression` 稳定值一一对应。`radiant` 默认只保留低强度哑光星尘，不再使用身体外发光或金属油亮滤镜；用品、服务和庆典主动触发的光环仍按各自效果显示。
 
 ## 旅行装、用品与限时效果
 
 - 探索期间根据委托显示 `travel-satchel`、`travel-raincoat`、`travel-star-cape` 或 `travel-grand-backpack` 旅行标识。
 - 旅行装只在视觉上暂时覆盖普通装扮，不修改 `equippedItem`；正常返程或提前返程后，原永久装扮自动恢复。
-- 键盘、鼠标、庆典、主题和光环由持久化效果队列驱动。`pet-view.tsx` 只渲染每个槽位的队首效果，并已把全部消费庆典/主题/光环及四种探索返程庆典/主题映射到桌宠动作、道具、背景或辉光；队列推进由主进程按实际运行时间完成。
+- 键盘、鼠标、主题和光环由持久化效果队列驱动。1.2.6 起，新使用的用品和服务由临时 `inventory-use` 立即播放专属动作；旧存档消费庆典和探索返程庆典仍可从 `celebration` 队列继续显示，队列推进由主进程按实际运行时间完成。
 - 探索正常完成时，返程庆典和对应主题奖励原子入队；提前返程不入队，且原永久装扮仍会恢复。
-- 1.2.4 的键盘陪打和光标抓握分别使用 `assets/props/mini-keyboard.png` 与 `assets/props/cursor-grab.png` 本地透明 PNG；旅行装和其他临时道具仍使用 emoji/CSS。
+- 1.2.4 的键盘陪打和光标抓握分别使用 `assets/props/mini-keyboard.png` 与 `assets/props/cursor-grab.png`。1.2.6 在 `assets/props/inventory/` 增加十二张用品/服务透明 PNG，迷你键盘动作复用现有键盘；十三种正式使用动作均不依赖系统 emoji。逐项映射见[用品与服务专属动作规格](INVENTORY_USE_ACTIONS.md)。
 
 ## 素材处理流程
 
@@ -75,8 +75,8 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 ## 失败与边界
 
 - 分层或当前表情加载失败会降级为带中性表情的整图，因此降级状态无法显示独立手脚步态或动态表情，外围效果仍可工作。
-- `layerFailed` 在成长阶段改变时重置；同阶段内的临时加载失败不会自动重试分层模式。
-- 旅行装和未迁移的限时道具没有独立 PNG 美术，外观仍会受平台 emoji 字体影响；键盘与光标抓握不再依赖平台 emoji。
+- `VisualState` 在当前视觉阶段实例锁定 fallback，成长阶段原子切换时才允许重新尝试分层。
+- 四种旅行装均使用 `assets/outfits/travel/` 的本地 PNG；探索返程的遗留庆典标识保留既有表现。
 - 自动测试验证装扮稳定 ID、文件名、512×512 RGBA 和 32 组边界，不替代透明边缘、DPI、左右镜像和动作遮挡的人工截图检查。
 
 ## 相关测试
@@ -84,5 +84,18 @@ assets/pet/<stage>/expressions/<expression>.png # 14 种图片表情
 - `src/renderer/ui-regressions.test.ts`：验证五层与图片表情加载、整图 fallback，以及全部 80 张 PNG 的尺寸与 RGBA 类型。
 - `src/renderer/outfit-layout.test.ts`：验证八件本地装扮、透明 PNG 契约和四阶段 32 组布局边界。
 - `src/shared/catalog.test.ts`：锁定八件永久装扮 ID，以及用品、服务、探索、故事和效果目录。
+- `src/renderer/ui-regressions.test.ts`：验证十二张新增用品/服务道具与复用键盘均为本地 RGBA PNG，并验证十三种数学动作配方。
 - `src/shared/game.test.ts`、`src/main/store.test.ts`：验证永久装扮购买规则和 schema 1 到 schema 2 的所有权/装备保留。
 - `scripts/prepare_v1_2_2_character_assets.py`：执行时验证全部 80 张阶段运行素材的透明画布契约。
+
+## 未发布手臂修复
+
+四阶段五层素材已通过 prepare_rig_attachments.py 确定性修整；肩部参数及预览验证见 [角色变换与附件实现](PET_RIG_AND_ATTACHMENTS.md)。原整图及表情仍保留。八件永久装扮与四种旅行装已迁移；商店继续使用未拆分原图。
+
+
+新增的 `torso/leaves` 为身体的互补分层；`segment/hand` 为接触动作片段，嘴部遮挡单独导出。运行时道具使用 `assets/props/rig/` 的规范化透明素材；护理刷具、光标箭头独立于旧组合图，避免重复手部。旅行资源由 `prepare_travel_parts.py` 本地生成；素材美术仍需用户实际观看确认。所有生成结果随源码提供，应用运行不依赖 Python、图片生成工具或网络。
+
+## 基础照顾本地素材（2026-09-29，未发布）
+
+新增 `assets/props/rig/care/{bowl,bread,washcloth,pillow}.png`，内置 imagegen 生成并保留透明 alpha；原始生成图复制到仓库，不依赖远程地址。杯碗握持、面包顶部接触和毛巾／抱枕握点在 `measure_rig_assets.cjs` 中测量。PNG原始尺寸允许不同，渲染统一映射到既有逻辑画布。提示词、来源及证据见 [实施记录](../CARE_INTERACTION_IMPLEMENTATION.md)。既有永久装扮 ID、所有权及旅行装配方不变。
+

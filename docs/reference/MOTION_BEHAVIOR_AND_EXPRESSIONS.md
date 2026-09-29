@@ -2,8 +2,8 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在行为类型、移动调度、动画、表达式解析、交互手势、视觉素材或测试已经变更并核对后更新；新增动作方向或角色性格规则必须先取得用户批准。  
-> 适用版本：1.2.5  
-> 最后核对：2026-08-23  
+> 适用版本：1.2.8 候选（正式发布待完成）  
+> 最后核对：2026-09-29  
 > 权威源码：`src/shared/types.ts`、`src/shared/interaction.ts`、`src/shared/expression.ts`、`src/main/interaction-controller.ts`、`src/main/motion.ts`、`src/main/main.ts`、`src/renderer/pet-view.tsx`、`src/renderer/styles.css`  
 > 更新触发：`PetBehavior`、`PetInteractionKind`、互动优先级、触发阈值、自动散步条件、速度/缓动、动画强度、拖动/点击手势、四阶段变体、表情文案或相关测试变化时。
 
@@ -24,16 +24,16 @@
 `PetRuntimeState` 由主进程的 `InteractionController` 所有，不持久化，包含：
 
 - `motion`：窗口是否正在自动移动及朝向。
-- `interaction`：当前互动种类、序列号、开始时间、持续时间和朝向。
+- `interaction`：当前互动种类、序列号、开始时间、持续时间、朝向，以及专属用品动作需要的 `inventoryItemId`。
 - `gaze`：归一化的鼠标注视偏移。
 - `keyboardStatus`：键盘节奏组件的 `disabled | starting | ready | unavailable` 状态。
 - `keyboardTempo`：只由聚合次数派生的 `calm | steady | rapid` 视觉节奏，不持久化。
 
-`PetInteractionKind` 已包含 `idle`、`nearby`、`petting`、`dodge`、`dragging`、`landing`、`keyboard-typing`、`keyboard-rest`、`cursor-paw`、`cursor-tug`、`cursor-chase`和 `cursor-dizzy`。每次状态变更都增加 `sequenceId`，便于渲染层重启同类动画。
+`PetInteractionKind` 已包含 `idle`、`nearby`、`petting`、`dodge`、`inventory-use`、`dragging`、`landing`、`keyboard-typing`、`keyboard-rest`、`cursor-paw`、`cursor-tug`、`cursor-chase`和 `cursor-dizzy`。每次状态变更都增加 `sequenceId`，便于渲染层重启同类动画。
 
 ### 互动优先级与中断
 
-当前顺序从高到低为：用户拖动、落地、多次点击闪躲、单击抚摸、键盘陪打、鼠标扩展互动、附近陪伴、待机。新状态只能中断更低优先级状态；拖动、落地和显式照料使用主进程的强制收束路径。
+当前顺序从高到低为：用户拖动、用品/服务专属动作、落地、多次点击闪躲、单击抚摸、键盘陪打、鼠标扩展互动、附近陪伴、待机。新状态只能中断更低优先级状态；拖动、用品使用、落地和显式照料使用主进程的强制收束路径。专属动作可以被拖动安全打断，其他环境互动不能覆盖；完整编排见[用品与服务专属动作规格](INVENTORY_USE_ACTIONS.md)。
 
 喂食、玩耍、清洁或睡眠开始时，主进程清除待结算点击和低优先级环境互动。睡眠、照料动画或前台全屏应用存在时，注视、鼠标环境互动和键盘陪打均回到待机，不会在条件解除后继续一段过期动画。
 
@@ -135,3 +135,10 @@
 - `src/renderer/drag-visual.test.ts`：拖动方向、速度限幅、动画强度和静止姿态。
 
 当前仍缺少真实 BrowserWindow 下的多显示器拖动、鼠标手势时序、视觉截图以及原生键盘钩子端到端测试。
+
+## 基础照顾动画（2026-09-29，未发布）
+
+新增 `PetInteractionKind=care`，运行时携带 `careAction/careVariant`，包含 feed/play/clean/sleep-in/sleep-loop/wake。短片按主进程起始时刻及截止时间求帧，阶段不改变业务时长。连续同种主动作轮换三个可观察变体；睡眠循环继承入睡变体。睡眠循环可被单击抚摸和拖动暂时打断，逻辑睡眠不变；明确叫醒或成功照顾才退出。旧序列的截止时间不能结束新动作。
+
+动作优先级与库存使用同级，环境互动不能覆盖，用户拖动优先；自动散步不抢占醒来短片。减少动态使用稳定用途姿态和低幅过渡，清洁粒子关闭。新增 `rig/care-actions.ts` 为纯时间分镜，复用原有肩部、手臂和刚性道具计算。详见 [实施记录](../CARE_INTERACTION_IMPLEMENTATION.md)。
+

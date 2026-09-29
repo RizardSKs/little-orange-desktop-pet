@@ -4,8 +4,8 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 可随项目演进更新；相关代码变化时必须在同一次修改中同步 |
-| 适用版本 | 1.2.5 |
-| 最后核对 | 2026-08-23 |
+| 适用版本 | 1.2.8 候选 |
+| 最后核对 | 2026-09-29 |
 | 权威来源 | 根目录 `AGENTS.md`、本目录下的治理与参考文档、当前源码与发布产物 |
 | 更新触发 | 新增、移动或改变文档职责；版本发布；文档控制规则经用户批准后变化 |
 
@@ -53,6 +53,7 @@
 | 照顾、经济、探索和收益 | [照顾、动作与收益](reference/CARE_ACTIONS_AND_REWARDS.md) | `src/shared/game.ts`、`src/shared/economy.ts`、`src/shared/catalog.ts` |
 | 装扮和素材 | [装扮与素材](reference/OUTFITS_AND_ASSETS.md) | `src/shared/catalog.ts`、`src/renderer/outfit-layout.ts`、`assets/pet/`、`assets/outfits/` |
 | 行为、移动和表情 | [动作、行为与表情](reference/MOTION_BEHAVIOR_AND_EXPRESSIONS.md) | `src/shared/interaction.ts`、`src/main/interaction-controller.ts`、`src/shared/expression.ts` |
+| 用品与服务使用动作 | [用品与服务专属动作](reference/INVENTORY_USE_ACTIONS.md) | `src/shared/catalog.ts`、`src/main/interaction-controller.ts`、`src/renderer/pet-view.tsx`、`assets/props/inventory/` |
 | 窗口、设置和 IPC | [界面、窗口、设置与 IPC](reference/UI_WINDOWS_SETTINGS_AND_IPC.md) | `src/main/main.ts`、`src/preload/preload.ts`、`src/shared/types.ts` |
 | 存档 | [存档结构与迁移](reference/SAVE_SCHEMA_AND_MIGRATIONS.md) | `src/shared/types.ts`、`src/shared/game.ts`、`src/main/store.ts` |
 | 验证 | [测试与验收](reference/TESTING_AND_ACCEPTANCE.md) | `src/**/*.test.ts`、构建配置 |
@@ -61,7 +62,7 @@
 
 ## 状态与历史
 
-- [当前实现状态](status/CURRENT_IMPLEMENTATION.md)：持续更新的 1.2.5 源码实现与发行边界。
+- [当前实现状态](status/CURRENT_IMPLEMENTATION.md)：持续更新的 1.2.8 候选实现与发行边界。
 - [版本索引](../CHANGELOG.md)：只追加的发布入口。
 - [1.0.0 快照](releases/v1.0.0.md)：依据遗留发布包重建。
 - [1.1.0 快照](releases/v1.1.0.md)：依据当前更新包、清单和归档差异重建。
@@ -70,9 +71,11 @@
 - [1.2.3 快照](releases/v1.2.3.md)：拖拽互动、本地 PNG 装扮、退出竞态修复、三件套与远端摘要证据。
 - [1.2.4 快照](releases/v1.2.4.md)：稳定肩部拖动、键盘陪打、鼠标抓握、安装升级与远端摘要证据。
 - [1.2.5 快照](releases/v1.2.5.md)：肩部安全扩展、可爱困倦动作、散步活跃度、安装升级与远端摘要证据。
+- [1.2.6 快照](releases/v1.2.6.md)：十三种用品/服务专属动作、本地道具、安装升级与远端摘要证据。
+- [1.2.7 快照](releases/v1.2.7.md)：角色与附件接触、四项丰富化动作、三条安装路径和三件套完整回下载校验。
 - [版本快照模板](releases/TEMPLATE.md)：后续正式发布必须使用。
 
-v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删除且标签保留。v1.2.1、v1.2.2、v1.2.3、v1.2.4 与 v1.2.5 均使用固定 ASCII 三件套，并已完成不可变标签、GitHub Release、远端 SHA-256 核对和正式发布快照。
+v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删除且标签保留。v1.2.1、v1.2.2、v1.2.3、v1.2.4、v1.2.5 与 v1.2.6 均使用固定 ASCII 三件套，并已完成不可变标签、GitHub Release、远端 SHA-256 核对和正式发布快照。
 
 ## 当前根目录入口
 
@@ -83,3 +86,23 @@ v1.2.0 因 GitHub 自动改写中文资产名而停止，错误 Release 已删�
 ## 仓库级技能
 
 - [项目治理基线技能](../.agents/skills/bootstrap-project-governance/SKILL.md)：在其他项目中建立或审查 `LOCKED` / `LIVING` / `APPEND_ONLY` 文档、Git/GitHub 闭环和正式 Release 门槛。
+
+## 角色与附件渲染
+
+[角色变换与附件实现](reference/PET_RIG_AND_ATTACHMENTS.md)：分阶段实施及 Phase 1 验证。
+
+## 动作丰富化计划与样板
+
+- [基础互动实施记录](CARE_INTERACTION_IMPLEMENTATION.md)：当前实现、安装验收、复现命令、动态预览与未验证边界。
+
+- [四项基础互动动作开发计划](CARE_INTERACTION_ANIMATION_PLAN.md)：喂食、玩耍、清洁、睡觉／叫醒的新一轮计划，实现已完成并进入 1.2.8 发布候选；与下述用品动作项目分开管理。
+
+- [动作与道具表现丰富化项目计划书](MOTION_AND_PROP_ENRICHMENT_PLAN.md)：现有十三项用品／服务的动作增强、样板顺序及验收方案；用户已启动四项样板开发。
+- [四项动作样板实施与验收](MOTION_SAMPLE_IMPLEMENTATION.md)：当前样板、离线动态对比、复现命令与待验收边界。
+
+- [计划与 ChatGPT 传话话术](MOTION_AND_PROP_DISCUSSION_KIT.md)：首轮完整计划、第 2–5 轮备用追问及回传模板。
+
+- [首轮判断与第二轮话术](MOTION_AND_PROP_ROUND_TWO.md)：首轮评审取舍、已核实的图层与生命周期，以及第二轮转发消息。
+
+- [两轮评审结论](MOTION_AND_PROP_REVIEW_CONCLUSION.md)：2/5 轮提前收敛，独立修订与用户待定事项；当前约束见计划书第 13 节。
+

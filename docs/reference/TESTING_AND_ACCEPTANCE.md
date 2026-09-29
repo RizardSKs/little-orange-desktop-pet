@@ -4,8 +4,8 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 测试结构、支持环境、原生依赖、发布方式或验收要求变化时同步更新 |
-| 适用版本 | 1.2.4 |
-| 最后核对 | 2026-08-23 |
+| 适用版本 | 1.2.8 候选（正式发布待完成） |
+| 最后核对 | 2026-09-29 |
 | 权威来源 | `package.json`、`.github/workflows/windows-release.yml`、`src/**/*.test.ts`、构建配置、实际安装结果和 GitHub Release |
 | 更新触发 | 行为变化、新缺陷回归、测试增删、Node/Electron/原生组件基线、CI 门禁或正式发布变化 |
 
@@ -120,3 +120,30 @@
 - [装扮与素材](OUTFITS_AND_ASSETS.md)
 - [发布与兼容准则](../governance/RELEASE_AND_COMPATIBILITY.md)
 - [更新操作手册](../../UPDATE_GUIDE.md)
+
+## 未发布 Phase 1 证据（2026-09-06）
+
+新增 geometry.test.ts 验证六项基础门槛；全量 102 项测试、TypeScript 检查及生产构建通过。隔离 Electron 预览确认 15 个唯一片段同级绘制且无存档 API；截图与 JSON 位于 tmp/rig-evidence/phase1。此证据不代表正式角色或真实 Windows DPI 已验收。
+
+## 未发布角色与附件回归（2026-09-06）
+
+实现与验证入口见 [角色变换与附件实现](PET_RIG_AND_ATTACHMENTS.md)。新增几何、肩点、动作接触/连续性、视觉事务、中断与减少动态效果测试；原界面回归改为检查正式数学动作，不再用未挂载 CSS 选择器证明动作正确。
+
+`verify_rig_bounds.cjs` 对真实 PNG alpha 凸包进行密集求帧检查，包含正式接触边界及其前后、循环边界、周期四分点和固定帧采样，并扩展三档强度与减少动态效果。当前常规互动还采用有限外部拖拽极值输入；不宣称覆盖任意未记录外部输入。
+
+本次完成 Windows 125% 显示环境的隔离 Electron 组件验证和四档 Chromium 缩放模拟。真实 Windows 100%/150%/200%、跨显示器切换、安装版全用品人工观察未运行。截图和 JSON 存于 `tmp/rig-evidence/`，不进入安装包或 Git。任何真实 DPI 或视觉问题仍须独立判定，不用纯数学精度代替光栅/人工验收。
+
+## 四项有限动作样板（2026-09-29）
+
+全量 123 项测试、TypeScript 检查及生产构建通过。新增测试覆盖总时长内收尾、压缩时长、跳帧与反向 seek、完整使用期间接触、真实吸管锚点、键盘固定与交替、护理停顿、中断及减少动态效果过渡。真实 alpha 扫描扩展到四项样板完整时长和收尾边界；其余动作仍扫描既有周期。
+
+`measure_rig_assets.cjs` 读取当前 PNG 的尺寸、摘要、透明轮廓及接触像素；`verify_motion_samples.cjs` 检查正式 React 关键帧、动作中途首次加载和释放后成长提交，避免仅用静态求帧证明 LivePet 正确。`export_motion_samples.cjs` 生成离线前后对比，其内容是生产求帧函数的采样播放，不是安装版录屏。`benchmark_motion_samples.cjs` 使用隔离离屏 LivePet 取得短时帧间隔、CPU 和工作集观测；共享进程与缓存，不能据此推断长期内存稳定性。
+
+复现步骤、实测结果与尚未通过的用户视觉／实装门槛见 [四项动作样板实施与验收](../MOTION_SAMPLE_IMPLEMENTATION.md)。
+
+## 基础照顾回归（2026-09-29，未发布）
+
+新增 `care-controller.test.ts` 覆盖保存前后边界、busy与替换、重复身份、来源隔离、睡眠显式目标、失败不消费和表演故障不重复结算；控制器测试覆盖截止替换、入睡转循环、拖动后睡眠恢复、叫醒不复活旧状态及变体轮换。`care-actions.test.ts` 覆盖阶段／朝向／强度／减少动态／变体求帧、收尾、跳时、接触和无道具降级。
+
+`verify_care_animations.cjs` 使用隔离隐藏 Electron 窗口检查正式 React关键帧、LivePet晚到解码与离线预览；`verify_rig_bounds.cjs --care-only` 扫描基础动作真实alpha及所有既有附件。`export_care_preview.mjs` 输出无存档访问的离线可交互HTML。最新结果及仍需实机验证的项目集中在 [实施记录](../CARE_INTERACTION_IMPLEMENTATION.md)，不把模拟或静态检查当正式安装验收。
+

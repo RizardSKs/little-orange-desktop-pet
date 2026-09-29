@@ -22,6 +22,9 @@ describe('interaction rules', () => {
   it('keeps manual and direct interactions above ambient ones', () => {
     expect(canInterruptInteraction('nearby', 'cursor-paw')).toBe(true);
     expect(canInterruptInteraction('petting', 'keyboard-typing')).toBe(false);
+    expect(canInterruptInteraction('landing', 'inventory-use')).toBe(true);
+    expect(canInterruptInteraction('inventory-use', 'petting')).toBe(false);
+    expect(canInterruptInteraction('inventory-use', 'dragging')).toBe(true);
     expect(canInterruptInteraction('landing', 'dragging')).toBe(true);
   });
 

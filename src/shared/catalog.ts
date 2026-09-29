@@ -8,7 +8,7 @@ import type {
   SupplyItemId,
   TravelOutfitId,
 } from './economy-types';
-import type { ShopItem } from './types';
+import type { PetExpression, ShopItem } from './types';
 
 const MINUTE_MS = 60 * 1000;
 const HOUR_MS = 60 * MINUTE_MS;
@@ -38,6 +38,13 @@ export interface InventoryCatalogItem {
   maxStack: number;
   stats?: InventoryStatEffect;
   effects: readonly EffectGrant[];
+  useVisual: InventoryUseVisual;
+}
+
+export interface InventoryUseVisual {
+  durationMs: number;
+  expression: PetExpression;
+  assetFile: string;
 }
 
 export interface TravelStory {
@@ -83,7 +90,8 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 12,
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { add: { satiety: 15 } },
-    effects: [{ slot: 'celebration', effectId: 'effect-cookie-snack', durationMs: 8_000 }],
+    effects: [],
+    useVisual: { durationMs: 8_000, expression: 'delighted', assetFile: 'inventory/citrus-cookie.png' },
   },
   {
     id: 'item-honey-soda' satisfies SupplyItemId,
@@ -94,7 +102,8 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 18,
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { add: { energy: 12 } },
-    effects: [{ slot: 'celebration', effectId: 'effect-honey-soda', durationMs: 8_000 }],
+    effects: [],
+    useVisual: { durationMs: 8_000, expression: 'refreshed', assetFile: 'inventory/honey-soda.png' },
   },
   {
     id: 'item-ribbon-ball' satisfies SupplyItemId,
@@ -105,7 +114,8 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 24,
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { add: { mood: 20, energy: -2 } },
-    effects: [{ slot: 'celebration', effectId: 'effect-ribbon-play', durationMs: 12_000 }],
+    effects: [],
+    useVisual: { durationMs: 12_000, expression: 'excited', assetFile: 'inventory/ribbon-ball.png' },
   },
   {
     id: 'item-bubble-bath' satisfies SupplyItemId,
@@ -116,7 +126,8 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 28,
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { add: { cleanliness: 30 } },
-    effects: [{ slot: 'celebration', effectId: 'effect-bubble-bath', durationMs: 12_000 }],
+    effects: [],
+    useVisual: { durationMs: 12_000, expression: 'refreshed', assetFile: 'inventory/bubble-bath.png' },
   },
   {
     id: 'item-mini-keyboard' satisfies SupplyItemId,
@@ -127,6 +138,7 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 36,
     maxStack: INVENTORY_STACK_LIMIT,
     effects: [{ slot: 'keyboard', effectId: 'effect-mini-keyboard', durationMs: 30 * MINUTE_MS }],
+    useVisual: { durationMs: 10_000, expression: 'focused', assetFile: 'mini-keyboard.png' },
   },
   {
     id: 'item-mouse-feather' satisfies SupplyItemId,
@@ -137,6 +149,7 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 36,
     maxStack: INVENTORY_STACK_LIMIT,
     effects: [{ slot: 'mouse', effectId: 'effect-mouse-feather', durationMs: 30 * MINUTE_MS }],
+    useVisual: { durationMs: 10_000, expression: 'excited', assetFile: 'inventory/mouse-feather.png' },
   },
   {
     id: 'item-sunset-theme' satisfies SupplyItemId,
@@ -147,6 +160,7 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 54,
     maxStack: INVENTORY_STACK_LIMIT,
     effects: [{ slot: 'theme', effectId: 'effect-sunset-theme', durationMs: HOUR_MS }],
+    useVisual: { durationMs: 8_000, expression: 'happy', assetFile: 'inventory/sunset-orb.png' },
   },
   {
     id: 'item-stage-sparkle' satisfies SupplyItemId,
@@ -157,6 +171,7 @@ export const SUPPLY_ITEMS: readonly InventoryCatalogItem[] = [
     price: 72,
     maxStack: INVENTORY_STACK_LIMIT,
     effects: [{ slot: 'aura', effectId: 'effect-stage-sparkle', durationMs: 30 * MINUTE_MS }],
+    useVisual: { durationMs: 8_000, expression: 'surprised', assetFile: 'inventory/stage-sparkles.png' },
   },
 ];
 
@@ -171,9 +186,9 @@ export const SERVICE_VOUCHERS: readonly InventoryCatalogItem[] = [
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { add: { mood: 10 }, fillToCap: ['cleanliness'] },
     effects: [
-      { slot: 'celebration', effectId: 'effect-grooming-ceremony', durationMs: 20_000 },
       { slot: 'aura', effectId: 'effect-grooming-glow', durationMs: 2 * HOUR_MS },
     ],
+    useVisual: { durationMs: 20_000, expression: 'refreshed', assetFile: 'inventory/grooming-kit.png' },
   },
   {
     id: 'service-desktop-picnic' satisfies ServiceVoucherId,
@@ -185,9 +200,9 @@ export const SERVICE_VOUCHERS: readonly InventoryCatalogItem[] = [
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { fillToCap: ['satiety', 'mood'] },
     effects: [
-      { slot: 'celebration', effectId: 'effect-picnic-ceremony', durationMs: 45_000 },
       { slot: 'theme', effectId: 'effect-picnic-theme', durationMs: 4 * HOUR_MS },
     ],
+    useVisual: { durationMs: 45_000, expression: 'delighted', assetFile: 'inventory/picnic-set.png' },
   },
   {
     id: 'service-sparkle-party' satisfies ServiceVoucherId,
@@ -199,10 +214,10 @@ export const SERVICE_VOUCHERS: readonly InventoryCatalogItem[] = [
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { fillToCap: ['mood'] },
     effects: [
-      { slot: 'celebration', effectId: 'effect-party-ceremony', durationMs: 60_000 },
       { slot: 'theme', effectId: 'effect-party-theme', durationMs: 8 * HOUR_MS },
       { slot: 'aura', effectId: 'effect-party-aura', durationMs: 8 * HOUR_MS },
     ],
+    useVisual: { durationMs: 60_000, expression: 'excited', assetFile: 'inventory/party-popper.png' },
   },
   {
     id: 'service-royal-celebration' satisfies ServiceVoucherId,
@@ -214,10 +229,10 @@ export const SERVICE_VOUCHERS: readonly InventoryCatalogItem[] = [
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { fillToCap: ['satiety', 'mood', 'energy', 'cleanliness'] },
     effects: [
-      { slot: 'celebration', effectId: 'effect-royal-ceremony', durationMs: 90_000 },
       { slot: 'theme', effectId: 'effect-royal-theme', durationMs: 24 * HOUR_MS },
       { slot: 'aura', effectId: 'effect-royal-aura', durationMs: 24 * HOUR_MS },
     ],
+    useVisual: { durationMs: 90_000, expression: 'proud', assetFile: 'inventory/royal-fanfare.png' },
   },
   {
     id: 'service-grand-festival' satisfies ServiceVoucherId,
@@ -229,10 +244,10 @@ export const SERVICE_VOUCHERS: readonly InventoryCatalogItem[] = [
     maxStack: INVENTORY_STACK_LIMIT,
     stats: { fillToCap: ['satiety', 'mood', 'energy', 'cleanliness'] },
     effects: [
-      { slot: 'celebration', effectId: 'effect-grand-ceremony', durationMs: 120_000 },
       { slot: 'theme', effectId: 'effect-grand-theme', durationMs: 72 * HOUR_MS },
       { slot: 'aura', effectId: 'effect-grand-aura', durationMs: 72 * HOUR_MS },
     ],
+    useVisual: { durationMs: 120_000, expression: 'proud', assetFile: 'inventory/grand-fireworks.png' },
   },
 ];
 

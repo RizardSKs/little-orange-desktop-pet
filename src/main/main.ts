@@ -2,9 +2,9 @@ import { app, BrowserWindow, dialog, ipcMain, Menu, nativeImage, powerMonitor, s
 import { execFile } from 'node:child_process';
 import path from 'node:path';
 import { promisify } from 'node:util';
-import { advanceOnline, buyItem, performAction, settleOffline, statCap } from '../shared/game';
+import { advanceOnline, buyItem, settleOffline, statCap } from '../shared/game';
 import { deriveGrowthMilestones, type GrowthProgressEvent } from '../shared/growth';
-import { findShopItem } from '../shared/catalog';
+import { findInventoryItem, findShopItem } from '../shared/catalog';
 import {
   acknowledgeExpeditionReward,
   advanceEconomyRuntime,
@@ -20,6 +20,8 @@ import type { AnimationIntensity, EconomyIpcResult, OfflineSummary, PetAction, P
 import { SaveStore } from './store';
 import { createMotionPlan, positionAt, walkDelayMs, walkDeltaPx } from './motion';
 import { InteractionController } from './interaction-controller';
+import { CareController } from './care-controller';
+import type { CareRequest, SleepTarget } from '../shared/types';
 import { RuntimeScheduler } from './runtime-scheduler';
 
 const execFileAsync = promisify(execFile);
@@ -44,7 +46,8 @@ let foregroundFullscreen = false;
 let systemSuspended = false;
 let screenLocked = false;
 let runtimeBaselineAt: number | null = null;
-let actionResetTimer: NodeJS.Timeout | null = null;
+let menuCommandId = 0;
+let careController: CareController;
 let motionTimer: NodeJS.Timeout | null = null;
 let motionToken = 0;
 let motionDirection: 'left' | 'right' = 'right';
@@ -234,6 +237,7 @@ function createInteractionController() {
     openPanel: () => togglePanel(true),
     movePet,
     finishPetMove: () => { if (state && store) store.save(state); },
+    finishCare: finishTemporaryCare,
   });
 }
 
@@ -258,7 +262,7 @@ function rebuildApplicationMenu() {
     {
       label: '宠物', submenu: [
         { label: '唤回小橙子', enabled: !state.settings.desktopLocked, click: () => { petWindow?.showInactive(); animatePetTo(defaultPetPosition()); } },
-        { label: state.pet.behavior === 'sleeping' ? '叫醒小橙子' : '让小橙子睡觉', enabled: !state.settings.desktopLocked, click: () => { cancelPetMotion(); interactionController?.suspendForCare(); state = performAction(state, 'sleep').state; saveAndBroadcast(); } },
+        { label: state.pet.behavior === 'sleeping' ? '叫醒小橙子' : '让小橙子睡觉', enabled: !state.settings.desktopLocked, click: sleepMenuAction(state.pet.behavior === 'sleeping' ? 'awake' : 'asleep') },
         { label: '自动散步', type: 'checkbox', checked: state.settings.autoWalk, enabled: !state.settings.desktopLocked, click: (item) => updateSetting('autoWalk', item.checked) },
         { type: 'separator' },
         { label: state.settings.desktopLocked ? '解锁小橙子' : '锁定在桌面', click: () => setDesktopLocked(!state.settings.desktopLocked) },
@@ -303,6 +307,7 @@ function rebuildTrayMenu() {
   tray.setContextMenu(Menu.buildFromTemplate([
     { label: '唤回小橙子', enabled: !state.settings.desktopLocked, click: () => { petWindow?.showInactive(); animatePetTo(defaultPetPosition()); } },
     { label: '打开管理面板', enabled: !state.settings.desktopLocked, click: () => togglePanel(true) },
+    { label: state.pet.behavior === 'sleeping' ? '叫醒小橙子' : '让小橙子睡觉', enabled: !state.settings.desktopLocked, click: sleepMenuAction(state.pet.behavior === 'sleeping' ? 'awake' : 'asleep') },
     { type: 'separator' },
     { label: '自动散步', type: 'checkbox', checked: state.settings.autoWalk, enabled: !state.settings.desktopLocked, click: (item) => updateSetting('autoWalk', item.checked) },
     { label: '始终置顶', type: 'checkbox', checked: state.settings.alwaysOnTop || state.settings.desktopLocked, enabled: !state.settings.desktopLocked, click: (item) => updateSetting('alwaysOnTop', item.checked) },
@@ -435,17 +440,37 @@ function updateSetting(key: SettingKey, value: boolean | string): SaveData {
   return state;
 }
 
-function resetTemporaryBehavior() {
-  if (actionResetTimer) runtimeScheduler?.clearTimeout(actionResetTimer);
-  if (state.pet.behavior === 'sleeping') return;
-  actionResetTimer = runtimeScheduler?.setTimeout(() => {
-    actionResetTimer = null;
-    if (quitting) return;
-    if (state.pet.behavior !== 'sleeping') {
-      state.pet.behavior = 'idle';
-      saveAndBroadcast();
+function finishTemporaryCare() {
+  if (!state || !['eating', 'playing', 'cleaning'].includes(state.pet.behavior)) return;
+  state = { ...state, pet: { ...state.pet, behavior: 'idle' } };
+  if (!quitting) saveAndBroadcast();
+}
+
+function createCareController() {
+  careController = new CareController({
+    state: () => state,
+    busy: action => quitting || systemSuspended || !interactionController || interactionController.careBusy(action),
+    save: next => store.save(next),
+    commit: next => { state = next; },
+    present: (action, now) => {
+      try { cancelPetMotion(); }
+      finally {
+        try { interactionController!.playCare(action, now); }
+        catch { finishTemporaryCare(); throw new Error('动作显示暂时不可用'); }
+      }
+    },
+    publish: () => { broadcast(); rebuildTrayMenu(); rebuildApplicationMenu(); },
+  });
+}
+
+function sleepMenuAction(target: SleepTarget) {
+  return () => {
+    try {
+      const result = careController.execute('menu', 'sleep', { id: 'menu-' + ++menuCommandId, sleepTarget: target });
+      if (!result.ok) dialog.showErrorBox('互动未完成', result.message);
     }
-  }, 2600) ?? null;
+    catch { dialog.showErrorBox('互动未完成', '请稍后重新操作。'); }
+  };
 }
 
 function clearKeyboardReadyTimer() {
@@ -541,6 +566,7 @@ function pauseActualRuntimeForSuspend() {
     advanceActualEconomyRuntime(now);
   }
   runtimeBaselineAt = null;
+  interactionController?.cancelForLock();
   pauseNativeInput();
   if (state && store) {
     saveAndBroadcast();
@@ -589,18 +615,13 @@ function setupIpc() {
   }));
   ipcMain.handle('state:load', () => state);
   ipcMain.handle('interaction:runtime-load', () => interactionController?.snapshot());
-  ipcMain.handle('pet:action', (event, action: unknown) => {
+  ipcMain.handle('pet:action', (event, action: unknown, request: CareRequest | undefined) => {
     assertPanelRequest(event);
     if (typeof action !== 'string' || !VALID_ACTIONS.has(action as PetAction)) throw new Error('无效互动');
-    cancelPetMotion();
-    interactionController?.suspendForCare();
     const fromLevel = state.growth.level;
-    const result = performAction(state, action as PetAction);
-    state = result.state;
-    saveAndBroadcast();
+    const result = careController.execute('panel-' + event.sender.id, action as PetAction, request ?? { id: 'legacy-' + ++menuCommandId });
     broadcastGrowthProgress(growthProgress('care', fromLevel));
-    resetTemporaryBehavior();
-    return { state, message: result.message };
+    return result;
   });
   ipcMain.handle('settings:set', (event, key: unknown, value: unknown) => {
     assertPanelRequest(event);
@@ -617,7 +638,7 @@ function setupIpc() {
     if (!petWindow || event.sender !== petWindow.webContents || state.settings.desktopLocked) throw new Error('当前无法打开菜单');
     const menu = Menu.buildFromTemplate([
       { label: `打开${state.pet.name}面板`, click: () => togglePanel(true) },
-      { label: state.pet.behavior === 'sleeping' ? '叫醒' : '睡觉', click: () => { cancelPetMotion(); interactionController?.suspendForCare(); state = performAction(state, 'sleep').state; saveAndBroadcast(); } },
+      { label: state.pet.behavior === 'sleeping' ? '叫醒' : '睡觉', click: sleepMenuAction(state.pet.behavior === 'sleeping' ? 'awake' : 'asleep') },
       { label: '自动散步', type: 'checkbox', checked: state.settings.autoWalk, click: (item) => updateSetting('autoWalk', item.checked) },
       { label: '锁定在桌面', click: () => setDesktopLocked(true) },
       { type: 'separator' },
@@ -685,6 +706,7 @@ function setupIpc() {
   ipcMain.handle('economy:item-use', (event, itemId: unknown): EconomyIpcResult => {
     assertPanelRequest(event);
     if (!isInventoryItemId(itemId)) throw new Error('无效用品');
+    if (!interactionController || interactionController.isDragging()) return { state, ok: false, code: 'item-unavailable', message: '请放下小橙子后再使用用品。' };
     const statResult = applyInventoryStatEffect(state.pet.stats, statCap(state.growth.level), itemId);
     if (!statResult.ok) {
       return { state, ok: false, code: inventoryStatFailureCode(statResult.code), message: statResult.message };
@@ -697,6 +719,11 @@ function setupIpc() {
       economy: economyResult.economy,
     };
     saveAndBroadcast();
+    const item = findInventoryItem(itemId);
+    if (item) {
+      cancelPetMotion();
+      interactionController?.playInventoryUse(itemId, item.useVisual.durationMs);
+    }
     const message = statResult.code === 'no-stat-effect'
       ? economyResult.message
       : `${economyResult.message}${statResult.message}`;
@@ -795,7 +822,7 @@ function startTimers() {
   }, 50);
   const scheduleWalk = () => scheduler.setTimeout(() => {
     if (quitting || !scheduler.isActive) return;
-    if (!petWindow || petWindow.isDestroyed() || systemSuspended || screenLocked || state.settings.desktopLocked || !state.settings.autoWalk || state.pet.behavior !== 'idle' || foregroundFullscreen || Boolean(panelWindow && !panelWindow.isDestroyed() && panelWindow.isFocused())) {
+    if (!petWindow || petWindow.isDestroyed() || systemSuspended || screenLocked || state.settings.desktopLocked || !state.settings.autoWalk || state.pet.behavior !== 'idle' || interactionController?.snapshot().interaction.kind === 'care' || foregroundFullscreen || Boolean(panelWindow && !panelWindow.isDestroyed() && panelWindow.isFocused())) {
       scheduleWalk();
       return;
     }
@@ -814,8 +841,7 @@ function stopRuntimeServices(): void {
   motionToken += 1;
   if (motionTimer) clearTimeout(motionTimer);
   motionTimer = null;
-  if (actionResetTimer) clearTimeout(actionResetTimer);
-  actionResetTimer = null;
+
   clearKeyboardReadyTimer();
   for (const cleanup of systemListenerCleanups.splice(0)) cleanup();
   stopKeyboardWorker('disabled');
@@ -835,6 +861,8 @@ app.whenReady().then(() => {
     return;
   }
   createInteractionController();
+  createCareController();
+  finishTemporaryCare();
   setupIpc();
   createPetWindow();
   createPanelWindow();

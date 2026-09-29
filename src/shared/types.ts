@@ -3,6 +3,13 @@ import type { GrowthProgressEvent } from './growth';
 
 export type PetBehavior = 'idle' | 'walking' | 'eating' | 'playing' | 'cleaning' | 'sleeping' | 'sad';
 export type PetAction = 'feed' | 'play' | 'clean' | 'sleep';
+export type CareVisual = 'feed' | 'play' | 'clean' | 'sleep-in' | 'sleep-loop' | 'wake';
+export type SleepTarget = 'asleep' | 'awake';
+export interface CareRequest { id: string; sleepTarget?: SleepTarget }
+export interface CareActionResult extends StateActionResult {
+  ok: boolean;
+  code: 'performed' | 'unchanged' | 'stats-full' | 'insufficient-coins' | 'insufficient-energy' | 'busy' | 'save-failed';
+}
 export type GrowthStage = 'sprout' | 'lively' | 'mature' | 'radiant';
 export type AnimationIntensity = 'gentle' | 'normal' | 'lively';
 export type WalkActivity = 'quiet' | 'normal' | 'active';
@@ -10,7 +17,7 @@ export type PetExpression = 'neutral' | 'happy' | 'curious' | 'surprised' | 'pro
 export type PetDirection = 'left' | 'right';
 export type KeyboardHookStatus = 'disabled' | 'starting' | 'ready' | 'unavailable';
 export type KeyboardTempo = 'calm' | 'steady' | 'rapid';
-export type PetInteractionKind = 'idle' | 'nearby' | 'petting' | 'dodge' | 'dragging' | 'landing' | 'keyboard-typing' | 'keyboard-rest' | 'cursor-paw' | 'cursor-tug' | 'cursor-chase' | 'cursor-dizzy';
+export type PetInteractionKind = 'idle' | 'nearby' | 'petting' | 'dodge' | 'inventory-use' | 'care' | 'dragging' | 'landing' | 'keyboard-typing' | 'keyboard-rest' | 'cursor-paw' | 'cursor-tug' | 'cursor-chase' | 'cursor-dizzy';
 
 export type { EconomyState } from './economy-types';
 export type { GrowthProgressEvent } from './growth';
@@ -26,6 +33,9 @@ export interface PetInteractionVisualState {
   startedAt: number;
   durationMs: number | null;
   direction: PetDirection;
+  inventoryItemId: InventoryItemId | null;
+  careAction?: CareVisual;
+  careVariant?: number;
 }
 
 export interface PetRuntimeState {
@@ -136,7 +146,7 @@ export interface OrangePetApi {
   loadBootstrap(): Promise<StartupSnapshot>;
   loadState(): Promise<SaveData>;
   loadRuntimeState(): Promise<PetRuntimeState>;
-  performAction(action: PetAction): Promise<StateActionResult>;
+  performAction(action: PetAction, request?: CareRequest): Promise<CareActionResult>;
   purchaseInventoryItem(itemId: InventoryItemId, quantity: number): Promise<EconomyIpcResult>;
   useInventoryItem(itemId: InventoryItemId): Promise<EconomyIpcResult>;
   startExpedition(expeditionId: ExpeditionId): Promise<EconomyIpcResult>;

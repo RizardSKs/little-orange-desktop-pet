@@ -25,6 +25,8 @@ import type {
   TimedEffect,
 } from './economy-types';
 import type {
+  CareActionResult,
+  SleepTarget,
   AnimationIntensity,
   AppSettings,
   GrowthState,
@@ -171,42 +173,44 @@ export function settleOffline(state: SaveData, now: number): { state: SaveData; 
 const proportionalExperience = (baseExperience: number, actualGain: number, nominalGain: number): number =>
   Math.floor(baseExperience * clamp(actualGain / nominalGain, 0, 1));
 
-export function performAction(state: SaveData, action: PetAction, now = Date.now()): { state: SaveData; message: string } {
+export function performAction(state: SaveData, action: PetAction, now = Date.now(), sleepTarget?: SleepTarget): CareActionResult {
   let next = advanceOnline(state, now);
   const cap = statCap(next.growth.level);
   if (action === 'feed') {
     const gain = Math.min(25, Math.max(0, cap - next.pet.stats.satiety));
-    if (gain <= 0) return { state: next, message: '小橙子已经吃得饱饱的。' };
-    if (next.economy.coins < 5) return { state: next, message: '金币不足，先攒些金币再来吧。' };
+    if (gain <= 0) return { state: next, ok: false, code: 'stats-full', message: '小橙子已经吃得饱饱的。' };
+    if (next.economy.coins < 5) return { state: next, ok: false, code: 'insufficient-coins', message: '金币不足，先攒些金币再来吧。' };
     const experience = proportionalExperience(3, gain, 25);
     next.economy.coins -= 5;
     next.pet.stats.satiety = roundStat(next.pet.stats.satiety + gain);
     next.pet.behavior = 'eating';
     next = addExperience(next, experience);
-    return { state: next, message: `小橙子恢复了 ${roundStat(gain)} 点饱食度，获得 ${experience} 点经验。` };
+    return { state: next, ok: true, code: 'performed', message: `小橙子恢复了 ${roundStat(gain)} 点饱食度，获得 ${experience} 点经验。` };
   }
   if (action === 'play') {
     const gain = Math.min(20, Math.max(0, cap - next.pet.stats.mood));
-    if (gain <= 0) return { state: next, message: '小橙子现在已经非常开心啦。' };
-    if (next.pet.stats.energy < 8) return { state: next, message: '小橙子太困了，先睡一会儿吧。' };
+    if (gain <= 0) return { state: next, ok: false, code: 'stats-full', message: '小橙子现在已经非常开心啦。' };
+    if (next.pet.stats.energy < 8) return { state: next, ok: false, code: 'insufficient-energy', message: '小橙子太困了，先睡一会儿吧。' };
     const experience = proportionalExperience(8, gain, 20);
     next.pet.stats.mood = roundStat(next.pet.stats.mood + gain);
     next.pet.stats.energy = roundStat(clamp(next.pet.stats.energy - 8, 0, cap));
     next.pet.behavior = 'playing';
     next = addExperience(next, experience);
-    return { state: next, message: `小橙子恢复了 ${roundStat(gain)} 点心情，获得 ${experience} 点经验。` };
+    return { state: next, ok: true, code: 'performed', message: `小橙子恢复了 ${roundStat(gain)} 点心情，获得 ${experience} 点经验。` };
   }
   if (action === 'clean') {
     const gain = Math.min(30, Math.max(0, cap - next.pet.stats.cleanliness));
-    if (gain <= 0) return { state: next, message: '小橙子已经亮晶晶啦。' };
+    if (gain <= 0) return { state: next, ok: false, code: 'stats-full', message: '小橙子已经亮晶晶啦。' };
     const experience = proportionalExperience(4, gain, 30);
     next.pet.stats.cleanliness = roundStat(next.pet.stats.cleanliness + gain);
     next.pet.behavior = 'cleaning';
     next = addExperience(next, experience);
-    return { state: next, message: `小橙子恢复了 ${roundStat(gain)} 点清洁度，获得 ${experience} 点经验。` };
+    return { state: next, ok: true, code: 'performed', message: `小橙子恢复了 ${roundStat(gain)} 点清洁度，获得 ${experience} 点经验。` };
   }
-  next.pet.behavior = next.pet.behavior === 'sleeping' ? 'idle' : 'sleeping';
-  return { state: next, message: next.pet.behavior === 'sleeping' ? '晚安，小橙子。' : '睡醒啦！' };
+  const sleeping = sleepTarget ? sleepTarget === 'asleep' : next.pet.behavior !== 'sleeping';
+  if (sleeping === (next.pet.behavior === 'sleeping')) return { state: next, ok: true, code: 'unchanged', message: sleeping ? '小橙子正在睡觉。' : '小橙子已经醒啦。' };
+  next.pet.behavior = sleeping ? 'sleeping' : 'idle';
+  return { state: next, ok: true, code: 'performed', message: next.pet.behavior === 'sleeping' ? '晚安，小橙子。' : '睡醒啦！' };
 }
 
 export function buyItem(state: SaveData, itemId: string): { state: SaveData; ok: boolean; message: string } {
