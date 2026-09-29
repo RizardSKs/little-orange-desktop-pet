@@ -2,7 +2,7 @@
 
 > 文档级别：LIVING（随实现持续维护）  
 > 修改权限：子代理仅可在领域规则、主进程调用链、界面或测试已经变更并核对后更新；新增货币、付费、联网奖励或惩罚性养成必须先取得用户批准。  
-> 适用版本：1.2.8 候选（正式发布待完成）  
+> 适用版本：1.2.8 正式发布
 > 最后核对：2026-09-29  
 > 权威源码：src/shared/game.ts、src/shared/growth.ts、src/shared/economy.ts、src/shared/catalog.ts、src/main/main.ts、src/main/store.ts、src/renderer/panel-view.tsx  
 > 更新触发：属性、衰减、动作成本或收益、动作失败条件、金币来源与消耗、在线或离线公式、结算时机、动作反馈或相关测试变化时。
@@ -100,7 +100,7 @@
 - `src/main/interaction-controller.test.ts` 与 `src/shared/interaction.test.ts`：运行时鼠标、拖动、键盘互动及冷却边界。
 - `src/shared/catalog.test.ts` 与 `src/renderer/ui-regressions.test.ts`：十三种用品/服务的专属动作配置、本地道具素材和渲染契约。
 
-## 基础照顾事务（2026-09-29，未发布）
+## 基础照顾事务（2026-09-14，v1.2.8）
 
 新增主进程 `CareController`：来源及请求身份校验、有限去重、忙碌预检、领域结算、同步保存、内存提交、表演及广播。保存失败不提交、不消费；已保存后表演失败仍保留成功事实，并明确提示显示不可用，不自动重做或退款。失败照顾仍允许原有在线时间推进。缓存内重复 ID 返回当前状态及原结果；缓存淘汰后的旧 ID 不承诺去重，界面每次明确操作生成新 UUID，不自动重试。
 

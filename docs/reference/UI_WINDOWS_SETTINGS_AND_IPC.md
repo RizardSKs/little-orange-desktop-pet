@@ -4,7 +4,7 @@
 | --- | --- |
 | 文档级别 | `LIVING` |
 | 修改权限 | 窗口、设置、菜单、IPC 或公开 API 变化时同步更新 |
-| 适用版本 | 1.2.8 候选（正式发布待完成） |
+| 适用版本 | 1.2.8 正式发布 |
 | 最后核对 | 2026-09-29 |
 | 权威源码 | `src/main/main.ts`、`src/preload/preload.ts`、`src/preload/unlock.ts`、`src/shared/types.ts`、`src/shared/economy-types.ts`、`src/renderer/App.tsx`、`src/renderer/pet-view.tsx`、`src/renderer/panel-view.tsx` |
 | 更新触发 | 增删窗口、设置键、IPC 通道、公开方法、事件、sender 验证、参数验证或系统副作用 |
@@ -134,7 +134,7 @@
 
 当前没有逐通道 Electron 端到端、菜单操作、设置系统副作用或窗口生命周期自动化测试。
 
-## 基础互动接口（2026-09-29，未发布）
+## 基础互动接口（2026-09-14，v1.2.8）
 
 `performAction(action, request?)` 仍使用白名单 `pet:action`，新增可选 `CareRequest={id,sleepTarget?}`；sleepTarget 仅接受 asleep/awake 且只用于 sleep。主进程校验 ID 长度与字符、动作名、目标及请求来源。面板生成 UUID 并用同步 pending 标志拦截双击；来源加请求 ID 组成去重键，相同 ID 不得改动作或睡眠目标。旧无 request 调用由主进程分配一次性身份。
 

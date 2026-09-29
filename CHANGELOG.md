@@ -124,3 +124,7 @@
 - 为喂食、玩耍、清洁加入多段身体动作与变化表现；睡觉加入入睡、持续呼吸和叫醒动作。
 - 新增本地碗、面包、毛巾与抱枕素材，照顾操作统一经主进程保存后再播放。
 - 保持应用身份、schema 2、养成收益和离线边界不变；Windows 隔离目录全新安装、v1.0.0 直升和 v1.2.7 覆盖升级通过。GitHub Actions 与正式 Release 远端校验仍待完成。
+
+## 勘误 2026-09-29 — v1.2.8
+
+- v1.2.8 已正式发布：[GitHub Release](https://github.com/RizardSKs/little-orange-desktop-pet/releases/tag/v1.2.8)。不可变标签、Windows CI、Setup／Update／manifest 三件套回读与完整下载 SHA-256 核对均已通过；证据见[正式发布快照](docs/releases/v1.2.8.md)。
